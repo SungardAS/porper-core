@@ -1,0 +1,14 @@
+node_modules
+.tmp
+.idea
+dist
+.publish
+__*
+*.zip
+.DS_Store
+*.pyc
+!__init__.py
+pymysql
+*.dist-info
+requests
+*.local.py
