@@ -49,3 +49,28 @@ def permission_handler(event, context):
         print ex
         if connection:  connection.rollback()
         raise ex
+
+
+def connection_handler(event, context):
+    try:
+        import json
+        # don't overwrite if the info is already populated
+        with open('models/config.json') as data_file:
+            connection_info = json.load(data_file)
+            if connection_info['host']:
+                raise Exception('already populated')
+        if not event['host']:
+            raise Exception('host is not given')
+        if not event['database']:
+            raise Exception('database is not given')
+        if not event['username']:
+            raise Exception('username is not given')
+        if not event['password']:
+            raise Exception('password is not given')
+        f = open('models/config.json', 'w')
+        f.write(json.dumps(event))
+        f.close()
+        return True
+    except Exception, ex:
+        print ex
+        raise ex
