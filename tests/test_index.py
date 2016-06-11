@@ -6,14 +6,16 @@ from index import permission_handler
 context = None
 event = {
     "region": "us-east-1",
-    "db": "mysql",
     "access_token": "091e304b-1a3f-4406-ac3a-cf8afd8cd647",  # alex.ough"s token
     #"access_token": "3ab4ae48-97fe-4420-8cb1-b1e3c62737f5",    # cloud_test_user"s token
     "resource": "user",
     #"resource": "account",
-    "oper": "find_all",
+    "oper": "create",
     "params" : {
-        "role_id": "ffffffff-ffff-ffff-ffff-ffffffffffff"
+      "id": "117043220775623860708",
+      "family_name": "Ough",
+      "given_name": "Alex",
+      "email": "alex.ough@gmail.com"
     }
 }
 event["params"]

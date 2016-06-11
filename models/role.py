@@ -13,7 +13,6 @@ class Role:
         print sql
         with self.connection.cursor() as cursor:
             cursor.execute(sql)
-        self.connection.commit()
 
     def find(self, params):
         if params.get('id'):
@@ -30,5 +29,4 @@ class Role:
             cursor.execute(sql)
             for row in cursor:
                 rows.append({'id':row[0], 'name':row[1]})
-        self.connection.commit()
         return rows

@@ -6,24 +6,14 @@ ADMIN_ROLE_ID = 'ffffffff-ffff-ffff-ffff-ffffffffffff'
 
 class UserRoleController:
 
-    def __init__(self, region, connection):
-        self.region = region
+    def __init__(self, connection):
         self.connection = connection
-
-        if connection:
-            from models.user import User
-            from models.role import Role
-            from models.user_role import UserRole
-            self.user = User(connection)
-            self.role = Role(connection)
-            self.user_role = UserRole(connection)
-        else:
-            from models_d.user import User
-            from models_d.role import Role
-            from models_d.user_role import UserRole
-            self.user = User(region)
-            self.role = Role(region)
-            self.user_role = UserRole(region)
+        from models.user import User
+        from models.role import Role
+        from models.user_role import UserRole
+        self.user = User(connection)
+        self.role = Role(connection)
+        self.user_role = UserRole(connection)
 
     def find_by_user_id(self, user_id):
         user_roles = self.user_role.find({'user_id': user_id})

@@ -18,7 +18,6 @@ class Permission:
         print sql
         with self.connection.cursor() as cursor:
             cursor.execute(sql)
-        self.connection.commit()
 
     def delete(self, params):
         if params.get('id'):
@@ -32,7 +31,6 @@ class Permission:
         print sql
         with self.connection.cursor() as cursor:
             cursor.execute(sql)
-        self.connection.commit()
 
     def find(self, params):
         sql = "SELECT * FROM permissions WHERE 1 = 1"
@@ -52,5 +50,4 @@ class Permission:
             cursor.execute(sql)
             for row in cursor:
                 rows.append({'id':row[0], 'user_id':row[1], 'role_id':row[2], 'action':row[3], 'resource':row[4], 'value':row[5], 'condition':row[6]})
-        self.connection.commit()
         return rows

@@ -7,25 +7,16 @@ ADMIN_ROLE_ID = 'ffffffff-ffff-ffff-ffff-ffffffffffff'
 
 class PermissionController:
 
-    def __init__(self, region, connection):
-        self.region = region
+    def __init__(self, connection):
         self.connection = connection
-
-        if connection:
-            from models.permission import Permission
-            from models.user_role import UserRole
-            self.permission = Permission(connection)
-            self.user_role = UserRole(connection)
-        else:
-            from models_d.permission import Permission
-            from models_d.user_role import UserRole
-            self.permission = Permission(region)
-            self.user_role = UserRole(region)
-
-        from access_token_controller import AccessTokenController
-        self.access_token_controller = AccessTokenController(region, connection)
+        from models.permission import Permission
+        from models.user_role import UserRole
+        self.permission = Permission(connection)
+        self.user_role = UserRole(connection)
+        from token_controller import TokenController
+        self.token_controller = TokenController(connection)
         from user_role_controller import UserRoleController
-        self.user_role_controller = UserRoleController(region, connection)
+        self.user_role_controller = UserRoleController(connection)
 
     def is_admin(self, user_id):
         row = self.user_role.find({'user_id': user_id, 'role_id': ADMIN_ROLE_ID})
@@ -38,7 +29,7 @@ class PermissionController:
         else: return False
 
     def are_permitted(self, access_token, params_list):
-        rows = self.access_token_controller.find(access_token)
+        rows = self.token_controller.find(access_token)
         user_id = rows[0]['user_id']
         for params in params_list:
             if not self.is_permitted(user_id, params):  return False
@@ -66,7 +57,7 @@ class PermissionController:
         return True
 
     def create(self, access_token, params):
-        rows = self.access_token_controller.find(access_token)
+        rows = self.token_controller.find(access_token)
         user_id = rows[0]['user_id']
         if not self.is_admin(user_id):  raise Exception("not permitted")
         self.permission.create(params)
@@ -76,7 +67,7 @@ class PermissionController:
         raise Exception("not supported")
 
     def delete(self, access_token, params):
-        rows = self.access_token_controller.find(access_token)
+        rows = self.token_controller.find(access_token)
         user_id = rows[0]['user_id']
         if not self.is_admin(user_id):  raise Exception("not permitted")
         self.permission.delete(params)
@@ -92,7 +83,7 @@ class PermissionController:
     """
     def find_all(self, access_token, params):
 
-        rows = self.access_token_controller.find(access_token)
+        rows = self.token_controller.find(access_token)
         user_id = rows[0]['user_id']
 
         # return my permissions

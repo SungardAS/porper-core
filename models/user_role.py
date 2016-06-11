@@ -5,7 +5,7 @@ class UserRole:
         self.connection = connection
 
     def create(self, params):
-        if params['is_admin']:
+        if params.get('is_admin'):
             is_admin = 1
         else:
             is_admin = 0
@@ -13,7 +13,6 @@ class UserRole:
         print sql
         with self.connection.cursor() as cursor:
             cursor.execute(sql)
-        self.connection.commit()
 
     def find(self, params):
         sql = "SELECT * FROM users_roles"
@@ -29,5 +28,4 @@ class UserRole:
             cursor.execute(sql)
             for row in cursor:
                 rows.append({'id':row[0], 'user_id':row[1], 'role_id':row[2], 'is_admin':row[3]})
-        self.connection.commit()
         return rows

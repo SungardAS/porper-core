@@ -1,11 +1,10 @@
 
-from controllers.account_controller import AccountController
 from controllers.permission_controller import PermissionController
 from controllers.role_controller import RoleController
-from controllers.service_controller import ServiceController
-from controllers.access_token_controller import AccessTokenController
+from controllers.token_controller import TokenController
 from controllers.user_controller import UserController
 from controllers.user_role_controller import UserRoleController
+from controllers.invited_user_controller import InvitedUserController
 
 ALLOWED_METHODS = [
     'create',
@@ -16,19 +15,16 @@ ALLOWED_METHODS = [
 ]
 
 ALLOWED_RESOURCES = [
-    'account',
     'permission',
     'role',
-    'service',
     'user',
     'user_role',
-    'token'
+    'token',
+    'invited_user'
 ]
 
 def permission_handler(event, context):
 
-    print event['region']
-    print event['db']
     print event['oper']
     print event['params']
 
@@ -38,17 +34,18 @@ def permission_handler(event, context):
     resource = event.get('resource')
     if resource not in ALLOWED_RESOURCES: raise Exception("not supported resource : %s" % resource)
 
-    region = None
-    connection = None
-    if event.get('db') == 'mysql':
+    try:
         from models.connection import connection
-    else:
-        region = event.get('region')
+        print connection
 
-    params = event.get('params')
-    access_token = event.get('access_token').replace("Bearer ", "")
-    controller = globals()['%sController' % resource.title().replace('_', '')](region, connection)
-    ret = getattr(controller, oper)(access_token, params)
-    print ret
-    return ret
-    #if(connection)  connection.end()
+        params = event.get('params')
+        access_token = event.get('access_token').replace("Bearer ", "")
+        controller = globals()['%sController' % resource.title().replace('_', '')](connection)
+        ret = getattr(controller, oper)(access_token, params)
+        connection.commit()
+        print ret
+        return ret
+    except Exception, ex:
+        print ex
+        if connection:  connection.rollback()
+        raise ex

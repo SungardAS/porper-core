@@ -6,23 +6,16 @@ ADMIN_ROLE_ID = 'ffffffff-ffff-ffff-ffff-ffffffffffff'
 
 class UserController:
 
-    def __init__(self, region, connection):
-        self.region = region
+    def __init__(self, connection):
         self.connection = connection
-
-        if connection:
-            from models.user import User
-            from models.user_role import UserRole
-            self.user = User(connection)
-            self.user_role = UserRole(connection)
-        else:
-            from models_d.user import User
-            from models_d.user_role import UserRole
-            self.user = User(region)
-            self.user_role = UserRole(region)
-
-        from access_token_controller import AccessTokenController
-        self.access_token_controller = AccessTokenController(region, connection)
+        from models.user import User
+        from models.user_role import UserRole
+        from models.invited_user import InvitedUser
+        self.user = User(connection)
+        self.user_role = UserRole(connection)
+        self.invited_user = InvitedUser(connection)
+        from token_controller import TokenController
+        self.token_controller = TokenController(connection)
 
     def is_admin(self, user_id):
         row = self.user_role.find({'user_id': user_id, 'role_id': ADMIN_ROLE_ID})
@@ -39,34 +32,41 @@ class UserController:
         if len(rows) > 0:  return True
         else: return False
 
-    # anyone who successfully logs in can save its information
     def create(self, access_token, params):
+
+        # if this is the first user, save it as an admin
+        users = self.user.find({})
+        if len(users) == 0:
+            # set this user to the admin
+            self.user.create(params)
+            self.user_role.create({'user_id': params['id'], 'role_id': ADMIN_ROLE_ID})
+            return True
+
+        # add a user to a role if I'm an admin or the role admin of the given role
         if params.get('role_id'):
-            rows = self.access_token_controller.find(access_token)
+            rows = self.token_controller.find(access_token)
             user_id = rows[0]['user_id']
-            # add this user to the given role only if I'm the admin or the role admin of the role
             if self.is_admin(user_id) or self.is_role_admin(user_id, role_id):
-                if params.get('is_admin') == None:
-                    params['is_admin'] = False
-                return self.user_role.create(params)
+                self.user_role.create(params)
+                return True
             else:
                 raise Exception("not permitted")
-        else:
-            return self.save(params['id'], params['family_name'], params['given_name'], params['email'])
 
-    # anyone who successfully logs in can save its information
-    def save(self, id, family_name, given_name, email):
-        params = {
-          'id': id,
-          'family_name': family_name,
-          'given_name': given_name,
-          'email': email
-        }
         rows = self.user.find(params)
         if len(rows) > 0:
             print 'already exists'
-            return
-        return self.user.create(params)
+            return True
+
+        # add the user if this user was invited before
+        invited_users = self.invited_user.find(params)
+        if len(invited_users) == 1:
+            invited_user = invited_users[0]
+            self.user.create(params)
+            self.user_role.create({'user_id': params['id'], 'role_id': invited_user['role_id'], 'is_admin': invited_user['is_admin']})
+            self.invited_user.update({'email':params['email'], 'state':self.invited_user.REGISTERED})
+            return True
+        else:
+            raise Exception("not permitted")
 
     """
     1. return requested users if I'm the admin
@@ -76,7 +76,7 @@ class UserController:
     """
     def find_all(self, access_token, params):
 
-        rows = self.access_token_controller.find(access_token)
+        rows = self.token_controller.find(access_token)
         user_id = rows[0]['user_id']
 
         # return all users if I'm an admin
