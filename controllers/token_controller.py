@@ -1,6 +1,4 @@
 
-import sys
-sys.path.insert(0, r'..')
 from datetime import datetime
 
 class TokenController:

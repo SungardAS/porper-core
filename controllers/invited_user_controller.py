@@ -1,6 +1,4 @@
 
-import sys
-sys.path.insert(0, r'..')
 from datetime import datetime
 
 ADMIN_ROLE_ID = 'ffffffff-ffff-ffff-ffff-ffffffffffff'

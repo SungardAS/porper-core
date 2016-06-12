@@ -1,6 +1,4 @@
 
-import sys
-sys.path.insert(0, r'..')
 import json
 
 ADMIN_ROLE_ID = 'ffffffff-ffff-ffff-ffff-ffffffffffff'

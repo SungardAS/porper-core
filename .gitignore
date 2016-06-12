@@ -10,3 +10,4 @@ __*
 !__init__.py
 *.local.py
 lib
+pymysql
