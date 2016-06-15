@@ -23,7 +23,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.1.0',
+    version='0.1.1',
 
     description='Portable Permission Controller',
     long_description=long_description,
@@ -65,7 +65,7 @@ setup(
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
-    packages=find_packages(exclude=['iam_roles', 'tests', 'pymysql']),
+    packages=find_packages(exclude=['iam_roles', 'tests', 'pymysql', 'config.json']),
 
     # Alternatively, if you want to distribute just a my_module.py, uncomment
     # this:

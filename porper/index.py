@@ -1,4 +1,7 @@
 
+import sys
+sys.path.insert(0, r"..")
+
 from porper.controllers.permission_controller import PermissionController
 from porper.controllers.role_controller import RoleController
 from porper.controllers.token_controller import TokenController
@@ -36,7 +39,7 @@ def permission_handler(event, context):
 
     connection = None
     try:
-        from models.connection import connection
+        from porper.models.connection import connection
         print connection
 
         params = event.get('params')
