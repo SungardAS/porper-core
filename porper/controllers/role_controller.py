@@ -5,8 +5,8 @@ class RoleController:
 
     def __init__(self, connection):
         self.connection = connection
-        from models.role import Role
-        from models.user_role import UserRole
+        from porper.models.role import Role
+        from porper.models.user_role import UserRole
         self.role = Role(connection)
         self.user_role = UserRole(connection)
         from token_controller import TokenController

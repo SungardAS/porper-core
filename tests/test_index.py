@@ -1,7 +1,7 @@
 
 import sys
 sys.path.insert(0, r"..")
-from index import permission_handler
+from porper.index import permission_handler
 
 context = None
 event = {

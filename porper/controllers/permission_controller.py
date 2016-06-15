@@ -7,8 +7,8 @@ class PermissionController:
 
     def __init__(self, connection):
         self.connection = connection
-        from models.permission import Permission
-        from models.user_role import UserRole
+        from porper.models.permission import Permission
+        from porper.models.user_role import UserRole
         self.permission = Permission(connection)
         self.user_role = UserRole(connection)
         from token_controller import TokenController
