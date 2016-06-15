@@ -5,9 +5,9 @@ class UserController:
 
     def __init__(self, connection):
         self.connection = connection
-        from models.user import User
-        from models.user_role import UserRole
-        from models.invited_user import InvitedUser
+        from porper.models.user import User
+        from porper.models.user_role import UserRole
+        from porper.models.invited_user import InvitedUser
         self.user = User(connection)
         self.user_role = UserRole(connection)
         self.invited_user = InvitedUser(connection)

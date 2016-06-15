@@ -5,7 +5,7 @@ class TokenController:
 
     def __init__(self, connection):
         self.connection = connection
-        from models.access_token import AccessToken
+        from porper.models.access_token import AccessToken
         self.access_token = AccessToken(connection)
 
     def create(self, access_token, params):

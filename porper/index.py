@@ -1,10 +1,10 @@
 
-from controllers.permission_controller import PermissionController
-from controllers.role_controller import RoleController
-from controllers.token_controller import TokenController
-from controllers.user_controller import UserController
-from controllers.user_role_controller import UserRoleController
-from controllers.invited_user_controller import InvitedUserController
+from porper.controllers.permission_controller import PermissionController
+from porper.controllers.role_controller import RoleController
+from porper.controllers.token_controller import TokenController
+from porper.controllers.user_controller import UserController
+from porper.controllers.user_role_controller import UserRoleController
+from porper.controllers.invited_user_controller import InvitedUserController
 
 ALLOWED_METHODS = [
     'create',
