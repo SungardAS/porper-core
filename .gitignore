@@ -11,3 +11,5 @@ __*
 *.local.py
 lib
 pymysql
+build
+*.egg-info

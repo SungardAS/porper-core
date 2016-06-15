@@ -1,0 +1,44 @@
+
+https://packaging.python.org/en/latest/distributing/
+
+
+https://packaging.python.org/en/latest/installing/#installing-requirements
+
+  sudo pip install --ignore-installed  -U pip setuptools
+  sudo pip install wheel
+
+
+Install “twine”
+
+  sudo pip install twine
+
+
+Files to be added
+
+  LICENSE.txt
+  README.rst
+  setup.cfg
+  setup.py
+
+
+Build a Universal Wheel
+
+  python setup.py bdist_wheel --universal
+
+
+Test the created package
+
+  cd ..
+  mkdir tmp
+  cd tmp
+  pip install ../porper-core/dist/<created_wheel_file> -t .
+
+
+Register the package
+
+  upload 'porper.egg-info/PKG-INFO'
+
+
+Upload the package
+
+  twine upload dist/* -p <PASSWORD>
