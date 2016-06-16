@@ -11,11 +11,11 @@ if not host:
     with open('config.json') as data_file:
         connection_info = json.load(data_file)
     #print connection_info
-    host = connection_info['host']
-    username = connection_info['username']
-    password = connection_info['password']
-    database = connection_info['database']
-    port = connection_info['port']
+    host = connection_info['mysql']['host']
+    username = connection_info['mysql']['username']
+    password = connection_info['mysql']['password']
+    database = connection_info['mysql']['database']
+    port = connection_info['mysql']['port']
 
 import pymysql
 connection = pymysql.connect(host, user=username, passwd=password, db=database)
