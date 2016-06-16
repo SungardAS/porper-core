@@ -66,5 +66,5 @@ class SsoAuthController(AuthController):
         headers = {"Authorization":"Bearer " + access_token}
         r = requests.get(url, headers=headers, verify=False)
         #print r._content
-        # {u'family_name': u'Grizzanti', u'userGuid': u'49d8bc68-f57e-11e3-ba1d-005056ba0d15', u'displayName': u'David Grizzanti', u'sub': u'cloud_test_user@sungardas.com', u'roles': [u'UCP-SDE', u'UCP-Administrator', u'UCP-Director', u'UCP-Sungard Administrator'], u'cloudstack_secret_key': u'3wKkwYpikde1KYRtm_YiBesm5_qBds-rOd0lPwsyvZyE8bMrFsuq-eYjeyVHKpH3QNMWB0_j-Br9BmfJ_DUCfw', u'zoneinfo': u'America/New_York', u'company_guid': u'76c6f530-40c1-446d-a5d5-a66e78605149', u'updated_at': u'0', u'applications': [u'UCP'], u'given_name': u'David', u'groups': [], u'cloudstack_api_key': u'P6ORU6HUuBGpDXmVc4yw-rBl-z7lFsl1szqlXWJkurHHmhNSStljTMkWNUI-JUt6LkR0k37y4AAp_DvOKnnQZw', u'guid': u'49d8bc68-f57e-11e3-ba1d-005056ba0d15', u'email': u'cloud_test_user@sungardas.com', u'employeeNumber': u'10032'}
+        # {u'family_name': u'', u'userGuid': u'', u'displayName': u'', u'sub': u'', u'roles': [], u'cloudstack_secret_key': u'', u'zoneinfo': u'', u'company_guid': u'', u'updated_at': u'0', u'applications': [], u'given_name': u'', u'groups': [], u'cloudstack_api_key': u'', u'guid': u'', u'email': u'', u'employeeNumber': u''}
         return json.loads(r._content)

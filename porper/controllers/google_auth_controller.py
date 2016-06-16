@@ -28,21 +28,21 @@ class GoogleAuthController(AuthController):
         print r._content
         """{
             "iss": "accounts.google.com",
-            "at_hash": "0PbwRt3n5UaqFNDi7bbbWg",
-            "aud": "617521787435-4h4d9icvm7nlotfelq00jsnh56jk2tf8.apps.googleusercontent.com",
-            "sub": "117043220775623860708",
+            "at_hash": "",
+            "aud": "",
+            "sub": "",
             "email_verified": "true",
-            "azp": "617521787435-4h4d9icvm7nlotfelq00jsnh56jk2tf8.apps.googleusercontent.com",
-            "email": "alex.ough@gmail.com",
+            "azp": "",
+            "email": "",
             "iat": "1466089125",
             "exp": "1466092725",
-            "name": "Alex Ough",
-            "picture": "https://lh6.googleusercontent.com/-rbZBbdZNzVw/AAAAAAAAAAI/AAAAAAAAFeE/zGeEgaS7AwY/s96-c/photo.jpg",
-            "given_name": "Alex",
-            "family_name": "Ough",
+            "name": "",
+            "picture": "",
+            "given_name": "",
+            "family_name": "",
             "locale": "en",
             "alg": "RS256",
-            "kid": "ea78209870244be0fdabeda6d821fb20d7a83bcb"
+            "kid": ""
         }"""
         user_info = json.loads(r._content)
         if not user_info.get('email_verified'):
