@@ -1,0 +1,108 @@
+
+import os
+import json
+import uuid
+import requests
+from porper.controllers.auth_controller import AuthController
+
+class GithubAuthController(AuthController):
+
+    def __init__(self, permission_connection):
+
+        AuthController.__init__(self, permission_connection)
+
+        self.auth_endpoint = os.environ.get('GITHUB_AUTH_ENDPOINT')
+        self.api_endpoint = os.environ.get('GITHUB_API_ENDPOINT')
+        self.client_id = os.environ.get('GITHUB_CLIENT_ID')
+        self.client_secret = os.environ.get('GITHUB_CLIENT_SECRET')
+        self.redirect_uri = os.environ.get('GITHUB_REDIRECT_URI')
+
+        if not self.auth_endpoint:
+            with open('config.json') as data_file:
+                config = json.load(data_file)
+            #print config
+            self.auth_endpoint = config['github']['auth_endpoint']
+            self.api_endpoint = config['github']['api_endpoint']
+            self.client_id = config['github']['client_id']
+            self.client_secret = config['github']['client_secret']
+            self.redirect_uri = config['github']['redirect_uri']
+
+    def authenticate(self, code, state):
+
+        print "code [%s], state [%s]" % (code, state)
+
+        # first find the access token from the given code & state
+        access_token_url = "%s/access_token" % (self.auth_endpoint)
+        post_data = {
+            "client_id": self.client_id,
+            "client_secret": self.client_secret,
+            "code": code,
+            "redirect_uri": self.redirect_uri,
+            "state": state
+        }
+        headers = {"Content-Type":"application/json"}
+        r = requests.post(access_token_url, headers=headers, data=json.dumps(post_data), verify=False)
+        print r
+        print r._content
+        """
+        access_token=f378a5dd8da8422472d1875011db11ea9ccbd9c8&scope=&token_type=bearer
+        """
+        try:
+            access_token = r._content.split('&')[0].split('=')[1]
+        except Exception:
+            raise Exception("unauthorized")
+
+        # now find the user info from the access token
+        user_url = "%s/user?access_token=%s"%(self.api_endpoint, access_token)
+        r = requests.get(user_url, verify=False)
+        print r._content
+        """
+        {
+            "login": "AlexOugh",
+            "id": 35925,
+            "avatar_url": "https://avatars.githubusercontent.com/u/35925?v=3",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/AlexOugh",
+            "html_url": "https://github.com/AlexOugh",
+            "followers_url": "https://api.github.com/users/AlexOugh/followers",
+            "following_url": "https://api.github.com/users/AlexOugh/following{/other_user}",
+            "gists_url": "https://api.github.com/users/AlexOugh/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/AlexOugh/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/AlexOugh/subscriptions",
+            "organizations_url": "https://api.github.com/users/AlexOugh/orgs",
+            "repos_url": "https://api.github.com/users/AlexOugh/repos",
+            "events_url": "https://api.github.com/users/AlexOugh/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/AlexOugh/received_events",
+            "type": "User",
+            "site_admin": false,
+            "name": "Alex Ough",
+            "company": null,
+            "blog": null,
+            "location": null,
+            "email": "alex.ough@gmail.com",
+            "hireable": null,
+            "bio": null,
+            "public_repos": 11,
+            "public_gists": 0,
+            "followers": 4,
+            "following": 0,
+            "created_at": "2008-11-21T23:30:05Z",
+            "updated_at": "2016-06-22T12:48:31Z"
+        }
+        """
+        user_info = json.loads(r._content)
+
+        # now save the user info & tokens
+        AuthController.authenticate(self,
+            str(user_info['id']),
+            user_info['email'],
+            "",
+            "",
+            user_info['name'],
+            access_token,
+            code)
+
+        # return the access_token if all completed successfully
+        user_info['user_id'] = user_info['id']
+        user_info['access_token'] = access_token
+        return user_info

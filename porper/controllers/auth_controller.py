@@ -18,7 +18,7 @@ class AuthController():
             'given_name': given_name,
             'name': name
         }
-        self.user_controller.create(None, params)
+        user_id = self.user_controller.create(None, params)
 
         # now save the tokens
         self.token_controller.save(access_token, refresh_token, user_id)

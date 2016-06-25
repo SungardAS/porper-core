@@ -37,7 +37,7 @@ class UserController:
             # set this user to the admin
             self.user.create(params)
             self.user_role.create({'user_id': params['id'], 'role_id': ADMIN_ROLE_ID})
-            return True
+            return params['id']
 
         # add a user to a role if I'm an admin or the role admin of the given role
         if params.get('role_id'):
@@ -45,14 +45,14 @@ class UserController:
             user_id = rows[0]['user_id']
             if self.is_admin(user_id) or self.is_role_admin(user_id, role_id):
                 self.user_role.create(params)
-                return True
+                return user_id
             else:
                 raise Exception("not permitted")
 
         rows = self.user.find(params)
         if len(rows) > 0:
             print 'already exists'
-            return True
+            return rows[0]['id']
 
         # add the user if this user was invited before
         invited_users = self.invited_user.find(params)
@@ -61,7 +61,7 @@ class UserController:
             self.user.create(params)
             self.user_role.create({'user_id': params['id'], 'role_id': invited_user['role_id'], 'is_admin': invited_user['is_admin']})
             self.invited_user.update({'email':params['email'], 'state':self.invited_user.REGISTERED})
-            return True
+            return params['id']
         else:
             raise Exception("not permitted")
 
