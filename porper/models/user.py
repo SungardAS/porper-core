@@ -9,6 +9,7 @@ class User:
         print sql
         with self.connection.cursor() as cursor:
             cursor.execute(sql)
+        return params['id']
 
     def find(self, params):
         if params.get('ids') == [] or params.get('role_ids') == []:

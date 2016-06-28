@@ -11,12 +11,14 @@ class InvitedUser:
         print sql
         with self.connection.cursor() as cursor:
             cursor.execute(sql)
+        return email
 
     def update(self, params):
         sql = "UPDATE invited_users SET state = '" + params['state'] + "' WHERE email = '" + params['email'] + "'"
         print sql
         with self.connection.cursor() as cursor:
             cursor.execute(sql)
+        return params['email']
 
     def find(self, params):
         sql = "SELECT iu.*, u.email invited_by_email, r.name role_name FROM invited_users iu"

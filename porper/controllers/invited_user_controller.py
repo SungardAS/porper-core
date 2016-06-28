@@ -31,14 +31,12 @@ class InvitedUserController:
 
         # allowed if I'm an admin
         if self.is_admin(user_id):
-            self.save(user_id, params)
-            return True
+            return self.save(user_id, params)
 
         # allowed if I'm the role admin of the given role
         role_id = params['role_id']
         if self.is_role_admin(user_id, role_id):
-            self.save(user_id, params)
-            return True
+            return self.save(user_id, params)
 
         raise Exception("not permitted")
 
@@ -64,14 +62,12 @@ class InvitedUserController:
 
         # allowed if I'm an admin
         if self.is_admin(user_id):
-            self.invited_user.update(params)
-            return True
+            return self.invited_user.update(params)
 
         # allowed if I'm the role admin of the given role
         role_id = params['role_id']
         if self.is_role_admin(user_id, role_id):
-            self.invited_user.update(params)
-            return True
+            return self.invited_user.update(params)
 
         raise Exception("not permitted")
 

@@ -9,12 +9,14 @@ class AccessToken:
         print sql
         with self.connection.cursor() as cursor:
             cursor.execute(sql)
+        return params['access_token']
 
     def update(self, params):
         sql = "UPDATE tokens SET refresh_token = '" + params['refresh_token'] + "', refreshed_time = '" + params['refreshed_time'] + "' WHERE access_token = '" + params['access_token'] + "'"
         print sql
         with self.connection.cursor() as cursor:
             cursor.execute(sql)
+        return params['access_token']
 
     def find(self, params):
         sql = "SELECT * FROM tokens WHERE access_token = '" + params['access_token'] + "'"
