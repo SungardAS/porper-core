@@ -87,8 +87,21 @@ googleAuthController = GoogleAuthController(connection)
 user_info = googleAuthController.authenticate(id_token)
 
 # GitHub Auth
+# https://developer.github.com/v3/oauth/
 githubAuthController = GithubAuthController(connection)
 user_info = githubAuthController.authenticate(code, state)
+
+
+==========================================================================================
+how to create roles
+==========================================================================================
+
+
+
+==========================================================================================
+how to assign users to roles
+==========================================================================================
+
 
 
 ==========================================================================================

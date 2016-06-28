@@ -24,8 +24,7 @@ class RoleController:
         rows = self.token_controller.find(access_token)
         user_id = rows[0]['user_id']
         if not self.is_admin(user_id):  raise Exception("not permitted")
-        self.role.create(params)
-        return True
+        return self.role.create(params)
 
     def update(self, access_token, params):
         raise Exception("not supported")

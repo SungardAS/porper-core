@@ -13,6 +13,7 @@ class Role:
         print sql
         with self.connection.cursor() as cursor:
             cursor.execute(sql)
+        return params['id']
 
     def find(self, params):
         if params.get('id'):

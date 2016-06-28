@@ -33,6 +33,7 @@ CREATE TABLE `invited_users` (
   `invited_by` varchar(36) NOT NULL DEFAULT '',
   `invited_at` datetime NOT NULL,
   `state` varchar(20) NOT NULL,
+  `is_admin` tinyint(4) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `role_id` (`role_id`),
   KEY `invited_by` (`invited_by`),

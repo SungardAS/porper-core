@@ -42,16 +42,20 @@ class SsoAuthController(AuthController):
 
         # now retrieve user info from the returned access_token
         user_info = self.get_user_information(tokens['access_token'])
+        print user_info
 
         # now save the user info & tokens
         access_token = tokens['access_token']
         refresh_token = tokens['refresh_token']
+        display_name = user_info.get('displayName')
+        if not display_name:
+            display_name = '%s %s' % (user_info['given_name'], user_info['family_name'])
         AuthController.authenticate(self,
             user_info['guid'],
             user_info['email'],
             user_info['family_name'],
             user_info['given_name'],
-            user_info['displayName'],
+            display_name,
             access_token,
             refresh_token)
 
