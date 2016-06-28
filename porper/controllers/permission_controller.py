@@ -54,10 +54,19 @@ class PermissionController:
             if len(parent_rows) == 0:  return False     #### TODO: not sure if all have to be true......
         return True
 
+    def has_allowed_permission(self, user_id, params):
+        # if the target permission is 'read', check if this user has 'create' permission on that resource
+        if params['action'] != 'read':  return False
+        params_for_allowed = dict(params)
+        params_for_allowed['action'] = 'create'
+        return self.permission.find(params_for_allowed) > 0
+
     def create(self, access_token, params):
         rows = self.token_controller.find(access_token)
         user_id = rows[0]['user_id']
-        if not self.is_admin(user_id):  raise Exception("not permitted")
+        if not self.is_admin(user_id):
+            if not self.has_allowed_permission(user_id, params):
+              raise Exception("not permitted")
         self.permission.create(params)
         return True
 
@@ -67,7 +76,9 @@ class PermissionController:
     def delete(self, access_token, params):
         rows = self.token_controller.find(access_token)
         user_id = rows[0]['user_id']
-        if not self.is_admin(user_id):  raise Exception("not permitted")
+        if not self.is_admin(user_id):
+            if not self.has_allowed_permission(user_id, params):
+              raise Exception("not permitted")
         self.permission.delete(params)
         return True
 
