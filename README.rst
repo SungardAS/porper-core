@@ -70,13 +70,30 @@ $ mysql -h db_host -u db_user -p db_name < porper_initial.sql
 
 
 ==========================================================================================
+how to get mysql connection
+==========================================================================================
+
+from porper.models.connection import mysql_connection
+
+# there are 3 ways to get connection
+connection = mysql_connection()
+
+
+
+
+
+
+==========================================================================================
 how to authenticate
 ==========================================================================================
 
-from porper.models.connection import connection
+from porper.models.connection import mysql_connection
 from porper.controllers.sso_auth_controller import SsoAuthController
 from porper.controllers.google_auth_controller import GoogleAuthController
 from porper.controllers.github_auth_controller import GithubAuthController
+
+# get the mysql connection as preferred
+# connection = mysql_connection()
 
 # SSO server
 ssoAuthController = SsoAuthController(connection)

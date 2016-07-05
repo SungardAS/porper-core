@@ -13,3 +13,5 @@ lib
 pymysql
 build
 *.egg-info
+.env
+config.json

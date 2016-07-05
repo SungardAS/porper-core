@@ -11,9 +11,9 @@ class PermissionController:
         from porper.models.user_role import UserRole
         self.permission = Permission(connection)
         self.user_role = UserRole(connection)
-        from token_controller import TokenController
+        from porper.controllers.token_controller import TokenController
         self.token_controller = TokenController(connection)
-        from user_role_controller import UserRoleController
+        from porper.controllers.user_role_controller import UserRoleController
         self.user_role_controller = UserRoleController(connection)
 
     def is_admin(self, user_id):

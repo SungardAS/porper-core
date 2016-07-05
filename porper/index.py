@@ -39,7 +39,9 @@ def permission_handler(event, context):
 
     connection = None
     try:
-        from porper.models.connection import connection
+
+        from porper.models.connection import mysql_connection
+        connection = mysql_connection()
         print connection
 
         params = event.get('params')

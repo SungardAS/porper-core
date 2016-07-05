@@ -1,8 +1,10 @@
 
 import sys
 sys.path.insert(0, r'../..')
-from models.connection import connection
-from controllers.permission_controller import PermissionController
+from porper.models.connection import mysql_connection
+from porper.controllers.permission_controller import PermissionController
+
+connection = mysql_connection()
 permission_controller = PermissionController(connection)
 
 ### are the permissions allowed?
@@ -80,3 +82,5 @@ params = {
   'user_id': 'c8b5dbbe-edd1-4e78-b03a-63b0d779be85' # alex_role
 };
 print permission_controller.find_all(access_token, params)
+
+connection.commit()

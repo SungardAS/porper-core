@@ -1,8 +1,10 @@
 
 import sys
 sys.path.insert(0, r'../..')
-from models.connection import connection
-from models.user import User
+from porper.models.connection import mysql_connection
+from porper.models.user import User
+
+connection = mysql_connection()
 user = User(connection)
 
 print user.find({'role_id':'3867c370-552f-43b8-bed9-6aa00ffc41b4'})
@@ -16,3 +18,5 @@ print user.create({'id': '117043220775623860708',
     'given_name': 'Alex',
     'email': 'alex.ough@gmail.com'
 })
+
+connection.commit()

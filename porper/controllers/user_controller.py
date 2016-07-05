@@ -11,7 +11,7 @@ class UserController:
         self.user = User(connection)
         self.user_role = UserRole(connection)
         self.invited_user = InvitedUser(connection)
-        from token_controller import TokenController
+        from porper.controllers.token_controller import TokenController
         self.token_controller = TokenController(connection)
 
     def is_admin(self, user_id):
