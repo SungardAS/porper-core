@@ -11,7 +11,7 @@ class InvitedUser:
         print sql
         with self.connection.cursor() as cursor:
             cursor.execute(sql)
-        return email
+        return params['email']
 
     def update(self, params):
         sql = "UPDATE invited_users SET state = '" + params['state'] + "' WHERE email = '" + params['email'] + "'"
