@@ -22,6 +22,8 @@ class UserRole:
           sql += " WHERE user_id = '" + params.get('user_id') + "'"
         elif params.get('role_id'):
           sql += " WHERE role_id = '" + params.get('role_id') + "'"
+        elif params.get('email'):
+          sql = "SELECT ur.* FROM users_roles ur JOIN users u ON u.id = ur.user_id WHERE u.email = '" + params.get('email') + "'"
         print sql
         rows = []
         with self.connection.cursor() as cursor:

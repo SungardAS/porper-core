@@ -62,4 +62,5 @@ class GoogleAuthController(AuthController):
         # return the access_token if all completed successfully
         user_info['user_id'] = user_info['sub']
         user_info['access_token'] = access_token
+        user_info['roles'] = AuthController.find_roles(self, user_info['email'])
         return user_info
