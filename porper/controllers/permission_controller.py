@@ -56,7 +56,7 @@ class PermissionController:
 
     def has_allowed_permission(self, user_id, params):
         # if the target permission is 'read', check if this user has 'create' permission on that resource
-        if params['action'] != 'read':  return False
+        #if params['action'] != 'read':  return False
         params_for_allowed = dict(params)
         params_for_allowed['action'] = 'create'
         return self.permission.find(params_for_allowed) > 0

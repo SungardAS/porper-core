@@ -19,7 +19,8 @@ class UserRoleController:
         if ADMIN_ROLE_ID in ids:
             params = {}
         else:
-            ids = [ user_role['role_id'] for user_role in user_roles if user_role['is_admin'] ]
+            #ids = [ user_role['role_id'] for user_role in user_roles if user_role['is_admin'] ]
+            ids = [ user_role['role_id'] for user_role in user_roles ]
             params = {'ids': ids}
         print params
         return self.role.find(params)
