@@ -66,6 +66,14 @@ CREATE TABLE `permissions` (
 LOCK TABLES `permissions` WRITE;
 /*!40000 ALTER TABLE `permissions` DISABLE KEYS */;
 
+INSERT INTO `permissions` (`user_id`, `role_id`, `action`, `resource`, `value`, `condition`) VALUES (NULL, 'ffffffff-ffff-ffff-ffff-ffffffffffff', 'create', 'primitive', '*', NULL);
+INSERT INTO `permissions` (`user_id`, `role_id`, `action`, `resource`, `value`, `condition`) VALUES (NULL, 'ffffffff-ffff-ffff-ffff-ffffffffffff', 'read', 'primitive', '*', NULL);
+INSERT INTO `permissions` (`user_id`, `role_id`, `action`, `resource`, `value`, `condition`) VALUES (NULL, 'ffffffff-ffff-ffff-ffff-ffffffffffff', 'delete', 'primitive', '*', NULL);
+INSERT INTO `permissions` (`user_id`, `role_id`, `action`, `resource`, `value`, `condition`) VALUES	(NULL, 'ffffffff-ffff-ffff-ffff-ffffffffffff', 'create', 'mgmt_system', '*', NULL);
+INSERT INTO `permissions` (`user_id`, `role_id`, `action`, `resource`, `value`, `condition`) VALUES (NULL, 'ffffffff-ffff-ffff-ffff-ffffffffffff', 'read', 'mgmt_system', '*', NULL);
+INSERT INTO `permissions` (`user_id`, `role_id`, `action`, `resource`, `value`, `condition`) VALUES (NULL, 'ffffffff-ffff-ffff-ffff-ffffffffffff', 'update', 'mgmt_system', '*', NULL);
+INSERT INTO `permissions` (`user_id`, `role_id`, `action`, `resource`, `value`, `condition`) VALUES (NULL, 'ffffffff-ffff-ffff-ffff-ffffffffffff', 'delete', 'mgmt_system', '*', NULL);
+
 
 /*!40000 ALTER TABLE `permissions` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -100,7 +108,7 @@ UNLOCK TABLES;
 DROP TABLE IF EXISTS `tokens`;
 
 CREATE TABLE `tokens` (
-  `access_token` varchar(36) NOT NULL DEFAULT '',
+  `access_token` varchar(100) NOT NULL DEFAULT '',
   `refresh_token` text NOT NULL,
   `refreshed_time` datetime NOT NULL,
   `user_id` varchar(36) NOT NULL DEFAULT '',
