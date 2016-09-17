@@ -17,9 +17,9 @@ class User:
         if params.get('role_id') or params.get('role_ids'):
             sql = "SELECT u.*, ur.is_admin FROM users u JOIN users_roles ur ON u.id = ur.user_id"
             if params.get('role_id'):
-                sql += " WHERE u.id IN (SELECT user_id FROM users_roles WHERE role_id = '" + params['role_id'] + "')"
+                sql += " WHERE ur.role_id = '" + params['role_id'] + "'"
             elif params.get('role_ids'):
-                sql += " WHERE u.id IN (SELECT user_id FROM users_roles WHERE role_id IN ('" + "','".join(params['role_ids']) + "'))"
+                sql += " WHERE ur.role_id IN ('" + "','".join(params['role_ids']) + "')"
             print sql
             rows = []
             with self.connection.cursor() as cursor:
