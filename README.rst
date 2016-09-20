@@ -1,3 +1,57 @@
+
+# Porper (Portable Permission Controller)
+
+https://pypi.python.org/pypi/porper
+
+This is a library to provide the permission control on resources in serverless environment.
+
+When implementing applications using existing frameworks, you can manage user permissions on resources using the module they provide,
+but they are not available when you implement applications using serverless computing like AWS Lambda.
+
+This is a very simple RBAC (Role Based Access Controller) library to manage user permissions based on their privileges.
+
+## Installation
+
+NOTE: Python 2.7
+
+```python
+pip install porper
+```
+
+## Usage
+
+Overview
+=================
+
+There are 2 ways to set porper database connection information
+
+Set Environment Variables
+```
+export MYSQL_HOST=<db_host>
+export MYSQL_USER=<db_user>
+export MYSQL_PASSWORD=<db_password>
+export MYSQL_DATABASE=<db_name>
+export MYSQL_PORT=3306
+```
+
+Using 'config.json' that needs to be placed in the root of porper library
+```
+{
+  "mysql": {
+    "host": "<db_host>",
+    "username": "<db_user>",
+    "password": "<db_password>",
+    "database": "<db_name>",
+    "port": 3306
+  }
+}
+```
+
+Database Initialization
+```
+$ mysql -h <db_host> -u <db_user> -p <db_name> < porper_initial.sql
+```
+
 Portable Permission Controller
 ==============================
 
