@@ -15,7 +15,6 @@ class GithubAuthController(AuthController):
         self.api_endpoint = os.environ.get('GITHUB_API_ENDPOINT')
         self.client_id = os.environ.get('GITHUB_CLIENT_ID')
         self.client_secret = os.environ.get('GITHUB_CLIENT_SECRET')
-        self.redirect_uri = os.environ.get('GITHUB_REDIRECT_URI')
 
         if not self.auth_endpoint:
             with open('config.json') as data_file:
@@ -25,11 +24,10 @@ class GithubAuthController(AuthController):
             self.api_endpoint = config['github']['api_endpoint']
             self.client_id = config['github']['client_id']
             self.client_secret = config['github']['client_secret']
-            self.redirect_uri = config['github']['redirect_uri']
 
-    def authenticate(self, code, state):
+    def authenticate(self, code, state, redirect_uri):
 
-        print "code [%s], state [%s]" % (code, state)
+        print "code [%s], state [%s], redirect_uri [%s]" % (code, state, redirect_uri)
 
         # first find the access token from the given code & state
         access_token_url = "%s/access_token" % (self.auth_endpoint)
@@ -37,7 +35,7 @@ class GithubAuthController(AuthController):
             "client_id": self.client_id,
             "client_secret": self.client_secret,
             "code": code,
-            "redirect_uri": self.redirect_uri,
+            "redirect_uri": redirect_uri,
             "state": state
         }
         headers = {"Content-Type":"application/json"}

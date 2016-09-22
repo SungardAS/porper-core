@@ -14,7 +14,6 @@ class SsoAuthController(AuthController):
         self.host = os.environ.get('SSO_HOST')
         self.username = os.environ.get('SSO_USER')
         self.password = os.environ.get('SSO_PASSWORD')
-        self.redirect_uri = os.environ.get('SSO_REDIRECT_URI')
 
         if not self.host:
             with open('config.json') as data_file:
@@ -23,16 +22,15 @@ class SsoAuthController(AuthController):
             self.host = sso_info['sso']['host']
             self.username = sso_info['sso']['username']
             self.password = sso_info['sso']['password']
-            self.redirect_uri = sso_info['sso']['redirect_uri']
 
-    def authenticate(self, code):
+    def authenticate(self, code, redirect_uri):
 
         # get the tokens to see if the given code is valid
-        print "code [%s]" % code
+        print "code [%s], redirect_uri [%s]" % (code, redirect_uri)
         task_url = "service/oauth2/access_token?realm=SungardAS"
         url = "https://%s/%s"%(self.host, task_url)
         client_auth = requests.auth.HTTPBasicAuth(self.username, self.password)
-        post_data = {"grant_type": "authorization_code", "code": code, "redirect_uri": self.redirect_uri}
+        post_data = {"grant_type": "authorization_code", "code": code, "redirect_uri": redirect_uri}
         r = requests.post(url, auth=client_auth, data=post_data, verify=False)
         print r._content
         # {u'access_token': u'ed8f3af2-c28a-439f-aa0c-69e0fd620502', u'id_token': u'eyAidHl...', u'expires_in': 59, u'token_type': u'Bearer', u'scope': u'phone address email cloud openid profile', u'refresh_token': u'8e044a96-2be8-45a5-b9c6-08f118f26f42'}
