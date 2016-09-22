@@ -15,7 +15,7 @@ class User:
         if params.get('ids') == [] or params.get('role_ids') == []:
             return []
         if params.get('role_id') or params.get('role_ids'):
-            sql = "SELECT u.*, ur.is_admin FROM users u JOIN users_roles ur ON u.id = ur.user_id"
+            sql = "SELECT distinct u.*, ur.is_admin FROM users u JOIN users_roles ur ON u.id = ur.user_id"
             if params.get('role_id'):
                 sql += " WHERE ur.role_id = '" + params['role_id'] + "'"
             elif params.get('role_ids'):

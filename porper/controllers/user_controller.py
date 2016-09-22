@@ -43,7 +43,7 @@ class UserController:
         if params.get('role_id'):
             rows = self.token_controller.find(access_token)
             user_id = rows[0]['user_id']
-            if self.is_admin(user_id) or self.is_role_admin(user_id, role_id):
+            if self.is_admin(user_id) or self.is_role_admin(user_id, params.get('role_id')):
                 self.user_role.create(params)
                 return user_id
             else:
