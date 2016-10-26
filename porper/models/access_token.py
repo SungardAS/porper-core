@@ -5,21 +5,24 @@ class AccessToken:
         self.connection = connection
 
     def create(self, params):
-        sql = "INSERT INTO tokens (access_token, refresh_token, refreshed_time, user_id) VALUES ('" + params['access_token'] + "', '" + params['refresh_token'] + "', '" + params['refreshed_time'] + "', '" + params['user_id'] + "')"
+        sql = "INSERT INTO tokens (access_token, refresh_token, refreshed_time, user_id) "
+        sql += " VALUES ('%s', '%s', '%s', '%s')" % (params['access_token'], params['refresh_token'], params['refreshed_time'], params['user_id'])
         print sql
         with self.connection.cursor() as cursor:
             cursor.execute(sql)
         return params['access_token']
 
     def update(self, params):
-        sql = "UPDATE tokens SET refresh_token = '" + params['refresh_token'] + "', refreshed_time = '" + params['refreshed_time'] + "' WHERE access_token = '" + params['access_token'] + "'"
+        sql = "UPDATE tokens"
+        sql += " SET refresh_token = '%s', refreshed_time = '%s'" % (params['refresh_token'], params['refreshed_time'])
+        sql += " WHERE access_token = '%s'" % (params['access_token'])
         print sql
         with self.connection.cursor() as cursor:
             cursor.execute(sql)
         return params['access_token']
 
     def find(self, params):
-        sql = "SELECT * FROM tokens WHERE access_token = '" + params['access_token'] + "'"
+        sql = "SELECT * FROM tokens WHERE access_token = '%s'" % (params['access_token'])
         print sql
         rows = []
         with self.connection.cursor() as cursor:

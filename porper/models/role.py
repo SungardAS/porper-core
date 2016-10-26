@@ -9,7 +9,7 @@ class Role:
     def create(self, params):
         if not params.get('id'):
             params['id'] = str(uuid.uuid4())
-        sql = "INSERT INTO roles (id, name) VALUES ('" + params['id'] + "', '" + params['name'] + "')"
+        sql = "INSERT INTO roles (id, name) VALUES ('%s', '%s')" % (params['id'], params['name'])
         print sql
         with self.connection.cursor() as cursor:
             cursor.execute(sql)
@@ -17,9 +17,9 @@ class Role:
 
     def find(self, params):
         if params.get('id'):
-            sql = "SELECT * FROM roles WHERE id = '" + params['id'] + "'"
+            sql = "SELECT * FROM roles WHERE id = '%s'" % (params['id'])
         elif params.get('ids'):
-            sql = "SELECT * FROM roles WHERE id IN ('" + "','".join(params['ids']) + "')"
+            sql = "SELECT * FROM roles WHERE id IN ('%s')" % ("','".join(params['ids']))
         elif params.get('ids') == []:
             sql = "SELECT * FROM roles WHERE 1 = 0"
         else:

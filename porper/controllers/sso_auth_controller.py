@@ -71,3 +71,11 @@ class SsoAuthController(AuthController):
         #print r._content
         # {u'family_name': u'', u'userGuid': u'', u'displayName': u'', u'sub': u'', u'roles': [], u'cloudstack_secret_key': u'', u'zoneinfo': u'', u'company_guid': u'', u'updated_at': u'0', u'applications': [], u'given_name': u'', u'groups': [], u'cloudstack_api_key': u'', u'guid': u'', u'email': u'', u'employeeNumber': u''}
         return json.loads(r._content)
+
+    def validate_token(self, refresh_token):
+        task_url = "service/oauth2/access_token?realm=SungardAS"
+        url = "https://%s/%s"%(self.host, task_url)
+        client_auth = requests.auth.HTTPBasicAuth(self.username, self.password)
+        post_data = {'grant_type':'refresh_token', 'refresh_token':refresh_token}
+        r = requests.post(url, auth=client_auth, data=post_data, verify=False)
+        return json.loads(r._content)

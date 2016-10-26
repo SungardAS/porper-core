@@ -59,8 +59,9 @@ class ResourceController():
     # find all read-permitted instances of the current resource, so 'id' is NOT given
     def find_all(self, access_token, params=None):
         permissions = self._find_permitted(access_token, 'read')
+        if len(permissions) == 0:   raise Exception("not permitted")
         ids = [ permission['value'] for permission in permissions ]
-        params = {}
+        if not params:  params = {}
         if ALL not in ids:  params['ids'] = ids
         return self.model.find(params)
 

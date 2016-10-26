@@ -66,15 +66,6 @@ CREATE TABLE `permissions` (
 LOCK TABLES `permissions` WRITE;
 /*!40000 ALTER TABLE `permissions` DISABLE KEYS */;
 
-INSERT INTO `permissions` (`user_id`, `role_id`, `action`, `resource`, `value`, `condition`) VALUES (NULL, 'ffffffff-ffff-ffff-ffff-ffffffffffff', 'create', 'primitive', '*', NULL);
-INSERT INTO `permissions` (`user_id`, `role_id`, `action`, `resource`, `value`, `condition`) VALUES (NULL, 'ffffffff-ffff-ffff-ffff-ffffffffffff', 'read', 'primitive', '*', NULL);
-INSERT INTO `permissions` (`user_id`, `role_id`, `action`, `resource`, `value`, `condition`) VALUES (NULL, 'ffffffff-ffff-ffff-ffff-ffffffffffff', 'delete', 'primitive', '*', NULL);
-INSERT INTO `permissions` (`user_id`, `role_id`, `action`, `resource`, `value`, `condition`) VALUES	(NULL, 'ffffffff-ffff-ffff-ffff-ffffffffffff', 'create', 'mgmt_system', '*', NULL);
-INSERT INTO `permissions` (`user_id`, `role_id`, `action`, `resource`, `value`, `condition`) VALUES (NULL, 'ffffffff-ffff-ffff-ffff-ffffffffffff', 'read', 'mgmt_system', '*', NULL);
-INSERT INTO `permissions` (`user_id`, `role_id`, `action`, `resource`, `value`, `condition`) VALUES (NULL, 'ffffffff-ffff-ffff-ffff-ffffffffffff', 'update', 'mgmt_system', '*', NULL);
-INSERT INTO `permissions` (`user_id`, `role_id`, `action`, `resource`, `value`, `condition`) VALUES (NULL, 'ffffffff-ffff-ffff-ffff-ffffffffffff', 'delete', 'mgmt_system', '*', NULL);
-
-
 /*!40000 ALTER TABLE `permissions` ENABLE KEYS */;
 UNLOCK TABLES;
 

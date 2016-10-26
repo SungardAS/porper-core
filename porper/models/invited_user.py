@@ -7,14 +7,17 @@ class InvitedUser:
         self.REGISTERED = 'registered'
 
     def create(self, params):
-        sql = "INSERT INTO invited_users (email, role_id, invited_by, invited_at, state, is_admin) VALUES ('" + params['email'] + "', '" + params['role_id'] + "', '" + params['invited_by'] + "', '" + params['invited_at'] + "', '" + params['state'] + "', " + params['is_admin'] + ")"
+        sql = "INSERT INTO invited_users (email, role_id, invited_by, invited_at, state, is_admin)"
+        sql += " VALUES ('%s', '%s', '%s', '%s', '%s', %s)" % (params['email'], params['role_id'], params['invited_by'], params['invited_at'], params['state'], params['is_admin'])
         print sql
         with self.connection.cursor() as cursor:
             cursor.execute(sql)
         return params['email']
 
     def update(self, params):
-        sql = "UPDATE invited_users SET state = '" + params['state'] + "' WHERE email = '" + params['email'] + "'"
+        sql = "UPDATE invited_users"
+        sql += " SET state = '%s'" % (params['state'])
+        sql += " WHERE email = '%s'" % (params['email'])
         print sql
         with self.connection.cursor() as cursor:
             cursor.execute(sql)
@@ -25,11 +28,11 @@ class InvitedUser:
         sql += " JOIN users u ON u.id = iu.invited_by"
         sql += " JOIN roles r ON r.id = iu.role_id"
         if params.get('email'):
-            sql += " WHERE iu.email = '" + params['email'] + "'"
+            sql += " WHERE iu.email = '%s'" % (params['email'])
         elif params.get('role_id'):
-            sql += " WHERE iu.role_id = '" + params['role_id'] + "'"
+            sql += " WHERE iu.role_id = '%s'" % (params['role_id'])
         elif params.get('role_ids'):
-            sql += " WHERE iu.role_id IN ('" + "','".join(params['role_ids']) + "')"
+            sql += " WHERE iu.role_id IN ('%s')" % ("','".join(params['role_ids']))
         print sql
         rows = []
         with self.connection.cursor() as cursor:

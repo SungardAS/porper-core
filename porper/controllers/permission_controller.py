@@ -74,12 +74,13 @@ class PermissionController:
         self.permission.create(params)
         return True
 
-    def update(self, access_token, params):
+    def update(self, access_token, params, user_id=None):
         raise Exception("not supported")
 
-    def delete(self, access_token, params):
-        rows = self.token_controller.find(access_token)
-        user_id = rows[0]['user_id']
+    def delete(self, access_token, params, user_id=None):
+        if not user_id:
+            rows = self.token_controller.find(access_token)
+            user_id = rows[0]['user_id']
         if not self.is_admin(user_id):
             if not self.has_allowed_permission(user_id, params):
               raise Exception("not permitted")
