@@ -279,8 +279,19 @@ class Demo:
 from porper.controllers.permission_controller import PermissionController
 permission_controller = PermissionController(connection)
 permitted_user_id = "<admin or user_id_who_has_create_permission_on_the_target_resource>"
+
+# by user_id
 permission_params = {
     "user_id": "<user_id>",
+    "resource": "<resource_name>",
+    "value": "<* or resource_id>",
+    "action": "<create|read|update|delete>"
+}
+permission_controller.create(None, permission_params, permitted_user_id)
+
+# by role_id
+permission_params = {
+    "role_id": "<role_id>",
     "resource": "<resource_name>",
     "value": "<* or resource_id>",
     "action": "<create|read|update|delete>"
