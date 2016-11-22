@@ -15,6 +15,15 @@ class UserRole:
         with self.connection.cursor() as cursor:
             cursor.execute(sql)
 
+    def delete(self, params):
+        if params.get('id'):
+            sql = "DELETE FROM users_roles where id = %s" % (params['id'])
+        else:
+            sql = "DELETE FROM users_roles where user_id = '%s' and role_id = '%s'" % (params['user_id'], params['role_id'])
+        print sql
+        with self.connection.cursor() as cursor:
+            cursor.execute(sql)
+
     def find(self, params):
         sql = "SELECT * FROM users_roles"
         if params.get('user_id') and params.get('role_id'):

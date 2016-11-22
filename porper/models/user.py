@@ -6,7 +6,7 @@ class User:
 
     def create(self, params):
         sql = "INSERT INTO users (id, email, family_name, given_name, name)"
-        sql += " VALUES ('%s', '%s', '%s', '%s', '%s %s')" % (params['id'], params['email'], params['family_name'], params['given_name'], params['given_name'], params['family_name'])
+        sql += " VALUES ('%s', '%s', '%s', '%s', '%s')" % (params['id'], params['email'], params['family_name'], params['given_name'], params['name'])
         print sql
         with self.connection.cursor() as cursor:
             cursor.execute(sql)

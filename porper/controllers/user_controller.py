@@ -65,6 +65,25 @@ class UserController:
         else:
             raise Exception("not permitted")
 
+    def delete(self, access_token, params):
+
+        rows = self.token_controller.find(access_token)
+        user_id = rows[0]['user_id']
+
+        # remove a user from a role if I'm an admin or the role admin of the given role
+        if params.get('role_id'):
+            if self.is_admin(user_id) or self.is_role_admin(user_id, params.get('role_id')):
+                self.user_role.delete(params)
+                return user_id
+            else:
+                raise Exception("not permitted")
+
+        if self.is_admin(user_id):
+            self.user.delete(params)
+            return user_id
+        else:
+            raise Exception("not permitted")
+
     """
     1. return requested users if I'm the admin
     2. return all users of roles where I'm the role admin
