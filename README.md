@@ -96,6 +96,9 @@ user_info = googleAuthController.authenticate(id_token)
 from porper.controllers.github_auth_controller import GithubAuthController
 githubAuthController = GithubAuthController(connection)
 user_info = githubAuthController.authenticate(code, state)
+
+# 'access_token' is used when sending following requests
+access_token = user_info['access_token']
 ```
 
 ## How to manage roles
@@ -107,30 +110,23 @@ user_info = githubAuthController.authenticate(code, state)
 ```
 
 ### To create a new role
-you must be the admin
+You must be the admin.
 ```
-path: /role
-method : POST
-data:
-{
+params = {
   "name": "<name_of_the_role>"
 }
+from porper.controllers.role_controller import RoleController
+roleController = RoleController(connection)
+roleController.create(access_token, params)
 ```
 
 ### To find roles
 ```
-path: /role
-method: GET
+roleController.find_all(access_token)
 ```
 > if you're the admin, it will return all roles
 
 > otherwise, return all roles where you're belong
-
-```
-path: /role?id=<role_id>
-method: GET
-```
-> It will return the role with the given id
 
 
 ## How to manage users
@@ -138,22 +134,22 @@ method: GET
 The first user logging into the system will be added as an admin automatically
 
 ### To invite users
-you have to invite them first and you must be either the admin or the role admin of the role where the new user will belong
+You have to invite them first and you must be either the admin or the role admin of the role where the new user will belong
 ```
-path: /invited_user
-method: POST
-data
-{
+params = {
   "email": "<email_address>",
   "role_id": "<role_id>",
   "is_admin": "<0_or_1>"
 }
+from porper.controllers.invited_user_controller import InvitedUserController
+invited_user_controller = InvitedUserController(connection)
+invited_user_controller.create(access_token, params)
 ```
 
 ### To find invited users
 ```
-path: /invited_user
-method: GET
+params = {}
+invited_user_controller.find_all(access_token, params)
 ```
 > if you're the admin, it will return all invited users
 
@@ -162,8 +158,10 @@ method: GET
 > otherwise, it will raise an exception of 'not permitted'
 
 ```
-path: /invited_user?role_id=<role_id>
-method: GET
+params = {
+  "role_id": "<role_id>"
+}
+invited_user_controller.find_all(access_token, params)
 ```
 > if you're the admin or a role admin of the given role, it will return all invited users of the given role
 
@@ -174,8 +172,10 @@ Once the invited users log in successfully for the first time, they will be auto
 
 ### To find registered user
 ```
-path: /user
-method: GET
+params = {}
+from porper.controllers.user_controller import UserController
+userController = UserController(connection)
+userController.find_all(access_token, params)
 ```
 > if you're the admin, it will return all users
 
@@ -184,36 +184,41 @@ method: GET
 > otherwise, it will return yourself
 
 ```
-path: /user?role_id=<role_id>
-method: GET
+params = {
+  "role_id": "<role_id>"
+}
+userController.find_all(access_token, params)
 ```
 > if you're the admin or a member of the given role, it will return all users of the given role
 
 > otherwise, it will raise an exception of 'not permitted'
 
 ```
-path:
-/user?id=<id>
-/user?email=<email_address>
-method: GET
+params = {
+  "id": "<id>",
+  "email": "<email_address>"
+}
+userController.find_all(access_token, params)
 ```
 > It will return a specific user with the given id or email address
 
 
 ### To assign a user to a role
+You must be either the admin or the role admin.
+
 ```
-path: /user
-method: POST
-data:
-{
+params = {
   "user_id": "<user_id>",
   "role_id": "<role_id>",
   "is_admin": "<0 or 1>"
 }
+from porper.controllers.user_controller import UserController
+userController = UserController(connection)
+userController.create(access_token, params)
 ```
 
 
-## How to create a controller & model for a custom resourc
+## How to create a controller & model for a custom resource
 
 ### Controller
 ```
