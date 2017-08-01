@@ -13,12 +13,6 @@ class GoogleAuthController(AuthController):
 
         self.tokeninfo_endpoint = os.environ.get('GOOGLE_TOKENINFO_ENDPOINT')
 
-        if not self.tokeninfo_endpoint:
-            with open('config.json') as data_file:
-                google_info = json.load(data_file)
-            #print google_info
-            self.tokeninfo_endpoint = google_info['google']['tokeninfo_endpoint']
-
     def authenticate(self, id_token):
 
         # get the tokens to see if the given code is valid

@@ -16,15 +16,6 @@ class GithubAuthController(AuthController):
         self.client_id = os.environ.get('GITHUB_CLIENT_ID')
         self.client_secret = os.environ.get('GITHUB_CLIENT_SECRET')
 
-        if not self.auth_endpoint:
-            with open('config.json') as data_file:
-                config = json.load(data_file)
-            #print config
-            self.auth_endpoint = config['github']['auth_endpoint']
-            self.api_endpoint = config['github']['api_endpoint']
-            self.client_id = config['github']['client_id']
-            self.client_secret = config['github']['client_secret']
-
     def authenticate(self, code, state, redirect_uri):
 
         print "code [%s], state [%s], redirect_uri [%s]" % (code, state, redirect_uri)

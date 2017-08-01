@@ -16,10 +16,11 @@ Install “twine”
 Files to be added
 
   LICENSE.txt
-  README.rst
+  README.md
   setup.cfg
   setup.py
 
+Update the version in setup.py
 
 Build a Universal Wheel
 

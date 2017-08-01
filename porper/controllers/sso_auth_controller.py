@@ -15,14 +15,6 @@ class SsoAuthController(AuthController):
         self.username = os.environ.get('SSO_USER')
         self.password = os.environ.get('SSO_PASSWORD')
 
-        if not self.host:
-            with open('config.json') as data_file:
-                sso_info = json.load(data_file)
-            #print sso_info
-            self.host = sso_info['sso']['host']
-            self.username = sso_info['sso']['username']
-            self.password = sso_info['sso']['password']
-
     def authenticate(self, code, redirect_uri):
 
         # get the tokens to see if the given code is valid
