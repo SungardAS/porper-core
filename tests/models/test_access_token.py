@@ -1,14 +1,18 @@
 
 import sys
-sys.path.insert(0, r'../..')
-from porper.models.connection import mysql_connection
-from porper.models.access_token import AccessToken
+sys.path.append('../../porper')
 
-connection = mysql_connection()
-access_token = AccessToken(connection)
+import boto3
+dynamodb = boto3.resource('dynamodb',region_name='us-east-1')
 
-print access_token.create({'access_token':'access', 'refresh_token':'refresh', 'refreshed_time':'2016-1-1', 'user_id':'b2fc88a6-7253-4850-8d5a-07639b1315aa'})
-print access_token.find({'access_token':'access'})
-print access_token.update({'access_token':'access', 'refresh_token':'refresh-2', 'refreshed_time':'2016-2-1' })
+from models.access_token import AccessToken
+access_token = AccessToken(dynamodb)
 
-connection.commit()
+params = {'access_token': '5550d59512546ad22951a56dd0a3b860739f9da0', 'refresh_token': '28769e2abdefab24c43d', 'refreshed_time': '2016-10-26 21:37:49', 'user_id': '35925'}
+access_token.create(params)
+
+params = {'access_token': '5550d59512546ad22951a56dd0a3b860739f9da0', 'refresh_token': '1111', 'refreshed_time': '2017-10-26 21:37:49'}
+access_token.update(params)
+
+params = {'access_token': '5550d59512546ad22951a56dd0a3b860739f9da0'}
+access_token.find(params)

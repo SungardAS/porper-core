@@ -23,8 +23,8 @@ class AuthController():
         # now save the tokens
         self.token_controller.save(access_token, refresh_token, user_id)
 
-    def find_roles(self, email):
-        from porper.models.user_role import UserRole
-        user_role = UserRole(self.connection)
-        user_roles = user_role.find({'email': email})
-        return user_roles
+    def find_groups(self, email):
+        from porper.models.user_group import UserGroup
+        user_group = UserGroup(self.connection)
+        user_groups = user_group.find({'email': email})
+        return user_groups

@@ -16,6 +16,31 @@ class ResourceController():
     def model_name(self):
         return self.model.__class__.__name__
 
+    def add_permissions(self, id, user_id, user_actions, group_id, group_actions):
+        if user_id and user_actions:
+            # add update/delete permissions to this user
+            user_permission_params = {
+                "user_id": user_id,
+                "resource": self.resource,
+                "value": id,
+                "action": None
+            }
+            for action in user_actions:
+                user_permission_params["action"] = action
+                permission_controller.create(None, user_permission_params, user_id)
+        if group_id and group_actions:
+            # add read permission to the given group
+            group_permission_params = {
+                "group_id": group_id,
+                "resource": self.resource,
+                "value": id,
+                "action": None
+            }
+            for action in group_actions:
+                group_permission_params["action"] = action
+                ###group_permission_params["condition"] = json.dumps({"is_admin": 1})
+                permission_controller.create(None, group_permission_params, user_id)
+
     def _find_permitted(self, access_token, action, id=None):
         params = {
             'action': action,
@@ -52,24 +77,33 @@ class ResourceController():
 
     def delete(self, access_token, params):
         if not self.is_permitted(access_token, 'delete', params['id']):    raise Exception("not permitted")
-        ret = self.model.delete(params)
+        ret = self.model.delete(params['id'])
         print "%s [%s] is successfully deleted : %s" % (self.model_name, params['id'], ret)
         return ret
 
     # find all read-permitted instances of the current resource, so 'id' is NOT given
-    def find_all(self, access_token, params=None):
+    def find(self, access_token, params):
         permissions = self._find_permitted(access_token, 'read')
         if len(permissions) == 0:   raise Exception("not permitted")
         ids = [ permission['value'] for permission in permissions ]
-        if not params:  params = {}
-        if ALL not in ids:  params['ids'] = ids
-        return self.model.find(params)
+        if params is None:
+            if ALL not in ids:
+                return self.model.find_by_ids(ids)
+            else:
+                return self.model.find()
+        elif params.get('id'):
+            if ALL in ids or params['id'] in ids:
+                return self.model.find_by_id(params['id'])
+            else:
+                return []
+        else:
+            return self.model.find(params)
 
     # find one read-permitted instance of the current resource whose id is the given
-    def find_one(self, access_token, params):
+    def find_by_id(self, access_token, id):
         permissions = self._find_permitted(access_token, 'read', params['id'])
         if len(permissions) == 0:   raise Exception("not permitted")
         for permission in permissions:
             if permission['value'] == params['id'] or permission['value'] == ALL:
-                return self.model.find({'id': params['id']})
-        raise Exception("not permitted")
+                return self.model.find_by_id(params['id'])
+        return None

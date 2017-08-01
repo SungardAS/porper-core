@@ -1,42 +1,42 @@
 
 import json
 
-ADMIN_ROLE_ID = 'ffffffff-ffff-ffff-ffff-ffffffffffff'
+ADMIN_GROUP_ID = 'ffffffff-ffff-ffff-ffff-ffffffffffff'
 
 class PermissionController:
 
     def __init__(self, connection):
         self.connection = connection
         from porper.models.permission import Permission
-        from porper.models.user_role import UserRole
+        from porper.models.user_group import UserGroup
         self.permission = Permission(connection)
-        self.user_role = UserRole(connection)
+        self.user_group = UserGroup(connection)
         from porper.controllers.token_controller import TokenController
         self.token_controller = TokenController(connection)
-        from porper.controllers.user_role_controller import UserRoleController
-        self.user_role_controller = UserRoleController(connection)
+        from porper.controllers.user_group_controller import UserGroupController
+        self.user_group_controller = UserGroupController(connection)
 
     def is_admin(self, user_id):
-        row = self.user_role.find({'user_id': user_id, 'role_id': ADMIN_ROLE_ID})
+        row = self.user_group.find({'user_id': user_id, 'group_id': ADMIN_GROUP_ID})
         if len(row) > 0:  return True
         else: return False
 
-    def is_role_admin(self, user_id, role_id):
-        rows = self.user_role.find({'user_id': user_id, 'role_id': role_id})
+    def is_group_admin(self, user_id, group_id):
+        rows = self.user_group.find({'user_id': user_id, 'group_id': group_id})
         if len(rows) > 0 and rows[0]['is_admin']:  return True
         else: return False
 
-    def is_permitted_by_role(self, user_id, role_id, is_admin):
-        if not role_id: return False
-        if is_admin and self.is_role_admin(user_id, role_id):
-            # the condition is 'is_admin: 1' and this user is the role admin, so this user is allowed
-            print "is_permitted_by_role: is admin is 1 and this user is a role admin, so return true"
+    def is_permitted_by_group(self, user_id, group_id, is_admin):
+        if not group_id: return False
+        if is_admin and self.is_group_admin(user_id, group_id):
+            # the condition is 'is_admin: 1' and this user is the group admin, so this user is allowed
+            print "is_permitted_by_group: is admin is 1 and this user is a group admin, so return true"
             return True
         elif is_admin == 0:
-            # the condition is 'is_admin: 0' and this user is the member of this role, so this user is allowed
-            print "is_permitted_by_role: is admin is 0 and this user is a member, so return true"
+            # the condition is 'is_admin: 0' and this user is the member of this group, so this user is allowed
+            print "is_permitted_by_group: is admin is 0 and this user is a member, so return true"
             return True
-        print "is_permitted_by_role: return false"
+        print "is_permitted_by_group: return false"
         return False
 
     def are_permitted(self, access_token, params_list):
@@ -97,12 +97,12 @@ class PermissionController:
             # check when the condition is 'is_admin' and it is satisified, add it to the return list if so
             if not user_id:
                 filtered.append(permission)
-            elif 'is_admin' in parent_params and self.is_permitted_by_role(user_id, permission.get('role_id'), parent_params['is_admin']):
+            elif 'is_admin' in parent_params and self.is_permitted_by_group(user_id, permission.get('group_id'), parent_params['is_admin']):
                 filtered.append(permission)
             continue
             # now check if the parent permissions include the given 'parent' value
             parent_params['user_id'] = user_id
-            #parent_params['role_id'] = permission['role_id']
+            #parent_params['group_id'] = permission['group_id']
             if not 'parent' in params:   continue
             parent_params['value'] = params['parent']
             parent_params['all'] = True     #### TODO: not sure if all have to be true......
@@ -114,30 +114,30 @@ class PermissionController:
     """
     1. find all of my permissions from access_token
     2. find all permissions of given user if I'm the admin
-    3. find all permissions of given role if I'm the admin
-    4. find member's all permissions if I'm the role admin of the given role
-    5. find member's all permissions if I'm the role admin of any roles where the given user belongs
+    3. find all permissions of given group if I'm the admin
+    4. find member's all permissions if I'm the group admin of the given group
+    5. find member's all permissions if I'm the group admin of any groups where the given user belongs
     6. find member's all permissions if I'm the given user
     """
-    def find_all(self, access_token, params):
+    def find(self, access_token, params):
 
         rows = self.token_controller.find(access_token)
         user_id = rows[0]['user_id']
 
         # return my permissions
-        if not params.get('user_id') and not params.get('role_id'):
+        if not params.get('user_id') and not params.get('group_id'):
             params['user_id'] = user_id
             rows = self.permission.find(params)
             return self.filter_conditions(rows, user_id)
 
-        # return requested user/role's permissions if I'm an admin
+        # return requested user/group's permissions if I'm an admin
         if self.is_admin(user_id):
             rows = self.permission.find(params)
             return self.filter_conditions(rows, params.get('user_id'))
 
-        # return requested role's permissions if I'm a role admin
-        if params.get('role_id'):
-            if self.is_role_admin(user_id, params['role_id']):
+        # return requested group's permissions if I'm a group admin
+        if params.get('group_id'):
+            if self.is_group_admin(user_id, params['group_id']):
                 rows = self.permission.find(params)
                 return self.filter_conditions(rows)
             else:   raise Exception("not permitted")
@@ -148,11 +148,11 @@ class PermissionController:
                 rows = self.permission.find(params)
                 return self.filter_conditions(rows, params['user_id'])
 
-            # return requested user's permissions if I'm a role admin of any roles the given user belongs
-            user_roles = self.user_role.find({'user_id': params['user_id']})
-            if len(user_roles) == 0:    raise Exception("not permitted")
-            for user_role in user_roles:
-                if self.is_role_admin(user_id, user_role['role_id']):
+            # return requested user's permissions if I'm a group admin of any groups the given user belongs
+            user_groups = self.user_group.find({'user_id': params['user_id']})
+            if len(user_groups) == 0:    raise Exception("not permitted")
+            for user_group in user_groups:
+                if self.is_group_admin(user_id, user_group['group_id']):
                     rows = self.permission.find(params)
                     return self.filter_conditions(rows, params['user_id'])
             raise Exception("not permitted")

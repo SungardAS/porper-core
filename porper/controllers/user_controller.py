@@ -1,31 +1,31 @@
 
-ADMIN_ROLE_ID = 'ffffffff-ffff-ffff-ffff-ffffffffffff'
+ADMIN_GROUP_ID = 'ffffffff-ffff-ffff-ffff-ffffffffffff'
 
 class UserController:
 
     def __init__(self, connection):
         self.connection = connection
         from porper.models.user import User
-        from porper.models.user_role import UserRole
+        from porper.models.user_group import UserGroup
         from porper.models.invited_user import InvitedUser
         self.user = User(connection)
-        self.user_role = UserRole(connection)
+        self.user_group = UserGroup(connection)
         self.invited_user = InvitedUser(connection)
         from porper.controllers.token_controller import TokenController
         self.token_controller = TokenController(connection)
 
     def is_admin(self, user_id):
-        row = self.user_role.find({'user_id': user_id, 'role_id': ADMIN_ROLE_ID})
+        row = self.user_group.find({'user_id': user_id, 'group_id': ADMIN_GROUP_ID})
         if len(row) > 0:  return True
         else: return False
 
-    def is_role_admin(self, user_id, role_id):
-        rows = self.user_role.find({'user_id': user_id, 'role_id': role_id})
+    def is_group_admin(self, user_id, group_id):
+        rows = self.user_group.find({'user_id': user_id, 'group_id': group_id})
         if len(rows) > 0 and rows[0]['is_admin']:  return True
         else: return False
 
-    def is_member(self, user_id, role_id):
-        rows = self.user_role.find({'user_id': user_id, 'role_id': role_id})
+    def is_member(self, user_id, group_id):
+        rows = self.user_group.find({'user_id': user_id, 'group_id': group_id})
         if len(rows) > 0:  return True
         else: return False
 
@@ -36,15 +36,15 @@ class UserController:
         if len(users) == 0:
             # set this user to the admin
             self.user.create(params)
-            self.user_role.create({'user_id': params['id'], 'role_id': ADMIN_ROLE_ID})
+            self.user_group.create({'user_id': params['id'], 'group_id': ADMIN_GROUP_ID})
             return params['id']
 
-        # add a user to a role if I'm an admin or the role admin of the given role
-        if params.get('role_id'):
+        # add a user to a group if I'm an admin or the group admin of the given group
+        if params.get('group_id'):
             rows = self.token_controller.find(access_token)
             user_id = rows[0]['user_id']
-            if self.is_admin(user_id) or self.is_role_admin(user_id, params.get('role_id')):
-                self.user_role.create(params)
+            if self.is_admin(user_id) or self.is_group_admin(user_id, params.get('group_id')):
+                self.user_group.create(params)
                 return user_id
             else:
                 raise Exception("not permitted")
@@ -59,7 +59,7 @@ class UserController:
         if len(invited_users) == 1:
             invited_user = invited_users[0]
             self.user.create(params)
-            self.user_role.create({'user_id': params['id'], 'role_id': invited_user['role_id'], 'is_admin': invited_user['is_admin']})
+            self.user_group.create({'user_id': params['id'], 'group_id': invited_user['group_id'], 'is_admin': invited_user['is_admin']})
             self.invited_user.update({'email':params['email'], 'state':self.invited_user.REGISTERED})
             return params['id']
         else:
@@ -70,10 +70,10 @@ class UserController:
         rows = self.token_controller.find(access_token)
         user_id = rows[0]['user_id']
 
-        # remove a user from a role if I'm an admin or the role admin of the given role
-        if params.get('role_id'):
-            if self.is_admin(user_id) or self.is_role_admin(user_id, params.get('role_id')):
-                self.user_role.delete(params)
+        # remove a user from a group if I'm an admin or the group admin of the given group
+        if params.get('group_id'):
+            if self.is_admin(user_id) or self.is_group_admin(user_id, params.get('group_id')):
+                self.user_group.delete(params)
                 return user_id
             else:
                 raise Exception("not permitted")
@@ -86,11 +86,11 @@ class UserController:
 
     """
     1. return requested users if I'm the admin
-    2. return all users of roles where I'm the role admin
-    3. return myself if I'm not the role admin of any role
-    4. return all members of the given role if I'm a member of the given role
+    2. return all users of groups where I'm the group admin
+    3. return myself if I'm not the group admin of any group
+    4. return all members of the given group if I'm a member of the given group
     """
-    def find_all(self, access_token, params):
+    def find(self, access_token, params):
 
         rows = self.token_controller.find(access_token)
         user_id = rows[0]['user_id']
@@ -98,16 +98,16 @@ class UserController:
         # return all users if I'm an admin
         if self.is_admin(user_id):  return self.user.find(params)
 
-        if not params.get('role_id'):
-            # return all users of roles where I'm the role admin
-            user_roles = self.user_role.find({'user_id': user_id})
-            role_ids = [ user_role['role_id'] for user_role in user_roles if user_role['is_admin'] ]
-            if len(role_ids) > 0:   return self.user.find({'role_ids': role_ids})
+        if not params.get('group_id'):
+            # return all users of groups where I'm the group admin
+            user_groups = self.user_group.find({'user_id': user_id})
+            group_ids = [ user_group['group_id'] for user_group in user_groups if user_group['is_admin'] ]
+            if len(group_ids) > 0:   return self.user.find({'group_ids': group_ids})
 
-            # if role is not given, return only itself
+            # if group is not given, return only itself
             return self.user.find({'id': user_id})
 
-        # return all members of the given role if I'm a member of the given role
-        if self.is_member(user_id, params['role_id']):  return self.user.find(params)
+        # return all members of the given group if I'm a member of the given group
+        if self.is_member(user_id, params['group_id']):  return self.user.find(params)
 
         raise Exception("not permitted")

@@ -1,56 +1,139 @@
 
+from __future__ import print_function # Python 2/3 compatibility
+import json
+import boto3
+from boto3.dynamodb.conditions import Key, Attr
+from botocore.exceptions import ClientError
+from decimal_encoder import DecimalEncoder
+
+import uuid
+
 class Permission:
 
-    def __init__(self, connection):
-        self.connection = connection
+    def __init__(self, dynamodb):
+        self.dynamodb = dynamodb
+        self.table = dynamodb.Table('permissions')
 
     def create(self, params):
-        user_id = params.get('user_id')
-        role_id = params.get('role_id')
-        if user_id:
-            sql = "INSERT INTO permissions (user_id, action, resource, value, `condition`)"
-            sql += " VALUES ('%s', '%s', '%s', '%s'" % (user_id, params.get('action'), params.get('resource'), params.get('value'))
-        elif role_id:
-            sql = "INSERT INTO permissions (role_id, action, resource, value, `condition`)"
-            sql += " VALUES ('%s', '%s', '%s', '%s'" % (role_id, params.get('action'), params.get('resource'), params.get('value'))
-        if params.get('condition'):
-            sql += ", '%s')" % (params.get('condition'))
+        if not params.get('id'):
+            params['id'] = str(uuid.uuid4())
+        try:
+            response = self.table.put_item(
+               Item=params
+            )
+        except ClientError as e:
+            print(e.response['Error']['Message'])
+            raise
         else:
-            sql += ", NULL)"
-        print sql
-        with self.connection.cursor() as cursor:
-            cursor.execute(sql)
+            print("PutItem succeeded:")
+            print(json.dumps(response, indent=4, cls=DecimalEncoder))
+
+    def _find_id(self, params):
+        if params.get('user_id') is None and params.get('role_id') is None:
+            return None
+        fe = "action = :action and resource = :resource and #value = :value"
+        ean = {'#value': 'value'}
+        eav = {':action': params['action'], ':resource': params['resource'], ':value': params['value']}
+        if params.get('user_id'):
+            fe += " and user_id = :user_id"
+            eav[':user_id'] = params['user_id']
+        elif params.get('role_id'):
+            fe += " and role_id = :role_id"
+            eav[':role_id'] = params['role_id']
+        response = self.table.scan(
+            FilterExpression=fe,
+            ExpressionAttributeNames=ean,
+            ExpressionAttributeValues=eav
+        )
+        for i in response['Items']:
+            print(json.dumps(i, cls=DecimalEncoder))
+        if len(response["Items"]) == 0: return None
+        else:   return response["Items"][0]['id']
 
     def delete(self, params):
-        if params.get('id'):
-            sql = "DELETE FROM permissions WHERE id = %s" % (params.get('id'))
+        id = params.get('id')
+        if id is None:
+            id = self._find_id(params)
+        if id is None:
+            print("No item found to delete")
+            return
+        try:
+            response = self.table.delete_item(
+                Key={
+                    'id': id
+                },
+            )
+        except ClientError as e:
+            print(e.response['Error']['Message'])
+            raise
         else:
-            sql = "DELETE FROM permissions "
-            sql += " WHERE action = '%s' AND resource = '%s' AND value = '%s'" % (params.get('action'), params.get('resource'), params.get('value'))
-            if params.get('user_id'):
-                sql += " AND user_id = '%s'" % (params.get('user_id'))
-            if params.get('role_id'):
-                sql += " AND role_id = '%s'" % (params.get('role_id'))
-        print sql
-        with self.connection.cursor() as cursor:
-            cursor.execute(sql)
+            print("DeleteItem succeeded:")
+            print(json.dumps(response, indent=4, cls=DecimalEncoder))
+            return
 
     def find(self, params):
-        sql = "SELECT * FROM permissions WHERE 1 = 1"
-        if params.get('resource'):   sql += " AND resource = '%s'" % (params.get('resource'))
-        if params.get('action'):   sql += " AND action = '%s'" % (params.get('action'))
-        if params.get('value'):     sql += " AND (value = '%s' OR value = '*')" % (params.get('value'))
+        fe = ""
+        ean = {}
+        eav = {}
+        if params.get('resource'):
+            if fe != "":
+                fe += " and "
+            fe += "#resource = :resource"
+            eav[':resource'] = params['resource']
+            ean['#resource'] = 'resource'
+        if params.get('action'):
+            if fe != "":
+                fe += " and "
+            fe += "#action = :action"
+            eav[':action'] = params['action']
+            ean['#action'] = 'action'
+        if params.get('value'):
+            if fe != "":
+                fe += " and "
+            fe += "#value in (:value1, :value2)"
+            eav[':value1'] = params['value']
+            eav[':value2'] = '*'
+            ean['#value'] = 'value'
         if params.get('user_id'):
             if params.get('all'):
-                sql += " AND (user_id = '%s' OR role_id IN (SELECT role_id FROM users_roles WHERE user_id = '%s'))" % (params.get('user_id'), params.get('user_id'))
+                from user_role import UserRole
+                user_role = UserRole(self.dynamodb)
+                user_role_items = user_role.find({'user_id': params['user_id']})
+                role_ids = [ user_role_item['role_id'] for user_role_item in user_role_items ]
+                if fe != "":
+                    fe += " and "
+                fe += "(#user_id = :user_id or role_id in ("
+                for index, role_id in enumerate(role_ids):
+                    role_id_name = ':role_id_%s' % index
+                    if index == 0:
+                        fe += role_id_name
+                    else:
+                        fe += ', ' + role_id_name
+                    eav[role_id_name] = role_id
+                eav[':user_id'] = params['user_id']
+                fe += '))'
+                print(fe)
+                print(eav)
             else:
-                sql += " AND user_id = '%s'" % (params.get('user_id'))
+                if fe != "":
+                    fe += " and "
+                fe += "#user_id = :user_id"
+                eav[':user_id'] = params['user_id']
+            ean['#user_id'] = 'user_id'
         elif params.get('role_id'):
-            sql += " AND role_id = '%s'" % (params.get('role_id'))
-        print sql
-        rows = []
-        with self.connection.cursor() as cursor:
-            cursor.execute(sql)
-            for row in cursor:
-                rows.append({'id':row[0], 'user_id':row[1], 'role_id':row[2], 'action':row[3], 'resource':row[4], 'value':row[5], 'condition':row[6]})
-        return rows
+            if fe != "":
+                fe += " and "
+            fe += "#role_id = :role_id"
+            eav[':role_id'] = params['role_id']
+            ean['#role_id'] = 'role_id'
+        print(fe)
+        print(ean)
+        print(eav)
+        response = self.table.scan(
+            FilterExpression=fe,
+            ExpressionAttributeNames=ean,
+            ExpressionAttributeValues=eav
+        )
+        for i in response['Items']:
+            print(json.dumps(i, cls=DecimalEncoder))
+        return response["Items"]
