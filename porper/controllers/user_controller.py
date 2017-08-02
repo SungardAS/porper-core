@@ -63,7 +63,8 @@ class UserController:
             self.invited_user.update({'email':params['email'], 'state':self.invited_user.REGISTERED})
             return params['id']
         else:
-            raise Exception("not permitted")
+            self.user.create(params)
+            return params['id']
 
     def delete(self, access_token, params):
 

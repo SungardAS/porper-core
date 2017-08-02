@@ -13,7 +13,9 @@ class GoogleAuthController(AuthController):
 
         self.tokeninfo_endpoint = os.environ.get('GOOGLE_TOKENINFO_ENDPOINT')
 
-    def authenticate(self, id_token):
+    def authenticate(self, params):
+
+        id_token = params['id_token']
 
         # get the tokens to see if the given code is valid
         print "id_token [%s]" % id_token
@@ -50,6 +52,7 @@ class GoogleAuthController(AuthController):
             user_info['family_name'],
             user_info['given_name'],
             user_info['name'],
+            'google',
             access_token,
             id_token)
 

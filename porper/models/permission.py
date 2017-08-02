@@ -72,6 +72,10 @@ class Permission:
             return
 
     def find(self, params):
+
+        if not params:
+            return self.table.scan()['Items']
+
         fe = ""
         ean = {}
         eav = {}

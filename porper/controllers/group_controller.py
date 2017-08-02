@@ -39,7 +39,4 @@ class GroupController:
     def find(self, access_token, params=None):
         rows = self.token_controller.find(access_token)
         user_id = rows[0]['user_id']
-        return self.user_group_controller.find_by_user_id(user_id)
-
-    def find_one(self, access_token, params):
-        raise Exception("not supported")
+        return self.user_group_controller.find(access_token, {'user_id': user_id})

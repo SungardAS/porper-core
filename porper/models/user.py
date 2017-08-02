@@ -45,6 +45,9 @@ class User:
 
     def find(self, params):
 
+        if not params:
+            return self.table.scan()['Items']
+
         if params.get('group_id'):
             from user_group import UserGroup
             user_group = UserGroup(self.dynamodb)

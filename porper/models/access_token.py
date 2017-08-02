@@ -50,6 +50,10 @@ class AccessToken:
             print(json.dumps(response, indent=4, cls=DecimalEncoder))
 
     def find(self, params):
+
+        if not params:
+            return self.table.scan()['Items']
+
         response = self.table.get_item(
             Key={
                 'access_token': params["access_token"]

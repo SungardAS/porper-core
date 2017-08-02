@@ -15,7 +15,10 @@ class SsoAuthController(AuthController):
         self.username = os.environ.get('SSO_USER')
         self.password = os.environ.get('SSO_PASSWORD')
 
-    def authenticate(self, code, redirect_uri):
+    def authenticate(self, params):
+
+        code = params['code']
+        redirect_uri = params['redirect_uri']
 
         # get the tokens to see if the given code is valid
         print "code [%s], redirect_uri [%s]" % (code, redirect_uri)
@@ -46,6 +49,7 @@ class SsoAuthController(AuthController):
             user_info['family_name'],
             user_info['given_name'],
             display_name,
+            'sso',
             access_token,
             refresh_token)
 

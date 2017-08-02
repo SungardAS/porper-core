@@ -62,6 +62,10 @@ class UserGroup:
         )['Items']
 
     def find(self, params):
+
+        if not params:
+            return self.table.scan()['Items']
+
         if params.get('user_id') and params.get('group_id'):
             response = self.table.get_item(
                 Key={
@@ -99,7 +103,7 @@ class UserGroup:
         if params.get('email'):
             from user import User
             user = User(self.dynamodb)
-            user_items = user.find(params['email'])
+            user_items = user.find({'email': params['email']})
             if len(user_items) == 0:    return []
             fe = Key('user_id').eq(user_items[0]['id']);
             response = self.table.scan(

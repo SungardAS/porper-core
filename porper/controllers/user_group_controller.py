@@ -12,7 +12,14 @@ class UserGroupController:
         self.group = Group(connection)
         self.user_group = UserGroup(connection)
 
-    def find_by_user_id(self, user_id):
+    def find(self, access_key, params):
+        if params.get('user_id'):
+            return _find_by_user_id(params['user_id'])
+        elif params.get('group_id'):
+            return _find_by_group_id(params['group_id'])
+        return []
+
+    def _find_by_user_id(self, user_id):
         user_groups = self.user_group.find({'user_id': user_id})
         print user_groups
         ids = [ user_group['group_id'] for user_group in user_groups ]
@@ -25,7 +32,7 @@ class UserGroupController:
         print params
         return self.group.find(params)
 
-    def find_by_group_id(self, group_id):
+    def _find_by_group_id(self, group_id):
         user_groups = self.user_group.find({'group_id': group_id})
         print user_groups
         ids = [row['user_id'] for row in user_groups]

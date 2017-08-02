@@ -50,6 +50,9 @@ class Group:
 
     def find(self, params):
 
+        if not params:
+            return self.table.scan()['Items']
+
         if params.get('id'):
             response = self.table.get_item(
                 Key={
@@ -68,4 +71,4 @@ class Group:
         if params.get('ids'):
             return self._find_by_ids(params['ids'])
 
-        return self.table.scan()['Items']
+        return []

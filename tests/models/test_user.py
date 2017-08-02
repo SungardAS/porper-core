@@ -2,8 +2,11 @@
 import sys
 sys.path.append('../../porper')
 
+import os
+region = os.environ.get('AWS_DEFAULT_REGION')
+
 import boto3
-dynamodb = boto3.resource('dynamodb',region_name='us-east-1')
+dynamodb = boto3.resource('dynamodb',region_name=region)
 
 from models.user import User
 user = User(dynamodb)

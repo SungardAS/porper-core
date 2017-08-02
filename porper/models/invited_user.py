@@ -65,6 +65,9 @@ class InvitedUser:
 
     def find(self, params):
 
+        if not params:
+            return self.table.scan()['Items']
+
         if params.get('email'):
             response = self.table.get_item(
                 Key={
