@@ -5,10 +5,11 @@ import boto3
 from boto3.dynamodb.conditions import Key, Attr
 from botocore.exceptions import ClientError
 from decimal_encoder import DecimalEncoder
+from resource import Resource
 
 import uuid
 
-class Group:
+class Group(Resource):
 
     def __init__(self, dynamodb):
         self.dynamodb = dynamodb
@@ -17,19 +18,9 @@ class Group:
     def create(self, params):
         if not params.get('id'):
             params['id'] = str(uuid.uuid4())
-        try:
-            response = self.table.put_item(
-               Item=params
-            )
-        except ClientError as e:
-            print(e.response['Error']['Message'])
-            raise
-        else:
-            print("PutItem succeeded:")
-            print(json.dumps(response, indent=4, cls=DecimalEncoder))
-            return params['id']
+        return Resource.create(self, params)
 
-    def _find_by_ids(self, ids):
+    """def _find_by_ids(self, ids):
         eav = {}
         fe = 'id in ('
         for index, id in enumerate(ids):
@@ -71,4 +62,4 @@ class Group:
         if params.get('ids'):
             return self._find_by_ids(params['ids'])
 
-        return []
+        return []"""

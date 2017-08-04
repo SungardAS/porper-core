@@ -5,14 +5,15 @@ import boto3
 from boto3.dynamodb.conditions import Key, Attr
 from botocore.exceptions import ClientError
 from decimal_encoder import DecimalEncoder
+from resource import Resource
 
-class User:
+class User(Resource):
 
     def __init__(self, dynamodb):
         self.dynamodb = dynamodb
         self.table = dynamodb.Table('users')
 
-    def create(self, params):
+    """def create(self, params):
         try:
             response = self.table.put_item(
                Item=params
@@ -124,4 +125,4 @@ class User:
                 print(json.dumps(i, cls=DecimalEncoder))
             return response["Items"]
 
-        return []
+        return []"""

@@ -13,34 +13,25 @@ class InvitedUserController:
         self.user_group = UserGroup(connection)
         from porper.controllers.token_controller import TokenController
         self.token_controller = TokenController(connection)
-
-    def is_admin(self, user_id):
-        row = self.user_group.find({'user_id': user_id, 'group_id': ADMIN_GROUP_ID})
-        if len(row) > 0:  return True
-        else: return False
-
-    def is_group_admin(self, user_id, group_id):
-        rows = self.user_group.find({'user_id': user_id, 'group_id': group_id})
-        if len(rows) > 0 and rows[0]['is_admin']:  return True
-        else: return False
+        from porper.controllers.permission_controller import PermissionController
+        self.permission_controller = PermissionController(self.connection)
 
     def create(self, access_token, params):
 
-        rows = self.token_controller.find(access_token)
-        user_id = rows[0]['user_id']
+        user_id = self.token_controller.find_user_id(access_token)
 
         # allowed if I'm an admin
-        if self.is_admin(user_id):
-            return self.save(user_id, params)
+        if self.permission_controller.is_admin(user_id):
+            return self._save(user_id, params)
 
         # allowed if I'm the group admin of the given group
         group_id = params['group_id']
-        if self.is_group_admin(user_id, group_id):
-            return self.save(user_id, params)
+        if self.permission_controller.is_group_admin(user_id, group_id):
+            return self._save(user_id, params)
 
         raise Exception("not permitted")
 
-    def save(self, user_id, params):
+    def _save(self, user_id, params):
         invited_users = self.invited_user.find(params)
         if len(invited_users) > 0:
             print 'already invited'
@@ -52,36 +43,37 @@ class InvitedUserController:
         if not params.get('state'):
             params['state'] = self.invited_user.INVITED
         if not params.get('is_admin'):
-            params['is_admin'] = '0'
+            params['is_admin'] = False
         return self.invited_user.create(params)
 
     def update(self, access_token, params):
 
-        rows = self.token_controller.find(access_token)
-        user_id = rows[0]['user_id']
+        user_id = self.token_controller.find_user_id(access_token)
 
         # allowed if I'm an admin
-        if self.is_admin(user_id):
+        if self.permission_controller.is_admin(user_id):
             return self.invited_user.update(params)
 
         # allowed if I'm the group admin of the given group
         group_id = params['group_id']
-        if self.is_group_admin(user_id, group_id):
+        if self.permission_controller.is_group_admin(user_id, group_id):
             return self.invited_user.update(params)
 
         raise Exception("not permitted")
 
     """
     1. return all invited users if I'm the admin
-    2. return all invited users of a given group if I'm the group admin
+    2. if 'group_id' is given,
+        - return all invited users of a given group if I'm the admin of given group
+    3. otherwise,
+        - return all invited users of groups where I'm the group admin
     """
     def find(self, access_token, params):
 
-        rows = self.token_controller.find(access_token)
-        user_id = rows[0]['user_id']
+        user_id = self.token_controller.find_user_id(access_token)
 
         # return all invited users if I'm an admin
-        if self.is_admin(user_id):  return self.invited_user.find({})
+        if self.permission_controller.is_admin(user_id):  return self.invited_user.find({})
 
         if not params.get('group_id'):
             # return all invited users of groups where I'm the group admin
@@ -91,6 +83,6 @@ class InvitedUserController:
         else:
             # return all invited users of the given group if I'm the group admin
             group_id = params['group_id']
-            if self.is_group_admin(user_id, group_id):    return self.invited_user.find(params)
+            if self.permission_controller.is_group_admin(user_id, group_id):    return self.invited_user.find(params)
 
         raise Exception("not permitted")

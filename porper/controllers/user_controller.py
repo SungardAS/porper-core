@@ -13,21 +13,8 @@ class UserController:
         self.invited_user = InvitedUser(connection)
         from porper.controllers.token_controller import TokenController
         self.token_controller = TokenController(connection)
-
-    def is_admin(self, user_id):
-        row = self.user_group.find({'user_id': user_id, 'group_id': ADMIN_GROUP_ID})
-        if len(row) > 0:  return True
-        else: return False
-
-    def is_group_admin(self, user_id, group_id):
-        rows = self.user_group.find({'user_id': user_id, 'group_id': group_id})
-        if len(rows) > 0 and rows[0]['is_admin']:  return True
-        else: return False
-
-    def is_member(self, user_id, group_id):
-        rows = self.user_group.find({'user_id': user_id, 'group_id': group_id})
-        if len(rows) > 0:  return True
-        else: return False
+        from porper.controllers.permission_controller import PermissionController
+        self.permission_controller = PermissionController(self.connection)
 
     def create(self, access_token, params):
 
@@ -41,9 +28,8 @@ class UserController:
 
         # add a user to a group if I'm an admin or the group admin of the given group
         if params.get('group_id'):
-            rows = self.token_controller.find(access_token)
-            user_id = rows[0]['user_id']
-            if self.is_admin(user_id) or self.is_group_admin(user_id, params.get('group_id')):
+            user_id = self.token_controller.find_user_id(access_token)
+            if self.permission_controller.is_admin(user_id) or self.permission_controller.is_group_admin(user_id, params.get('group_id')):
                 self.user_group.create(params)
                 return user_id
             else:
@@ -68,18 +54,17 @@ class UserController:
 
     def delete(self, access_token, params):
 
-        rows = self.token_controller.find(access_token)
-        user_id = rows[0]['user_id']
+        user_id = self.token_controller.find_user_id(access_token)
 
         # remove a user from a group if I'm an admin or the group admin of the given group
         if params.get('group_id'):
-            if self.is_admin(user_id) or self.is_group_admin(user_id, params.get('group_id')):
+            if self.permission_controller.is_admin(user_id) or self.permission_controller.is_group_admin(user_id, params.get('group_id')):
                 self.user_group.delete(params)
                 return user_id
             else:
                 raise Exception("not permitted")
 
-        if self.is_admin(user_id):
+        if self.permission_controller.is_admin(user_id):
             self.user.delete(params)
             return user_id
         else:
@@ -87,28 +72,47 @@ class UserController:
 
     """
     1. return requested users if I'm the admin
-    2. return all users of groups where I'm the group admin
-    3. return myself if I'm not the group admin of any group
-    4. return all members of the given group if I'm a member of the given group
+    2. if 'group_id' is given,
+        - return all members of the given group if I belong to that group
+    3. otherwise,
+        - return all users of groups where I belong
     """
     def find(self, access_token, params):
 
-        rows = self.token_controller.find(access_token)
-        user_id = rows[0]['user_id']
+        user_id = self.token_controller.find_user_id(access_token)
 
         # return all users if I'm an admin
-        if self.is_admin(user_id):  return self.user.find(params)
-
-        if not params.get('group_id'):
-            # return all users of groups where I'm the group admin
-            user_groups = self.user_group.find({'user_id': user_id})
-            group_ids = [ user_group['group_id'] for user_group in user_groups if user_group['is_admin'] ]
-            if len(group_ids) > 0:   return self.user.find({'group_ids': group_ids})
-
-            # if group is not given, return only itself
-            return self.user.find({'id': user_id})
+        if self.permission_controller.is_admin(user_id):
+            if not params.get('group_id'):
+                return self.user.find(params)
+            else:
+                user_groups = self.user_group.find({'group_id': params['group_id']})
+                if len(user_groups) == 0:   return []
+                user_ids = [ user_group['user_id'] for user_group in user_groups ]
+                params['ids'] = user_ids
+                del params['group_id']
+                return self.user.find(params)
 
         # return all members of the given group if I'm a member of the given group
-        if self.is_member(user_id, params['group_id']):  return self.user.find(params)
+        if params.get('group_id'):
+            if self.permission_controller.is_member(user_id, params['group_id']):
+                user_groups = self.user_group.find({'group_id': params['group_id']})
+                if len(user_groups) == 0:   return []
+                user_ids = [ user_group['user_id'] for user_group in user_groups ]
+                params['ids'] = user_ids
+                del params['group_id']
+                return self.user.find(params)
+            else:
+                return []
 
-        raise Exception("not permitted")
+        # return all users of groups where I belong
+        user_groups = self.user_group.find({'user_id': user_id})
+        group_ids = [ user_group['group_id'] for user_group in user_groups ]
+        if len(group_ids) == 0:
+            # if no group is found, return only itself
+            params['id'] = user_id
+        else:
+            user_groups = self.user_group.find_by_group_ids(group_ids)
+            user_ids = [ user_group['user_id'] for user_group in user_groups ]
+            params['ids'] = user_ids
+        return self.user.find(params)

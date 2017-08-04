@@ -6,17 +6,22 @@ from boto3.dynamodb.conditions import Key, Attr
 from botocore.exceptions import ClientError
 from decimal_encoder import DecimalEncoder
 
-import uuid
-
 class Permission:
 
     def __init__(self, dynamodb):
         self.dynamodb = dynamodb
         self.table = dynamodb.Table('permissions')
 
+    def _generate_id(self, params):
+        id = ""
+        if params.get('user_id'):
+            id = 'u-%s' % params['user_id']
+        elif params.get('group_id'):
+            id = 'g-%s' % params['group_id']
+        return '%s-%s-%s-%s' % (id, params.get('resource'), params.get('action'), params.get('value'))
+
     def create(self, params):
-        if not params.get('id'):
-            params['id'] = str(uuid.uuid4())
+        params['id'] = self._generate_id(params)
         try:
             response = self.table.put_item(
                Item=params
@@ -27,9 +32,10 @@ class Permission:
         else:
             print("PutItem succeeded:")
             print(json.dumps(response, indent=4, cls=DecimalEncoder))
+            return params
 
     def _find_id(self, params):
-        if params.get('user_id') is None and params.get('role_id') is None:
+        if params.get('user_id') is None and params.get('group_id') is None:
             return None
         fe = "action = :action and resource = :resource and #value = :value"
         ean = {'#value': 'value'}
@@ -37,9 +43,9 @@ class Permission:
         if params.get('user_id'):
             fe += " and user_id = :user_id"
             eav[':user_id'] = params['user_id']
-        elif params.get('role_id'):
-            fe += " and role_id = :role_id"
-            eav[':role_id'] = params['role_id']
+        elif params.get('group_id'):
+            fe += " and group_id = :group_id"
+            eav[':group_id'] = params['group_id']
         response = self.table.scan(
             FilterExpression=fe,
             ExpressionAttributeNames=ean,
@@ -56,7 +62,7 @@ class Permission:
             id = self._find_id(params)
         if id is None:
             print("No item found to delete")
-            return
+            return None
         try:
             response = self.table.delete_item(
                 Key={
@@ -69,7 +75,7 @@ class Permission:
         else:
             print("DeleteItem succeeded:")
             print(json.dumps(response, indent=4, cls=DecimalEncoder))
-            return
+            return id
 
     def find(self, params):
 
@@ -100,22 +106,25 @@ class Permission:
             ean['#value'] = 'value'
         if params.get('user_id'):
             if params.get('all'):
-                from user_role import UserRole
-                user_role = UserRole(self.dynamodb)
-                user_role_items = user_role.find({'user_id': params['user_id']})
-                role_ids = [ user_role_item['role_id'] for user_role_item in user_role_items ]
+                from user_group import UserGroup
+                user_group = UserGroup(self.dynamodb)
+                user_group_items = user_group.find({'user_id': params['user_id']})
+                group_ids = [ user_group_item['group_id'] for user_group_item in user_group_items ]
                 if fe != "":
                     fe += " and "
-                fe += "(#user_id = :user_id or role_id in ("
-                for index, role_id in enumerate(role_ids):
-                    role_id_name = ':role_id_%s' % index
-                    if index == 0:
-                        fe += role_id_name
-                    else:
-                        fe += ', ' + role_id_name
-                    eav[role_id_name] = role_id
+                if len(group_ids) == 0:
+                    fe += "#user_id = :user_id"
+                else:
+                    fe += "(#user_id = :user_id or group_id in ("
+                    for index, group_id in enumerate(group_ids):
+                        group_id_name = ':group_id_%s' % index
+                        if index == 0:
+                            fe += group_id_name
+                        else:
+                            fe += ', ' + group_id_name
+                        eav[group_id_name] = group_id
+                    fe += '))'
                 eav[':user_id'] = params['user_id']
-                fe += '))'
                 print(fe)
                 print(eav)
             else:
@@ -124,12 +133,12 @@ class Permission:
                 fe += "#user_id = :user_id"
                 eav[':user_id'] = params['user_id']
             ean['#user_id'] = 'user_id'
-        elif params.get('role_id'):
+        elif params.get('group_id'):
             if fe != "":
                 fe += " and "
-            fe += "#role_id = :role_id"
-            eav[':role_id'] = params['role_id']
-            ean['#role_id'] = 'role_id'
+            fe += "#group_id = :group_id"
+            eav[':group_id'] = params['group_id']
+            ean['#group_id'] = 'group_id'
         print(fe)
         print(ean)
         print(eav)

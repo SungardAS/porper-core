@@ -22,7 +22,7 @@ class AuthController():
             params['given_name'] = given_name
         if email:
             params['email'] = email.lower()
-        user_id = self.user_controller.create(None, params)
+        user_id = self.user_controller.create(access_token, params)
 
         # now save the tokens
         self.token_controller.save(access_token, refresh_token, user_id)

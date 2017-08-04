@@ -5,8 +5,9 @@ import boto3
 from boto3.dynamodb.conditions import Key, Attr
 from botocore.exceptions import ClientError
 from decimal_encoder import DecimalEncoder
+from resource import Resource
 
-class UserGroup:
+class UserGroup(Resource):
 
     def __init__(self, dynamodb):
         self.dynamodb = dynamodb
@@ -17,7 +18,8 @@ class UserGroup:
             params["is_admin"] = True
         else:
             params["is_admin"] = False
-        try:
+        return Resource.create(self, params)
+        """try:
             response = self.table.put_item(
                Item=params
             )
@@ -26,7 +28,7 @@ class UserGroup:
             raise
         else:
             print("PutItem succeeded:")
-            print(json.dumps(response, indent=4, cls=DecimalEncoder))
+            print(json.dumps(response, indent=4, cls=DecimalEncoder))"""
 
     def delete(self, params):
         try:
@@ -43,7 +45,7 @@ class UserGroup:
             print("DeleteItem succeeded:")
             print(json.dumps(response, indent=4, cls=DecimalEncoder))
 
-    def _find_by_group_ids(self, group_ids):
+    def find_by_group_ids(self, group_ids):
         eav = {}
         fe = 'group_id in ('
         for index, group_id in enumerate(group_ids):

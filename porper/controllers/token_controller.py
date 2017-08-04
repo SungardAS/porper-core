@@ -8,6 +8,12 @@ class TokenController:
         from porper.models.access_token import AccessToken
         self.access_token = AccessToken(connection)
 
+    def find_user_id(self, access_token):
+        params = {
+            'access_token': access_token
+        }
+        return self.find(params)[0]['user_id']
+
     def create(self, access_token, params):
         return self.save(params['access_token'], params['refresh_token'], params['user_id'])
 
@@ -26,10 +32,7 @@ class TokenController:
             print 'updating token : %s' % params
             return self.access_token.update(params)
 
-    def find(self, access_token):
-        params = {
-            'access_token': access_token
-        }
+    def find(self, params):
         rows = self.access_token.find(params)
         if len(rows) == 0:
             raise Exception("unauthorized")
