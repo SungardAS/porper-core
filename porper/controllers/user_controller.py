@@ -26,14 +26,18 @@ class UserController:
             self.user_group.create({'user_id': params['id'], 'group_id': ADMIN_GROUP_ID})
             return params['id']
 
+        user_id = self.token_controller.find_user_id(access_token)
+
         # add a user to a group if I'm an admin or the group admin of the given group
         if params.get('group_id'):
-            user_id = self.token_controller.find_user_id(access_token)
             if self.permission_controller.is_admin(user_id) or self.permission_controller.is_group_admin(user_id, params.get('group_id')):
                 self.user_group.create(params)
                 return user_id
             else:
                 raise Exception("not permitted")
+
+        if not self.permission_controller.is_admin(user_id):
+            raise Exception("not permitted")
 
         rows = self.user.find(params)
         if len(rows) > 0:
@@ -49,8 +53,9 @@ class UserController:
             self.invited_user.update({'email':params['email'], 'state':self.invited_user.REGISTERED})
             return params['id']
         else:
-            self.user.create(params)
-            return params['id']
+            #self.user.create(params)
+            #return params['id']
+            raise Exception("not permitted")
 
     def delete(self, access_token, params):
 

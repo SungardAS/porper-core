@@ -43,15 +43,17 @@ class SsoAuthController(AuthController):
         display_name = user_info.get('displayName')
         if not display_name:
             display_name = '%s %s' % (user_info['given_name'], user_info['family_name'])
-        AuthController.authenticate(self,
-            user_info['guid'],
-            user_info['email'],
-            user_info['family_name'],
-            user_info['given_name'],
-            display_name,
-            'sso',
-            access_token,
-            refresh_token)
+        auth_params = {
+            'user_id': user_info['guid'],
+            'email': user_info['email'],
+            'family_name': user_info['family_name'],
+            'given_name': user_info['given_name'],
+            'name': display_name,
+            'auth_type': 'sso',
+            'access_token': access_token,
+            'refresh_token': refresh_token
+        }
+        AuthController.authenticate(self, auth_params)
 
         # return the access_token if all completed successfully
         user_info['user_id'] = user_info['guid']

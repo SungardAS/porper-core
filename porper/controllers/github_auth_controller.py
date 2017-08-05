@@ -142,15 +142,17 @@ class GithubAuthController(AuthController):
         last_name = splitted[len(splitted)-1]
 
         # now save the user info & tokens
-        AuthController.authenticate(self,
-            str(user_info['id']),
-            user_info['email'],
-            last_name,
-            first_name,
-            user_info['name'],
-            'github',
-            access_token,
-            code)
+        auth_params = {
+            'user_id': str(user_info['id']),
+            'email': user_info['email'],
+            'family_name': last_name,
+            'given_name': first_name,
+            'name': user_info['name'],
+            'auth_type': 'github',
+            'access_token': access_token,
+            'refresh_token': code
+        }
+        AuthController.authenticate(self, auth_params)
 
         # return the access_token if all completed successfully
         user_info['user_id'] = user_info['id']

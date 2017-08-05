@@ -72,7 +72,7 @@ class AccessToken(Resource):
                 return []
 
         if params.get('user_id'):
-            response = self.table.scan(
+            return self.table.scan(
                 FilterExpression="user_id = :user_id",
                 ExpressionAttributeValues={":user_id": params['user_id']}
             )['Items']

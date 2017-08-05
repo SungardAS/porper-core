@@ -46,15 +46,17 @@ class GoogleAuthController(AuthController):
 
         # now save the user info & tokens
         access_token = str(uuid.uuid4())
-        AuthController.authenticate(self,
-            user_info['sub'],
-            user_info['email'],
-            user_info['family_name'],
-            user_info['given_name'],
-            user_info['name'],
-            'google',
-            access_token,
-            id_token)
+        auth_params = {
+            'user_id': user_info['sub'],
+            'email': user_info['email'],
+            'family_name': user_info['family_name'],
+            'given_name': user_info['given_name'],
+            'name': user_info['name'],
+            'auth_type': 'google',
+            'access_token': access_token,
+            'refresh_token': id_token
+        }
+        AuthController.authenticate(self, auth_params)
 
         # return the access_token if all completed successfully
         user_info['user_id'] = user_info['sub']
