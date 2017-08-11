@@ -8,6 +8,9 @@ https://packaging.python.org/en/latest/installing/#installing-requirements
   sudo pip install wheel
 
 
+https://pypi.python.org/pypi/porper
+
+
 Install “twine”
 
   sudo pip install twine

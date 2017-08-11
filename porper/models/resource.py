@@ -89,6 +89,22 @@ class Resource:
         fe += ')'
         return fe
 
+    def build_filters(self, params, fe, ean, eav, exceptions):
+        for key in params.keys():
+            if not params[key]: continue
+            if key in exceptions:   continue
+            if isinstance(params[key], list):
+                key_single = key[:len(key)-1]    # truncate 's'
+                fe = self.add_filter_with_multiple_values(fe, ean, eav, key_single, params[key])
+            else:
+                if fe != "":
+                    fe += " and "
+                fe += "#%s = :%s" % (key, key)
+                #print(fe)
+                eav[':%s' % key] = params[key]
+                ean['#%s' % key] = key
+        return fe
+
     def find_by_ids(self, ids):
         ean = {}
         eav = {}

@@ -27,6 +27,9 @@ class UserController:
             return params['id']
 
         user_id = self.token_controller.find_user_id(access_token)
+        return self.create_using_user_id(user_id, params)
+
+    def create_using_user_id(self, user_id, params):
 
         # add a user to a group if I'm an admin or the group admin of the given group
         if params.get('group_id'):
@@ -50,7 +53,7 @@ class UserController:
             invited_user = invited_users[0]
             self.user.create(params)
             self.user_group.create({'user_id': params['id'], 'group_id': invited_user['group_id'], 'is_admin': invited_user['is_admin']})
-            self.invited_user.update({'email':params['email'], 'state':self.invited_user.REGISTERED})
+            self.invited_user.update({'email':params['email'], 'auth_type':params['auth_type'], 'state':self.invited_user.REGISTERED})
             return params['id']
         else:
             #self.user.create(params)
@@ -58,8 +61,10 @@ class UserController:
             raise Exception("not permitted")
 
     def delete(self, access_token, params):
-
         user_id = self.token_controller.find_user_id(access_token)
+        return self.delete_using_user_id(user_id, params)
+
+    def delete_using_user_id(self, user_id, params):
 
         # remove a user from a group if I'm an admin or the group admin of the given group
         if params.get('group_id'):
@@ -83,8 +88,10 @@ class UserController:
         - return all users of groups where I belong
     """
     def find(self, access_token, params):
-
         user_id = self.token_controller.find_user_id(access_token)
+        return self.find_using_user_id(user_id, params)
+
+    def find_using_user_id(self, user_id, params):
 
         # return all users if I'm an admin
         if self.permission_controller.is_admin(user_id):

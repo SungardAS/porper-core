@@ -96,8 +96,7 @@ class ResourceController():
 
         raise Exception("not permitted")"""
 
-    def find_permitted(self, access_token, action, id=None):
-        user_id = self.token_controller.find_user_id(access_token)
+    def find_permitted(self, user_id, action, id=None):
         if self.permission_controller.is_admin(user_id):
             # admin has all permissions
             return [{'value': ALL}]
@@ -107,13 +106,11 @@ class ResourceController():
             'all': True
         }
         if id: params['value'] = id
-        params['user_id'] = user_id
-        permissions = self.permission_controller.find(params)
+        permissions = self.permission_controller.find_using_user_id(user_id, params)
         print 'permissions : %s' % permissions
         return permissions
 
-    def is_permitted(self, access_token, action, id):
-        user_id = self.token_controller.find_user_id(access_token)
+    def is_permitted(self, user_id, action, id):
         if self.permission_controller.is_admin(user_id):
             return True
         params = {
@@ -126,9 +123,11 @@ class ResourceController():
             params['user_id'] = user_id
         return self.permission_controller.is_permitted(params)
 
-    def create(self, access_token, params, group_id=None):
-
+    def create(self, access_token, params):
         user_id = self.token_controller.find_user_id(access_token)
+        return self.create_using_user_id(user_id, params)
+
+    def create_using_user_id(self, user_id, params):
 
         # create a new item
         ret = self.model.create(params)
@@ -162,20 +161,32 @@ class ResourceController():
         return ret
 
     def update(self, access_token, params):
-        if not self.is_permitted(access_token, 'update', params['id']):    raise Exception("not permitted")
+        user_id = self.token_controller.find_user_id(access_token)
+        return self.update_using_user_id(user_id, params)
+
+    def update_using_user_id(self, user_id, params):
+        if not self.is_permitted(user_id, 'update', params['id']):    raise Exception("not permitted")
         ret = self.model.update(params)
         print "%s [%s] is successfully updated : %s" % (self.model_name, params['id'], ret)
         return ret
 
     def delete(self, access_token, params):
-        if not self.is_permitted(access_token, 'delete', params['id']):    raise Exception("not permitted")
+        user_id = self.token_controller.find_user_id(access_token)
+        return self.delete_using_user_id(user_id, params)
+
+    def delete_using_user_id(self, user_id, params):
+        if not self.is_permitted(user_id, 'delete', params['id']):    raise Exception("not permitted")
         ret = self.model.delete(params['id'])
         print "%s [%s] is successfully deleted : %s" % (self.model_name, params['id'], ret)
         return ret
 
     # find all read-permitted instances of the current resource, so 'id' is NOT given
     def find(self, access_token, params):
-        permissions = self.find_permitted(access_token, 'read')
+        user_id = self.token_controller.find_user_id(access_token)
+        return self.find_using_user_id(user_id, params)
+
+    def find_using_user_id(self, user_id, params):
+        permissions = self.find_permitted(user_id, 'read')
         if len(permissions) == 0:   return []
         ids = [ permission['value'] for permission in permissions ]
         if params is None:
@@ -205,7 +216,11 @@ class ResourceController():
 
     # find one read-permitted instance of the current resource whose id is the given
     def find_by_id(self, access_token, id):
-        permissions = self.find_permitted(access_token, 'read', id)
+        user_id = self.token_controller.find_user_id(access_token)
+        return self.find_by_id_using_user_id(user_id, id)
+
+    def find_by_id_using_user_id(self, user_id, id):
+        permissions = self.find_permitted(user_id, 'read', id)
         if len(permissions) == 0:   return None
         for permission in permissions:
             if permission['value'] == id or permission['value'] == ALL:
@@ -213,7 +228,11 @@ class ResourceController():
         return None
 
     def find_by_ids(self, access_token, params_ids):
-        permissions = self.find_permitted(access_token, 'read')
+        user_id = self.token_controller.find_user_id(access_token)
+        return self.find_by_ids_using_user_id(user_id, ids)
+
+    def find_by_ids_using_user_id(self, user_id, ids):
+        permissions = self.find_permitted(user_id, 'read')
         if len(permissions) == 0:   return []
         ids = [ permission['value'] for permission in permissions ]
         if ALL in ids:

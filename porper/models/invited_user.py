@@ -34,7 +34,8 @@ class InvitedUser(Resource):
         try:
             response = self.table.update_item(
                 Key={
-                    'email': params["email"]
+                    'email': params["email"],
+                    'auth_type': params["auth_type"]
                 },
                 UpdateExpression="set #state = :state",
                 ExpressionAttributeNames={
@@ -67,25 +68,61 @@ class InvitedUser(Resource):
         return items
 
     def find(self, params):
-
-        if params.get('email'):
-            response = self.table.get_item(
-                Key={
-                    'email': params['email']
-                }
+        """if params.get('email'):
+            fe = "auth_type = :auth_type"
+            eav = {":auth_type": params['auth_type']}
+            if params['auth_type'] == 'slack':
+                fe += " and slack_team_id = :slack_team_id and slack_bot_name = :slack_bot_name"
+                eav[":slack_team_id"] = params['slack_team_id']
+                eav[":slack_bot_name"] = params['slack_bot_name'].lower()
+            items = self.table.query(
+                KeyConditionExpression=Key('email').eq(params['email']),
+                FilterExpression=fe,
+                ExpressionAttributeValues=eav
             )
-            if response.get('Item'):
-                item = response['Item']
-                print("GetItem succeeded:")
-                print(json.dumps(item, indent=4, cls=DecimalEncoder))
-                return self._fill_related_attrs([item])
+        else:
+            items = Resource.find(self, params)
+        if len(items) == 0: return []
+        return self._fill_related_attrs(items)"""
+
+        print(params)
+
+        if params.get('email') and params.get('auth_type'):
+            if len(params.keys()) > 2:
+                fe = ""
+                ean = {}
+                eav = {}
+                exceptions = ['email', 'auth_type']
+                fe = self.build_filters(params, fe, ean, eav, exceptions)
+                response = self.table.query(
+                    KeyConditionExpression=Key('email').eq(params['email']) & Key('auth_type').eq(params['auth_type']),
+                    FilterExpression=fe,
+                    ExpressionAttributeNames=ean,
+                    ExpressionAttributeValues=eav
+                )
+                for i in response['Items']:
+                    print(json.dumps(i, cls=DecimalEncoder))
+                return self._fill_related_attrs(response["Items"])
             else:
-                print("GetItem returns no item:")
-                return []
+                response = self.table.get_item(
+                    Key={
+                        'email': params['email'],
+                        'auth_type': params["auth_type"]
+                    }
+                )
+                if response.get('Item'):
+                    item = response['Item']
+                    print("GetItem succeeded:")
+                    print(json.dumps(item, indent=4, cls=DecimalEncoder))
+                    return self._fill_related_attrs([item])
+                else:
+                    print("GetItem returns no item:")
+                    return []
 
         items = Resource.find(self, params)
         if len(items) == 0: return []
         return self._fill_related_attrs(items)
+
 
         """if not params:
             return self.table.scan()['Items']

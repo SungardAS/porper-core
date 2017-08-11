@@ -17,8 +17,10 @@ class InvitedUserController:
         self.permission_controller = PermissionController(self.connection)
 
     def create(self, access_token, params):
-
         user_id = self.token_controller.find_user_id(access_token)
+        return self.create_using_user_id(user_id, params)
+
+    def create_using_user_id(self, user_id, params):
 
         # allowed if I'm an admin
         if self.permission_controller.is_admin(user_id):
@@ -44,11 +46,15 @@ class InvitedUserController:
             params['state'] = self.invited_user.INVITED
         if not params.get('is_admin'):
             params['is_admin'] = False
+        else:
+            params['is_admin'] = True
         return self.invited_user.create(params)
 
     def update(self, access_token, params):
-
         user_id = self.token_controller.find_user_id(access_token)
+        return self.update_using_user_id(user_id, params)
+
+    def update_using_user_id(self, user_id, params):
 
         # allowed if I'm an admin
         if self.permission_controller.is_admin(user_id):
@@ -69,20 +75,24 @@ class InvitedUserController:
         - return all invited users of groups where I'm the group admin
     """
     def find(self, access_token, params):
-
         user_id = self.token_controller.find_user_id(access_token)
+        return self.find_using_user_id(user_id, params)
+
+    def find_using_user_id(self, user_id, params):
 
         # return all invited users if I'm an admin
-        if self.permission_controller.is_admin(user_id):  return self.invited_user.find({})
+        if self.permission_controller.is_admin(user_id):  return self.invited_user.find(params)
 
         if not params.get('group_id'):
             # return all invited users of groups where I'm the group admin
             user_groups = self.user_group.find({'user_id': user_id})
             group_ids = [ user_group['group_id'] for user_group in user_groups if user_group['is_admin'] ]
-            if len(group_ids) > 0:   return self.invited_user.find({'group_ids': group_ids})
+            if len(group_ids) > 0:
+                params['group_ids'] = group_ids
+                return self.invited_user.find(params)
         else:
             # return all invited users of the given group if I'm the group admin
-            group_id = params['group_id']
-            if self.permission_controller.is_group_admin(user_id, group_id):    return self.invited_user.find(params)
+            if self.permission_controller.is_group_admin(user_id, group_id):
+                return self.invited_user.find(params)
 
         raise Exception("not permitted")

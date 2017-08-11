@@ -61,5 +61,5 @@ class GoogleAuthController(AuthController):
         # return the access_token if all completed successfully
         user_info['user_id'] = user_info['sub']
         user_info['access_token'] = access_token
-        user_info['groups'] = AuthController.find_groups(self, user_info['email'])
+        user_info['groups'] = AuthController.find_groups(self, auth_params['user_id'])
         return user_info

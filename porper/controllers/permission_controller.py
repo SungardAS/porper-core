@@ -11,6 +11,8 @@ class PermissionController:
         from porper.models.user_group import UserGroup
         self.permission = Permission(connection)
         self.user_group = UserGroup(connection)
+        from porper.controllers.token_controller import TokenController
+        self.token_controller = TokenController(connection)
 
     def is_admin(self, user_id):
         row = self.user_group.find({'user_id': user_id, 'group_id': ADMIN_GROUP_ID})
@@ -130,17 +132,20 @@ class PermissionController:
 
         raise Exception("not permitted")
 
-    def create(self, params):
+    def create(self, access_token, params):
+        user_id = self.token_controller.find_user_id(access_token)
         #return self.permission.create(params)
         if params.get('to_group_id'):
-            return self.create_permissions_to_group(params['user_id'], params['resource_name'], params['resource_id'], params['permissions'], params['to_group_id'])
+            return self.create_permissions_to_group(user_id, params['resource_name'], params['resource_id'], params['permissions'], params['to_group_id'])
         elif params.get('to_user_id'):
-            return self.create_permissions_to_user(params['user_id'], params['resource_name'], params['resource_id'], params['permissions'], params['to_user_id'])
+            return self.create_permissions_to_user(user_id, params['resource_name'], params['resource_id'], params['permissions'], params['to_user_id'])
 
-    def update(self, params):
+    def update(self, access_token, params):
+        user_id = self.token_controller.find_user_id(access_token)
         raise Exception("not supported")
 
-    def delete(self, params):
+    def delete(self, access_token, params):
+        user_id = self.token_controller.find_user_id(access_token)
         return self.permission.delete(params)
 
     def _filter_conditions(self, user_id, rows):
@@ -156,6 +161,11 @@ class PermissionController:
                     filtered.append(permission)
         return filtered
 
-    def find(self, params):
+    def find(self, access_token, params):
+        user_id = self.token_controller.find_user_id(access_token)
+        return find_usin_user_id(user_id, params)
+
+    def find_using_user_id(self, user_id, params):
+        params['user_id'] = user_id
         rows = self.permission.find(params)
-        return self._filter_conditions(params.get('user_id'), rows)
+        return self._filter_conditions(user_id, rows)
