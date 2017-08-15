@@ -17,6 +17,10 @@ class GroupController:
     # only the admin can create a group
     def create(self, access_token, params):
         user_id = self.token_controller.find_user_id(access_token)
+        return self.create_using_user_id(user_id, params)
+
+
+    def create_using_user_id(self, user_id, params):
         if not self.permission_controller.is_admin(user_id):  raise Exception("not permitted")
         return self.group.create(params)
 
@@ -33,8 +37,10 @@ class GroupController:
     3. otherwise, return all groups where this user belongs
     """
     def find(self, access_token, params):
-
         user_id = self.token_controller.find_user_id(access_token)
+        return self.find_using_user_id(user_id, params)
+
+    def find_using_user_id(self, user_id, params):
 
         # return all groups if I'm an admin
         if self.permission_controller.is_admin(user_id):

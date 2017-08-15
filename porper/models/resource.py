@@ -130,6 +130,8 @@ class Resource:
 
     def find(self, params):
 
+        print('resource find params : %s' % params)
+
         if not params:
             return self.table.scan()['Items']
 
@@ -149,7 +151,7 @@ class Resource:
             if not params[key]: continue
             if isinstance(params[key], list):
                 key_single = key[:len(key)-1]    # truncate 's'
-                fe += self.add_filter_with_multiple_values(fe, ean, eav, key_single, params[key])
+                fe = self.add_filter_with_multiple_values(fe, ean, eav, key_single, params[key])
             else:
                 if fe != "":
                     fe += " and "

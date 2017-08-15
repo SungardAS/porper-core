@@ -48,7 +48,7 @@ class UserController:
             return rows[0]['id']
 
         # add the user if this user was invited before
-        invited_users = self.invited_user.find(params)
+        invited_users = self.invited_user.find({'email':params['email'], 'auth_type':params['auth_type']})
         if len(invited_users) == 1:
             invited_user = invited_users[0]
             self.user.create(params)
