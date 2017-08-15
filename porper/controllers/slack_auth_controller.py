@@ -43,7 +43,7 @@ class SlackAuthController(AuthController):
         print r._content
         user_info = json.loads(r._content)
         user_info['refresh_token'] = code
-        return save(user_info)
+        return self.save(user_info)
 
 
     def validate(self, access_token):
@@ -73,7 +73,7 @@ class SlackAuthController(AuthController):
         user_info = json.loads(r._content)
         user_info['access_token'] = access_token
         user_info['refresh_token'] = access_token
-        return save(user_info)
+        return self.save(user_info)
 
 
     def save(self, user_info):
