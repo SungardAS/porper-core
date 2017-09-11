@@ -18,8 +18,11 @@ class SlackAuthController(AuthController):
         code = params.get('code')
         state = params.get('state')
         access_token = params.get('access_token')
-        print "code [%s], state [%s], access_token [%s]" % (code, state, access_token)
-        if access_token:
+        uid = params.get('uid')
+        print "code [%s], state [%s], access_token [%s], uid [%s]" % (code, state, access_token, uid)
+        if uid:
+            return self.find_user(uid)
+        elif access_token:
             return self.validate(access_token)
         else:
             return self.login(code, state)
@@ -46,8 +49,16 @@ class SlackAuthController(AuthController):
         return self.save(user_info)
 
 
-    def validate(self, access_token):
+    def find_user(self, uid):
+        from porper.models.user import User
+        user = User(self.connection)
+        user_info = user.find_by_id(uid)
+        if not user_info:
+            raise Exception("not authenticated")
+        return user_info
 
+
+    def validate(self, access_token):
         # https://slack.com/api/users.identity?token=xoxp-1111827393-16111519414-20367011469-5f89a31i07
         api_url = "%s/users.identity" % (self.api_endpoint)
         payload = {
