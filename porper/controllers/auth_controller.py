@@ -17,10 +17,10 @@ class AuthController():
     def authenticate(self, params):
 
         user_id = params['user_id']
-        email = params['email']
-        family_name = params['family_name']
-        given_name = params['given_name']
-        name = params['name']
+        email = params.get('email')
+        family_name = params.get('family_name')
+        given_name = params.get('given_name')
+        name = params.get('name')
         auth_type = params['auth_type']
         access_token = params['access_token']
         refresh_token = params['refresh_token']
@@ -30,9 +30,10 @@ class AuthController():
             # create this user
             params = {
                 'id': user_id,
-                'name': name,
                 'auth_type': auth_type
             }
+            if name:
+                params['name'] = name
             if family_name:
                 params['family_name'] = family_name
             if given_name:
