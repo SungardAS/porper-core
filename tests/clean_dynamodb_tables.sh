@@ -11,7 +11,7 @@ aws dynamodb scan --table-name groups | \
   xargs -0 -n1 -t aws dynamodb delete-item --table-name groups --key
 
 aws dynamodb scan --table-name invited_users | \
-  jq -c '.Items[] | { email }' | \
+  jq -c '.Items[] | { email, auth_type }' | \
   tr '\n' '\0' | \
   xargs -0 -n1 -t aws dynamodb delete-item --table-name invited_users --key
 
@@ -20,10 +20,10 @@ aws dynamodb scan --table-name permissions | \
   tr '\n' '\0' | \
   xargs -0 -n1 -t aws dynamodb delete-item --table-name permissions --key
 
-aws dynamodb scan --table-name orders | \
+aws dynamodb scan --table-name aws_accounts | \
   jq -c '.Items[] | { id }' | \
   tr '\n' '\0' | \
-  xargs -0 -n1 -t aws dynamodb delete-item --table-name orders --key
+  xargs -0 -n1 -t aws dynamodb delete-item --table-name aws_accounts --key
 
 aws dynamodb scan --table-name user_group_rels | \
   jq -c '.Items[] | { user_id, group_id }' | \
