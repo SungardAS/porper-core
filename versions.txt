@@ -1,0 +1,10 @@
+
+Version 2.0
+  Using MySQL for persistence
+  Branch name: mysql
+
+
+Version 3.0
+  10/31/2017
+  Using DynamoDB for persistence
+  Branch names: master, dynamodb
