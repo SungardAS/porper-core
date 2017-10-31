@@ -15,15 +15,10 @@ class SsoAuthController(AuthController):
         self.username = os.environ.get('SSO_USER')
         self.password = os.environ.get('SSO_PASSWORD')
 
-        if not self.host:
-            with open('config.json') as data_file:
-                sso_info = json.load(data_file)
-            #print sso_info
-            self.host = sso_info['sso']['host']
-            self.username = sso_info['sso']['username']
-            self.password = sso_info['sso']['password']
+    def authenticate(self, params):
 
-    def authenticate(self, code, redirect_uri):
+        code = params['code']
+        redirect_uri = params['redirect_uri']
 
         # get the tokens to see if the given code is valid
         print "code [%s], redirect_uri [%s]" % (code, redirect_uri)
@@ -48,19 +43,22 @@ class SsoAuthController(AuthController):
         display_name = user_info.get('displayName')
         if not display_name:
             display_name = '%s %s' % (user_info['given_name'], user_info['family_name'])
-        AuthController.authenticate(self,
-            user_info['guid'],
-            user_info['email'],
-            user_info['family_name'],
-            user_info['given_name'],
-            display_name,
-            access_token,
-            refresh_token)
+        auth_params = {
+            'user_id': user_info['guid'],
+            'email': user_info['email'],
+            'family_name': user_info['family_name'],
+            'given_name': user_info['given_name'],
+            'name': display_name,
+            'auth_type': 'sso',
+            'access_token': access_token,
+            'refresh_token': refresh_token
+        }
+        AuthController.authenticate(self, auth_params)
 
         # return the access_token if all completed successfully
         user_info['user_id'] = user_info['guid']
         user_info['access_token'] = access_token
-        user_info['roles'] = AuthController.find_roles(self, user_info['email'])
+        user_info['groups'] = AuthController.find_groups(self, auth_params['user_id'])
         return user_info
 
     def get_user_information(self, access_token):

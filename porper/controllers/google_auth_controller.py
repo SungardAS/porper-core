@@ -13,13 +13,9 @@ class GoogleAuthController(AuthController):
 
         self.tokeninfo_endpoint = os.environ.get('GOOGLE_TOKENINFO_ENDPOINT')
 
-        if not self.tokeninfo_endpoint:
-            with open('config.json') as data_file:
-                google_info = json.load(data_file)
-            #print google_info
-            self.tokeninfo_endpoint = google_info['google']['tokeninfo_endpoint']
+    def authenticate(self, params):
 
-    def authenticate(self, id_token):
+        id_token = params['id_token']
 
         # get the tokens to see if the given code is valid
         print "id_token [%s]" % id_token
@@ -50,17 +46,20 @@ class GoogleAuthController(AuthController):
 
         # now save the user info & tokens
         access_token = str(uuid.uuid4())
-        AuthController.authenticate(self,
-            user_info['sub'],
-            user_info['email'],
-            user_info['family_name'],
-            user_info['given_name'],
-            user_info['name'],
-            access_token,
-            id_token)
+        auth_params = {
+            'user_id': user_info['sub'],
+            'email': user_info['email'],
+            'family_name': user_info['family_name'],
+            'given_name': user_info['given_name'],
+            'name': user_info['name'],
+            'auth_type': 'google',
+            'access_token': access_token,
+            'refresh_token': id_token
+        }
+        AuthController.authenticate(self, auth_params)
 
         # return the access_token if all completed successfully
         user_info['user_id'] = user_info['sub']
         user_info['access_token'] = access_token
-        user_info['roles'] = AuthController.find_roles(self, user_info['email'])
+        user_info['groups'] = AuthController.find_groups(self, auth_params['user_id'])
         return user_info

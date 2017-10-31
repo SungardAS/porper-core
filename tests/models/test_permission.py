@@ -1,17 +1,58 @@
 
 import sys
-sys.path.insert(0, r'../..')
-from porper.models.connection import mysql_connection
-from porper.models.permission import Permission
+sys.path.append('../../porper')
 
-connection = mysql_connection()
-permission = Permission(connection)
+import os
+region = os.environ.get('AWS_DEFAULT_REGION')
 
-print permission.create({'user_id':'49d8bc68-f57e-11e3-ba1d-005056ba0d15', 'resource':'res-a', 'action':'act-a', 'value':'val-a', 'condition':'cond-a', 'role_id':''})
-print permission.create({'user_id':'', 'resource':'res', 'action':'act-r', 'value':'val-r', 'condition':'', 'role_id':'3867c370-552f-43b8-bed9-6aa00ffc41b4'})
-print permission.find({'user_id':'49d8bc68-f57e-11e3-ba1d-005056ba0d15', 'resource':'account', 'action':'', 'value':'', 'condition':'', 'role_id':'', 'all':True})
-print permission.find({'user_id':'', 'resource':'res', 'action':'act-r', 'value':'', 'condition':'', 'role_id':'3867c370-552f-43b8-bed9-6aa00ffc41b4'})
-print permission.delete({'user_id':'49d8bc68-f57e-11e3-ba1d-005056ba0d15', 'resource':'res-a', 'action':'act-a', 'value':'val-a', 'condition':'cond-a', 'role_id':''})
-print permission.delete({'user_id':'', 'resource':'res', 'action':'act-r', 'value':'val-r', 'condition':'', 'role_id':'3867c370-552f-43b8-bed9-6aa00ffc41b4'})
+import boto3
+dynamodb = boto3.resource('dynamodb',region_name=region)
 
-connection.commit()
+from models.permission import Permission
+permission = Permission(dynamodb)
+
+params = {'user_id': 'user1', 'action': 'action1', 'resource': 'res1', 'value': 'val1'}
+permission.create(params)
+params = {'user_id': 'user1', 'action': 'action2', 'resource': 'res2', 'value': '*'}
+permission.create(params)
+params = {'user_id': 'user2', 'action': 'action3', 'resource': 'res3', 'value': 'val3'}
+permission.create(params)
+params = {'user_id': 'user2', 'action': 'action4', 'resource': 'res4', 'value': '*'}
+permission.create(params)
+
+params = {'role_id': 'abcd', 'action': 'action11', 'resource': 'res11', 'value': 'val11'}
+permission.create(params)
+params = {'role_id': 'abcd', 'action': 'action12', 'resource': 'res12', 'value': '*'}
+permission.create(params)
+params = {'role_id': '1234', 'action': 'action13', 'resource': 'res13', 'value': 'val13'}
+permission.create(params)
+params = {'role_id': '1234', 'action': 'action14', 'resource': 'res14', 'value': '*'}
+permission.create(params)
+
+params = {'user_id': 'user1', 'action': 'actionx', 'resource': 'resx', 'value': 'valx'}
+permission.create(params)
+permission.delete(params)
+
+params = {'role_id': '1234', 'action': 'actionx', 'resource': 'resx', 'value': 'valuex'}
+permission.create(params)
+permission.delete(params)
+
+permission.delete({'id': '1234'})
+
+params = {'action': 'action2', 'resource': 'res2', 'value': '*'}
+permission.find(params)
+
+params = {'user_id': 'user1', 'action': 'action1', 'resource': 'res1', 'value': 'val1'}
+permission.find(params)
+
+params = {'role_id': '1234', 'action': 'action13', 'resource': 'res13', 'value': 'val13'}
+permission.find(params)
+
+params = {'user_id': 'user2'}
+permission.find(params)
+
+params = {'role_id': 'abcd'}
+permission.find(params)
+
+params = {'user_id': 'user1', 'all':True}
+permission.find(params)
