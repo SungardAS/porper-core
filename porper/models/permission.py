@@ -6,11 +6,13 @@ from boto3.dynamodb.conditions import Key, Attr
 from botocore.exceptions import ClientError
 from decimal_encoder import DecimalEncoder
 
+import os
+
 class Permission:
 
     def __init__(self, dynamodb):
         self.dynamodb = dynamodb
-        self.table = dynamodb.Table('permissions')
+        self.table = dynamodb.Table(os.environ.get('PERMISSION_TABLE_NAME'))
 
     def _generate_id(self, params):
         id = ""

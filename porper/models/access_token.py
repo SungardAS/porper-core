@@ -7,13 +7,14 @@ from botocore.exceptions import ClientError
 from decimal_encoder import DecimalEncoder
 from resource import Resource
 
+import os
 import dateutil.parser
 
 class AccessToken(Resource):
 
     def __init__(self, dynamodb):
         self.dynamodb = dynamodb
-        self.table = dynamodb.Table('access_tokens')
+        self.table = dynamodb.Table(os.environ.get('ACCESS_TOKEN_TABLE_NAME'))
 
     def create(self, params):
         params["time_stamp"] = dateutil.parser.parse(params['refreshed_time']).strftime("%s")   # will be used as TTL attribute

@@ -7,13 +7,14 @@ from botocore.exceptions import ClientError
 from decimal_encoder import DecimalEncoder
 from resource import Resource
 
+import os
 import uuid
 
 class Group(Resource):
 
     def __init__(self, dynamodb):
         self.dynamodb = dynamodb
-        self.table = dynamodb.Table('groups')
+        self.table = dynamodb.Table(os.environ.get('GROUP_TABLE_NAME'))
 
     def create(self, params):
         if not params.get('id'):

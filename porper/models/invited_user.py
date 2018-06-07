@@ -7,11 +7,13 @@ from botocore.exceptions import ClientError
 from decimal_encoder import DecimalEncoder
 from resource import Resource
 
+import os
+
 class InvitedUser(Resource):
 
     def __init__(self, dynamodb):
         self.dynamodb = dynamodb
-        self.table = dynamodb.Table('invited_users')
+        self.table = dynamodb.Table(os.environ.get('INVITED_USER_TABLE_NAME'))
         self.INVITED = 'invited'
         self.REGISTERED = 'registered'
 

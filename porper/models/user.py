@@ -7,11 +7,13 @@ from botocore.exceptions import ClientError
 from decimal_encoder import DecimalEncoder
 from resource import Resource
 
+import os
+
 class User(Resource):
 
     def __init__(self, dynamodb):
         self.dynamodb = dynamodb
-        self.table = dynamodb.Table('users')
+        self.table = dynamodb.Table(os.environ.get('USER_TABLE_NAME'))
 
     """def create(self, params):
         try:
