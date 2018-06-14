@@ -119,6 +119,7 @@ class Resource:
             eav[id_name] = id
         fe += ')'"""
         fe += self.add_filter_with_multiple_values(fe, ean, eav, "id", ids)
+        print(fe)
 
         print(fe)
         print(eav)

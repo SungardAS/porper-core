@@ -52,7 +52,7 @@ class AuthController():
             user_id = self.user_controller.create(admin_access_token, params)
 
         # now save the tokens
-        self.token_controller.save(access_token, refresh_token, user_id)
+        return self.token_controller.save(access_token, refresh_token, user_id)
 
     def find_groups(self, user_id):
         from porper.models.user_group import UserGroup

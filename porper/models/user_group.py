@@ -47,6 +47,24 @@ class UserGroup(Resource):
             print("DeleteItem succeeded:")
             print(json.dumps(response, indent=4, cls=DecimalEncoder))
 
+    def find_by_user_ids(self, user_ids):
+        eav = {}
+        fe = 'user_id in ('
+        for index, user_id in enumerate(user_ids):
+            user_id_name = ':user_id_%s' % index
+            if index == 0:
+                fe += user_id_name
+            else:
+                fe += ', ' + user_id_name
+            eav[user_id_name] = user_id
+        fe += ')'
+        print(fe)
+        print(eav)
+        return self.table.scan(
+            FilterExpression=fe,
+            ExpressionAttributeValues=eav
+        )['Items']
+
     def find_by_group_ids(self, group_ids):
         eav = {}
         fe = 'group_id in ('
