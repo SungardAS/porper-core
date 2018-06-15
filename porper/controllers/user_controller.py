@@ -38,21 +38,29 @@ class UserController(MetaResourceController):
             })
             return params['id']
 
-        # find current user information including id and level
+        """# find current user information including id and level
         current_user = self.find_user_level(access_token, params.get('group_id'))
 
-        # a normal user is now allowed
+        # a normal user is not allowed
         if current_user['level'] == self.USER_LEVEL_USER:
-            raise Exception('not permitted')
+            raise Exception('not permitted')"""
 
         # add the given user to the specified group
-        if current_user["group_id"]:
-            self.user_group.create({
+        if params.get("group_id"):
+            """self.user_group.create({
                 "user_id": params['id'],
                 "group_id": current_user["group_id"],
                 "is_admin": params['is_admin']
             })
-            return params['id']
+            return params['id']"""
+            return self.user_group_controller.create(
+                access_token,
+                {
+                    "user_id": params['id'],
+                    "group_id": params["group_id"],
+                    "is_admin": params['is_admin']
+                }
+            )
 
         # find if the given user already exists
         rows = self.user.find({"email": params['email'], "auth_type": params['auth_type']})
@@ -119,11 +127,9 @@ class UserController(MetaResourceController):
             raise Exception("not permitted")
 
         user_groups = self.user_group_controller.find(access_token, {'group_id': params['group_id']})
-        if params['group_id'] != self.ADMIN_GROUP_ID:
-            # every user in the admin group is a group admin
-            user_groups = [ user_group for user_group in user_groups if user_group['is_admin'] ]
-        if len(user_groups) == 1:
-            raise Exception("cannot remove this user because it is the only (group) admin")
+        if params['group_id'] == self.ADMIN_GROUP_ID:
+            if len(user_groups) == 1:
+                raise Exception("You cannot remove this user because there must be at least one user in admin group")
         return self.user_group_controller.delete(
             access_token,
             {

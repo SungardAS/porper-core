@@ -367,6 +367,83 @@ except Exception as ex:
 
 
 #########################################################################################################
+# Add User to Group
+#########################################################################################################
+from porper.controllers.user_controller import UserController
+user_controller = UserController(dynamodb)
+
+### create
+#  - Test user
+#    - admin
+
+# add the group admin of one group to diff group as user
+user_controller.create(admin_token_ret['access_token'], {'id': group_admin_in_group_1_ret['user_id'], 'group_id': group_2_ret['id'], 'is_admin': False})
+
+
+### create
+#  - Test user
+#    - group admin
+
+# 1. add the user of diff group to the test user's group as group admin
+user_controller.create(group_admin_in_group_2_ret['access_token'], {'id': user_in_group_1_ret['user_id'], 'group_id': group_2_ret['id'], 'is_admin': True})
+
+# 2. add the user of the test user's group to diff group as group admin
+try:
+    user_controller.create(group_admin_in_group_2_ret['access_token'], {'id': user_in_group_2_ret['user_id'], 'group_id': group_1_ret['id'], 'is_admin': True})
+    raise Exception("should be failed")
+except Exception as ex:
+    print(ex)
+    if str(ex) == "not permitted":
+        pass
+    else:
+        raise ex
+
+
+### create
+#  - Test user
+#    - user
+
+# 1. add the user of diff group to the test user's group as group admin
+try:
+    user_controller.create(user_in_group_2_ret['access_token'], {'id': user_in_group_1_ret['user_id'], 'group_id': group_2_ret['id'], 'is_admin': True})
+    raise Exception("should be failed")
+except Exception as ex:
+    print(ex)
+    if str(ex) == "not permitted":
+        pass
+    else:
+        raise ex
+
+# 2. add the user of the test user's group to diff group as group admin
+try:
+    user_controller.create(user_in_group_2_ret['access_token'], {'id': user_in_group_2_ret['user_id'], 'group_id': group_1_ret['id'], 'is_admin': True})
+    raise Exception("should be failed")
+except Exception as ex:
+    print(ex)
+    if str(ex) == "not permitted":
+        pass
+    else:
+        raise ex
+
+
+#### In Create in User
+# 'group_admin_in_group_1_ret' was added to 'group_2_ret' as a user
+# 'user_in_group_1_ret' was added to 'group_2_ret' as an admin
+
+####
+# 'group_1_ret'
+#   - 'group_admin_in_group_1_ret' as admin
+#   - 'user_in_group_1_ret' as user
+# 'group_2_ret'
+#   - 'group_admin_in_group_2_ret' as admin
+#   - 'user_in_group_1_ret' as admin
+#   - 'group_admin_in_group_1_ret' as user
+#   - 'user_in_group_2_ret' as user
+# 'group_3_ret'
+#   - 'group_admin_in_group_3_ret' as admin
+#   - 'user_in_group_3_ret' as user
+
+#########################################################################################################
 # Find User
 #########################################################################################################
 from porper.controllers.user_controller import UserController
@@ -384,8 +461,8 @@ if len(users) != num_create_users:
     raise Exception("number of users should be {}".format(num_create_users))
 
 # 2. input params: group_id
-num_create_users = 2
-users = user_controller.find(admin_token_ret['access_token'], {'group_id': group_1_ret['id']})
+num_create_users = 4
+users = user_controller.find(admin_token_ret['access_token'], {'group_id': group_2_ret['id']})
 print("there are {} users".format(len(users)))
 if len(users) != num_create_users:
     raise Exception("number of users should be {}".format(num_create_users))
@@ -400,15 +477,6 @@ if len(users) != num_create_users:
 
 # 4. input params: id
 id = group_admin_in_group_3_ret['user_id']
-"""try:
-    user_controller.find(admin_token_ret['access_token'], {'id': id})
-    raise Exception("should be failed")
-except Exception as ex:
-    print(ex)
-    if str(ex) == "not permitted":
-        pass
-    else:
-        raise ex"""
 user_controller.find(admin_token_ret['access_token'], {'id': id})
 
 # 5. input params: email, auth
@@ -427,22 +495,22 @@ if users[0]['email'] != params['email'] or users[0]['auth_type'] != params['auth
 #    - group admin
 
 # 1. input params: None
-num_create_users = 2
+num_create_users = 4
 users = user_controller.find(group_admin_in_group_1_ret['access_token'], {})
 print("there are {} users".format(len(users)))
 if len(users) != num_create_users:
     raise Exception("number of users should be {}".format(num_create_users))
 
 # 2-1. input params: group_id (test user's group)
-num_create_users = 2
-users = user_controller.find(group_admin_in_group_1_ret['access_token'], {'group_id': group_1_ret['id']})
+num_create_users = 4
+users = user_controller.find(group_admin_in_group_2_ret['access_token'], {'group_id': group_2_ret['id']})
 print("there are {} users".format(len(users)))
 if len(users) != num_create_users:
     raise Exception("number of users should be {}".format(num_create_users))
 
 # 2-2. input params: group_id (group where this test user does NOT belong)
 num_create_users = 0
-users = user_controller.find(group_admin_in_group_1_ret['access_token'], {'group_id': group_2_ret['id']})
+users = user_controller.find(group_admin_in_group_1_ret['access_token'], {'group_id': group_3_ret['id']})
 print("there are {} users".format(len(users)))
 if len(users) != num_create_users:
     raise Exception("number of users should be {}".format(num_create_users))
@@ -470,13 +538,13 @@ if len(users) != num_create_users:
 
 # 3-3. input params: ids (all in the diff group)
 ids = [
+    group_admin_in_group_1_ret['user_id'],
+    user_in_group_1_ret['user_id'],
     group_admin_in_group_2_ret['user_id'],
-    user_in_group_2_ret['user_id'],
-    group_admin_in_group_3_ret['user_id'],
-    user_in_group_3_ret['user_id']
+    user_in_group_2_ret['user_id']
 ]
 num_create_users = 0
-users = user_controller.find(group_admin_in_group_1_ret['access_token'], {'ids': ids})
+users = user_controller.find(group_admin_in_group_3_ret['access_token'], {'ids': ids})
 print("there are {} users".format(len(users)))
 if len(users) != num_create_users:
     raise Exception("number of users should be {}".format(num_create_users))
@@ -538,14 +606,14 @@ if len(users) != num_create_users:
 #    - user
 
 # 1. input params: None
-num_create_users = 2
+num_create_users = 4
 users = user_controller.find(user_in_group_1_ret['access_token'], {})
 print("there are {} users".format(len(users)))
 if len(users) != num_create_users:
     raise Exception("number of users should be {}".format(num_create_users))
 
 # 2-1. input params: group_id (test user's group)
-num_create_users = 2
+num_create_users = 4
 users = user_controller.find(user_in_group_2_ret['access_token'], {'group_id': group_2_ret['id']})
 print("there are {} users".format(len(users)))
 if len(users) != num_create_users:
@@ -581,13 +649,13 @@ if len(users) != num_create_users:
 
 # 3-3. input params: ids (all in the diff group)
 ids = [
+    group_admin_in_group_1_ret['user_id'],
+    user_in_group_1_ret['user_id'],
     group_admin_in_group_2_ret['user_id'],
-    user_in_group_2_ret['user_id'],
-    group_admin_in_group_3_ret['user_id'],
-    user_in_group_3_ret['user_id']
+    user_in_group_2_ret['user_id']
 ]
 num_create_users = 0
-users = user_controller.find(user_in_group_1_ret['access_token'], {'ids': ids})
+users = user_controller.find(user_in_group_3_ret['access_token'], {'ids': ids})
 print("there are {} users".format(len(users)))
 if len(users) != num_create_users:
     raise Exception("number of users should be {}".format(num_create_users))
@@ -644,6 +712,23 @@ if len(users) != num_create_users:
     raise Exception("number of users should be {}".format(num_create_users))
 
 
+#### In Create in User
+# 'group_admin_in_group_1_ret' was added to 'group_2_ret' as a user
+# 'user_in_group_1_ret' was added to 'group_2_ret' as an admin
+
+####
+# 'group_1_ret'
+#   - 'group_admin_in_group_1_ret' as admin
+#   - 'user_in_group_1_ret' as user
+# 'group_2_ret'
+#   - 'group_admin_in_group_2_ret' as admin
+#   - 'user_in_group_1_ret' as admin
+#   - 'group_admin_in_group_1_ret' as user
+#   - 'user_in_group_2_ret' as user
+# 'group_3_ret'
+#   - 'group_admin_in_group_3_ret' as admin
+#   - 'user_in_group_3_ret' as user
+
 #########################################################################################################
 # Delete User (remove users from groups)
 #########################################################################################################
@@ -654,126 +739,659 @@ user_controller = UserController(dynamodb)
 #  - Test user
 #    - admin
 
-# 1-1. remove the test admin itself from an admin group where there is only one admin
+# 1-1. remove the test admin itself from an admin group where there are more than one admins
+# first, add a new admin to the admin group before testing before removing this test user
+user_controller.create(admin_token_ret['access_token'], {'id': group_admin_in_group_1_ret['user_id'], 'group_id': ADMIN_GROUP_ID, 'is_admin': False})
+user_controller.delete(admin_token_ret['access_token'], {'id': admin_token_ret['user_id'], 'group_id': ADMIN_GROUP_ID, 'is_admin': False})
+
+# 1-2. remove another admin from an admin group
+# first, put back the original admin to the admin group and delete the other admin
+user_controller.create(group_admin_in_group_1_ret['access_token'], {'id': admin_token_ret['user_id'], 'group_id': ADMIN_GROUP_ID, 'is_admin': False})
+user_controller.delete(admin_token_ret['access_token'], {'id': group_admin_in_group_1_ret['user_id'], 'group_id': ADMIN_GROUP_ID})
+
+# 1-3. remove the test admin itself from an admin group where there is only one admin
 try:
     user_controller.delete(admin_token_ret['access_token'], {'id': admin_token_ret['user_id'], 'group_id': ADMIN_GROUP_ID})
     raise Exception("should be failed")
 except Exception as ex:
     print(ex)
-    if str(ex) == "cannot remove this user because it is the only (group) admin":
+    if str(ex) == "You cannot remove this user because there must be at least one user in admin group":
         pass
     else:
         raise ex
-
-# 1-2. remove the test admin itself from an admin group where there are more one admins
-
-
-
-# 1-3. remove another admin from an admin group
-
-
 
 # 2-1. remove a group admin from its group where there is only one group admin
-try:
-    user_controller.delete(admin_token_ret['access_token'], {'id': group_admin_in_group_1_ret['user_id'], 'group_id': group_1_ret['id']})
-    raise Exception("should be failed")
-except Exception as ex:
-    print(ex)
-    if str(ex) == "cannot remove this user because it is the only (group) admin":
-        pass
-    else:
-        raise ex
-
-
+user_controller.delete(admin_token_ret['access_token'], {'id': group_admin_in_group_1_ret['user_id'], 'group_id': group_1_ret['id']})
 
 # 2-2. remove a group admin from its group where there are more than one group admins
+user_controller.delete(admin_token_ret['access_token'], {'id': group_admin_in_group_2_ret['user_id'], 'group_id': group_2_ret['id']})
+
+# 3-1. remove a user from a group where there is only one user including grop admin
+user_controller.delete(admin_token_ret['access_token'], {'id': user_in_group_1_ret['user_id'], 'group_id': group_1_ret['id']})
+
+# 3-2. remove a user from a group where there are more than one user including grop admin
+user_controller.delete(admin_token_ret['access_token'], {'id': user_in_group_2_ret['user_id'], 'group_id': group_2_ret['id']})
 
 
-
-# 3. remove a user from a group
-
-
-
+####
+# 'group_1_ret'
+#   - None
+# 'group_2_ret'
+#   - 'user_in_group_1_ret' as admin
+#   - 'group_admin_in_group_1_ret' as user
+# 'group_3_ret'
+#   - 'group_admin_in_group_3_ret' as admin
+#   - 'user_in_group_3_ret' as user
 
 ### remove
 #  - Test user
 #    - group admin
 
 # 1. remove a admin from a admin group
+try:
+    user_controller.delete(group_admin_in_group_3_ret['access_token'], {'id': admin_token_ret['user_id'], 'group_id': ADMIN_GROUP_ID})
+    raise Exception("should be failed")
+except Exception as ex:
+    print(ex)
+    if str(ex) == "not permitted":
+        pass
+    else:
+        raise ex
+
+# 2-1. remove the test user itself from its group where there are more than one users including group admin
+user_controller.delete(group_admin_in_group_3_ret['access_token'], {'id': group_admin_in_group_3_ret['user_id'], 'group_id': group_3_ret['id']})
+
+# 2-2. remove the test user itself from its group where there is only one user including group admin
+# first, delete an existing user to make the group have only the test user before removing the test user itself
+user_controller.delete(user_in_group_1_ret['access_token'], {'id': group_admin_in_group_1_ret['user_id'], 'group_id': group_2_ret['id']})
+user_controller.delete(user_in_group_1_ret['access_token'], {'id': user_in_group_1_ret['user_id'], 'group_id': group_2_ret['id']})
+
+####
+# 'group_1_ret'
+#   - None
+# 'group_2_ret'
+#   - None
+# 'group_3_ret'
+#   - 'user_in_group_3_ret' as user
+
+# 2-3. remove a group admin from a different group where there is only one user including group admin
+# first, add group admins in two different groups before removing one of them by the other
+user_controller.create(admin_token_ret['access_token'], {'id': user_in_group_1_ret['user_id'], 'group_id': group_2_ret['id'], 'is_admin': True})
+user_controller.create(admin_token_ret['access_token'], {'id': group_admin_in_group_3_ret['user_id'], 'group_id': group_3_ret['id'], 'is_admin': True})
+try:
+    user_controller.delete(group_admin_in_group_3_ret['access_token'], {'id': user_in_group_1_ret['user_id'], 'group_id': group_2_ret['id']})
+except Exception as ex:
+    print(ex)
+    if str(ex) == "not permitted":
+        pass
+    else:
+        raise ex
+
+# 2-4. remove a group admin from a different group where there are more than one user including group admin
+try:
+    user_controller.delete(user_in_group_1_ret['access_token'], {'id': group_admin_in_group_3_ret['user_id'], 'group_id': group_3_ret['id']})
+except Exception as ex:
+    print(ex)
+    if str(ex) == "not permitted":
+        pass
+    else:
+        raise ex
+
+####
+# 'group_1_ret'
+#   - None
+# 'group_2_ret'
+#   - user_in_group_1_ret as admin
+# 'group_3_ret'
+#   - group_admin_in_group_3_ret as admin
+#   - 'user_in_group_3_ret' as user
+
+# 3-1. remove a user from its group where there is only one user including group admin
+# This is impossible because a normal user (who is the only user in the group) has no priviledge to remove users from a group
+
+# 3-2. remove a user from its group where there are more than one users including group admin
+user_controller.delete(group_admin_in_group_3_ret['access_token'], {'id': user_in_group_3_ret['user_id'], 'group_id': group_3_ret['id']})
+
+# 3-3. remove a user from a different group where there is only one user including group admin
+# first, add a normal user to a diff group before removing it
+user_controller.create(admin_token_ret['access_token'], {'id': user_in_group_1_ret['user_id'], 'group_id': group_1_ret['id'], 'is_admin': False})
+try:
+    user_controller.delete(group_admin_in_group_2_ret['access_token'], {'id': user_in_group_1_ret['user_id'], 'group_id': group_1_ret['id']})
+except Exception as ex:
+    print(ex)
+    if str(ex) == "not permitted":
+        pass
+    else:
+        raise ex
+
+# 3-4. remove a user from a different group where there are more than one users including group admin
+# first, add a normal user to a diff group before removing it
+user_controller.create(admin_token_ret['access_token'], {'id': group_admin_in_group_1_ret['user_id'], 'group_id': group_2_ret['id'], 'is_admin': False})
+try:
+    user_controller.delete(group_admin_in_group_3_ret['access_token'], {'id': group_admin_in_group_1_ret['user_id'], 'group_id': group_2_ret['id']})
+except Exception as ex:
+    print(ex)
+    if str(ex) == "not permitted":
+        pass
+    else:
+        raise ex
 
 
-
-# 2. remove the test group admin itself from its group where there is only one group admin
-
-
-
-# 3-1. remove a group admin from its group (same group with the test group admin) where there are more than one group admins
-
-
-
-# 3-2. remove a group admin from its group (same group with the test group admin) where there are more than one group admins
-
-
-
-# 3-3. remove a group admin from its group (diff group with the test group admin) where there are more than one group admins
-
-
-
-# 3-4. remove a group admin from its group (diff group with the test group admin) where there are more than one group admins
-
-
-
-# 4-1. remove a user from a group (same group with the test admin user)
-
-
-
-# 4-2. remove a user from a group (diff group with the test admin user)
-
-
-
+####
+# 'group_1_ret'
+#   - user_in_group_1_ret as user
+# 'group_2_ret'
+#   - user_in_group_1_ret as admin
+#   - group_admin_in_group_1_ret as user
+# 'group_3_ret'
+#   - group_admin_in_group_3_ret as admin
 
 ### remove
 #  - Test user
 #    - user
 
 # 1. remove a admin from a admin group
+try:
+    user_controller.delete(user_in_group_3_ret['access_token'], {'id': admin_token_ret['user_id'], 'group_id': ADMIN_GROUP_ID})
+    raise Exception("should be failed")
+except Exception as ex:
+    print(ex)
+    if str(ex) == "not permitted":
+        pass
+    else:
+        raise ex
+
+# 2-1. remove a group admin from a different group where there is only one user including group admin
+## TODO:
+
+# 2-2. remove a group admin from a different group where there are more than one user including group admin
+## TODO:
+
+# 3-1. remove the test user itself from its group where there is only one user including group admin
+## TODO:
+
+# 3-2. remove the test user itself from its group where there are more than one users including group admin
+## TODO:
+
+# 3-3. remove a user from a different group where there is only one user including group admin
+## TODO:
+
+# 3-4. remove a user from a different group where there are more than one users including group admin
+## TODO:
 
 
+####
+# 'group_1_ret'
+#   - user_in_group_1_ret as user
+# 'group_2_ret'
+#   - user_in_group_1_ret as admin
+#   - group_admin_in_group_1_ret as user
+# 'group_3_ret'
+#   - group_admin_in_group_3_ret as admin
 
-# 2. remove the test user itself from its group
+# add 'user_in_group_2_ret' in 'group_2_ret' for 'Find group' tests
+user_controller.create(user_in_group_1_ret['access_token'], {'id': user_in_group_2_ret['user_id'], 'group_id': group_2_ret['id'], 'is_admin': False})
 
-
-
-# 3-1. remove a group admin from its group (same group with the test user)
-
-
-
-# 3-2. remove a group admin from its group (diff group with the test user)
-
-
-
-# 4-1. remove a user from a group (same group with the test user)
-
-
-
-# 4-2. remove a user from a group (diff group with the test user)
-
-
-
-
-
+####
+# 'group_1_ret'
+#   - user_in_group_1_ret as user
+# 'group_2_ret'
+#   - user_in_group_1_ret as admin
+#   - group_admin_in_group_1_ret as user
+#   - user_in_group_2_ret as user
+# 'group_3_ret'
+#   - group_admin_in_group_3_ret as admin
 
 #########################################################################################################
 # Find groups
 #########################################################################################################
+from porper.controllers.group_controller import GroupController
+group_controller = GroupController(dynamodb)
+
+### find group
+#  - Test user
+#    - admin
+
+# 1. input params: None
+num_create_groups = 5
+groups = group_controller.find(admin_token_ret['access_token'], {})
+print("there are {} groups".format(len(groups)))
+if len(groups) != num_create_groups:
+    raise Exception("number of groups should be {}".format(num_create_groups))
+
+# 2. input params: user_id
+num_create_groups = 2
+groups = group_controller.find(admin_token_ret['access_token'], {'user_id': user_in_group_1_ret['user_id']})
+print("there are {} groups".format(len(groups)))
+if len(groups) != num_create_groups:
+    raise Exception("number of groups should be {}".format(num_create_groups))
+
+# 3. input params: ids
+ids = [group_2_ret['id'], group_3_ret['id']]
+num_create_groups = len(ids)
+groups = group_controller.find(admin_token_ret['access_token'], {'ids': ids})
+print("there are {} groups".format(len(groups)))
+if len(groups) != num_create_groups:
+    raise Exception("number of groups should be {}".format(num_create_groups))
+
+# 4. input params: id
+id = group_3_ret['id']
+group_controller.find(admin_token_ret['access_token'], {'id': id})
+
+# 5. input params: name
+params = {
+    'name': group_1_ret['name']
+}
+groups = group_controller.find(admin_token_ret['access_token'], params)
+print("there are {} groups".format(len(groups)))
+if groups[0]['name'] != params['name']:
+    raise Exception("The returned group is not same with the given")
 
 
+### find group
+#  - Test user
+#    - group admin
+
+# 1. input params: None
+num_create_groups = 2
+groups = group_controller.find(user_in_group_1_ret['access_token'], {})
+print("there are {} groups".format(len(groups)))
+if len(groups) != num_create_groups:
+    raise Exception("number of groups should be {}".format(num_create_groups))
+
+# 2-1. input params: user_id (in test user's group)
+num_create_groups = 1
+groups = group_controller.find(user_in_group_1_ret['access_token'], {'user_id': group_admin_in_group_1_ret['user_id']})
+print("there are {} groups".format(len(groups)))
+if len(groups) != num_create_groups:
+    raise Exception("number of groups should be {}".format(num_create_groups))
+
+# 2-2. input params: user_id (in diff group)
+num_create_groups = 0
+groups = group_controller.find(user_in_group_1_ret['access_token'], {'user_id': group_admin_in_group_3_ret['user_id']})
+print("there are {} groups".format(len(groups)))
+if len(groups) != num_create_groups:
+    raise Exception("number of groups should be {}".format(num_create_groups))
+
+# 2-2. input params: user_id (who does NOT belong any group)
+num_create_groups = 0
+groups = group_controller.find(user_in_group_1_ret['access_token'], {'user_id': group_admin_in_group_2_ret['user_id']})
+print("there are {} groups".format(len(groups)))
+if len(groups) != num_create_groups:
+    raise Exception("number of groups should be {}".format(num_create_groups))
+
+# 3-1. input params: ids (groups where the test user belongs)
+ids = [group_1_ret['id'], group_2_ret['id']]
+num_create_groups = len(ids)
+groups = group_controller.find(user_in_group_1_ret['access_token'], {'ids': ids})
+print("there are {} groups".format(len(groups)))
+if len(groups) != num_create_groups:
+    raise Exception("number of groups should be {}".format(num_create_groups))
+
+# 3-2. input params: ids (some groups where the test user belongs and some NOT belong)
+ids = [
+    group_2_ret['id'],
+    group_3_ret['id']
+]
+num_create_groups = 1
+groups = group_controller.find(user_in_group_1_ret['access_token'], {'ids': ids})
+print("there are {} groups".format(len(groups)))
+if len(groups) != num_create_groups:
+    raise Exception("number of groups should be {}".format(num_create_groups))
+
+# 3-3. input params: ids (all groups where the test user does NOT belong)
+ids = [
+    group_1_ret['id'],
+    group_2_ret['id']
+]
+num_create_groups = 0
+groups = group_controller.find(group_admin_in_group_3_ret['access_token'], {'ids': ids})
+print("there are {} groups".format(len(groups)))
+if len(groups) != num_create_groups:
+    raise Exception("number of groups should be {}".format(num_create_groups))
+
+# 4-1. input params: id (group where the test user belong)
+id = group_2_ret['id']
+group_controller.find(user_in_group_1_ret['access_token'], {'id': id})
+
+# 4-2. input params: id (group where the test user does NOT belong)
+id = group_1_ret['id']
+try:
+    group_controller.find(group_admin_in_group_3_ret['access_token'], {'id': id})
+    raise Exception("should be failed")
+except Exception as ex:
+    print(ex)
+    if str(ex) == "not permitted":
+        pass
+    else:
+        raise ex
+
+# 5-1. input params: name (group where the test user belong)
+params = {
+    'name': group_2_ret['name']
+}
+groups = group_controller.find(user_in_group_1_ret['access_token'], params)
+print("there are {} groups".format(len(groups)))
+if groups[0]['name'] != params['name']:
+    raise Exception("The returned group is not same with the given")
+
+# 5-2. input params: name (group where the test user does NOT belong)
+params = {
+    'name': group_2_ret['name']
+}
+num_create_groups = 0
+groups = group_controller.find(group_admin_in_group_3_ret['access_token'], params)
+print("there are {} groups".format(len(groups)))
+if len(groups) != num_create_groups:
+    raise Exception("number of groups should be {}".format(num_create_groups))
 
 
+### find group
+#  - Test user
+#    - user
+
+# 1. input params: None
+num_create_groups = 2
+groups = group_controller.find(user_in_group_1_ret['access_token'], {})
+print("there are {} groups".format(len(groups)))
+if len(groups) != num_create_groups:
+    raise Exception("number of groups should be {}".format(num_create_groups))
+
+# 2-1. input params: user_id (in test user's group)
+num_create_groups = 1
+groups = group_controller.find(user_in_group_2_ret['access_token'], {'user_id': group_admin_in_group_1_ret['user_id']})
+print("there are {} groups".format(len(groups)))
+if len(groups) != num_create_groups:
+    raise Exception("number of groups should be {}".format(num_create_groups))
+
+# 2-2. input params: user_id (in diff group)
+num_create_groups = 0
+groups = group_controller.find(user_in_group_2_ret['access_token'], {'user_id': group_admin_in_group_3_ret['user_id']})
+print("there are {} groups".format(len(groups)))
+if len(groups) != num_create_groups:
+    raise Exception("number of groups should be {}".format(num_create_groups))
+
+# 2-2. input params: user_id (who does NOT belong any group)
+num_create_groups = 0
+groups = group_controller.find(user_in_group_2_ret['access_token'], {'user_id': group_admin_in_group_2_ret['user_id']})
+print("there are {} groups".format(len(groups)))
+if len(groups) != num_create_groups:
+    raise Exception("number of groups should be {}".format(num_create_groups))
+
+# 3-1. input params: ids (groups where the test user belongs)
+ids = [group_2_ret['id']]
+num_create_groups = len(ids)
+groups = group_controller.find(user_in_group_2_ret['access_token'], {'ids': ids})
+print("there are {} groups".format(len(groups)))
+if len(groups) != num_create_groups:
+    raise Exception("number of groups should be {}".format(num_create_groups))
+
+# 3-2. input params: ids (some groups where the test user belongs and some NOT belong)
+ids = [
+    group_2_ret['id'],
+    group_3_ret['id']
+]
+num_create_groups = 1
+groups = group_controller.find(user_in_group_2_ret['access_token'], {'ids': ids})
+print("there are {} groups".format(len(groups)))
+if len(groups) != num_create_groups:
+    raise Exception("number of groups should be {}".format(num_create_groups))
+
+# 3-3. input params: ids (all groups where the test user does NOT belong)
+ids = [
+    group_1_ret['id'],
+    group_3_ret['id']
+]
+num_create_groups = 0
+groups = group_controller.find(user_in_group_2_ret['access_token'], {'ids': ids})
+print("there are {} groups".format(len(groups)))
+if len(groups) != num_create_groups:
+    raise Exception("number of groups should be {}".format(num_create_groups))
+
+# 4-1. input params: id (group where the test user belong)
+id = group_2_ret['id']
+group_controller.find(user_in_group_2_ret['access_token'], {'id': id})
+
+# 4-2. input params: id (group where the test user does NOT belong)
+id = group_3_ret['id']
+try:
+    group_controller.find(user_in_group_2_ret['access_token'], {'id': id})
+    raise Exception("should be failed")
+except Exception as ex:
+    print(ex)
+    if str(ex) == "not permitted":
+        pass
+    else:
+        raise ex
+
+# 5-1. input params: name (group where the test user belong)
+params = {
+    'name': group_2_ret['name']
+}
+groups = group_controller.find(user_in_group_2_ret['access_token'], params)
+print("there are {} groups".format(len(groups)))
+if groups[0]['name'] != params['name']:
+    raise Exception("The returned group is not same with the given")
+
+# 5-2. input params: name (group where the test user does NOT belong)
+params = {
+    'name': group_3_ret['name']
+}
+num_create_groups = 0
+groups = group_controller.find(user_in_group_2_ret['access_token'], params)
+print("there are {} groups".format(len(groups)))
+if len(groups) != num_create_groups:
+    raise Exception("number of groups should be {}".format(num_create_groups))
 
 
+#########################################################################################################
+# Update groups
+#########################################################################################################
+from porper.controllers.group_controller import GroupController
+group_controller = GroupController(dynamodb)
 
+### update
+#  - Test user
+#    - admin
+
+# 1. update the admin group
+try:
+    group_controller.update(admin_token_ret['access_token'], {'id': ADMIN_GROUP_ID, 'name': 'new_admin'})
+    raise Exception("should be failed")
+except Exception as ex:
+    print(ex)
+    if str(ex) == "You cannot update the admin group":
+        pass
+    else:
+        raise ex
+
+# 2. update a normal group
+group_controller.update(admin_token_ret['access_token'], {'id': group_2_ret['id'], 'name': 'new_group_2'})
+
+
+### update
+#  - Test user
+#    - group admin
+
+# 1. update the admin group
+try:
+    group_controller.update(group_admin_in_group_3_ret['access_token'], {'id': ADMIN_GROUP_ID, 'name': 'new_admin'})
+    raise Exception("should be failed")
+except Exception as ex:
+    print(ex)
+    if str(ex) == "You cannot update the admin group":
+        pass
+    else:
+        raise ex
+
+# 2-1. update a group where the test user belongs
+group_controller.update(group_admin_in_group_3_ret['access_token'], {'id': group_3_ret['id'], 'name': 'new_group_3'})
+
+# 2-2. update a group where the test user does NOT belong
+try:
+    group_controller.update(group_admin_in_group_3_ret['access_token'], {'id': group_1_ret['id'], 'name': 'new_group_1'})
+except Exception as ex:
+    print(ex)
+    if str(ex) == "not permitted":
+        pass
+    else:
+        raise ex
+
+
+### update
+#  - Test user
+#    - user
+
+# 1. update the admin group
+try:
+    group_controller.update(user_in_group_1_ret['access_token'], {'id': ADMIN_GROUP_ID, 'name': 'new_admin'})
+    raise Exception("should be failed")
+except Exception as ex:
+    print(ex)
+    if str(ex) == "You cannot update the admin group":
+        pass
+    else:
+        raise ex
+
+# 2-1. update a group where the test user belongs
+try:
+    group_controller.update(user_in_group_1_ret['access_token'], {'id': group_1_ret['id'], 'name': 'new_group_1'})
+except Exception as ex:
+    print(ex)
+    if str(ex) == "not permitted":
+        pass
+    else:
+        raise ex
+
+# 2-2. update a group where the test user does NOT belong
+try:
+    group_controller.update(user_in_group_1_ret['access_token'], {'id': group_3_ret['id'], 'name': 'new_group_1'})
+except Exception as ex:
+    print(ex)
+    if str(ex) == "not permitted":
+        pass
+    else:
+        raise ex
+
+
+####
+# 'group_1_ret'
+#   - user_in_group_1_ret as user
+# 'group_2_ret'
+#   - user_in_group_1_ret as admin
+#   - group_admin_in_group_1_ret as user
+#   - user_in_group_2_ret as user
+# 'group_3_ret'
+#   - group_admin_in_group_3_ret as admin
 
 #########################################################################################################
 # Delete a group
 #########################################################################################################
+from porper.controllers.group_controller import GroupController
+group_controller = GroupController(dynamodb)
+
+### delete
+#  - Test user
+#    - admin
+
+# 1. delete the admin group
+try:
+    group_controller.delete(admin_token_ret['access_token'], {'id': ADMIN_GROUP_ID})
+    raise Exception("should be failed")
+except Exception as ex:
+    print(ex)
+    if str(ex) == "You cannot remove the admin group":
+        pass
+    else:
+        raise ex
+
+# 2-1. delete a normal group that has users
+try:
+    group_controller.delete(admin_token_ret['access_token'], {'id': group_1_ret['id']})
+    raise Exception("should be failed")
+except Exception as ex:
+    print(ex)
+    if str(ex) == "You must remove all users before removing this group":
+        pass
+    else:
+        raise ex
+
+# 2-2. delete a normal group that has NO users
+## TODO:
+
+
+### delete
+#  - Test user
+#    - group admin
+
+# 1. delete the admin group
+try:
+    group_controller.delete(group_admin_in_group_3_ret['access_token'], {'id': ADMIN_GROUP_ID})
+    raise Exception("should be failed")
+except Exception as ex:
+    print(ex)
+    if str(ex) == "not permitted":
+        pass
+    else:
+        raise ex
+
+# 2-1. delete a group where the test user belongs and that has users
+try:
+    group_controller.delete(group_admin_in_group_3_ret['access_token'], {'id': group_3_ret['id']})
+    raise Exception("should be failed")
+except Exception as ex:
+    print(ex)
+    if str(ex) == "You must remove all users before removing this group":
+        pass
+    else:
+        raise ex
+
+# 2-2. delete a group  where the test user belongs and that has NO users
+## TODO:
+
+# 2-3. delete a group where the test user does NOT belong and that has users
+## TODO:
+
+# 2-4. delete a group  where the test user does NOT belong and that has NO users
+## TODO:
+
+
+### delete
+#  - Test user
+#    - user
+
+# 1. delete the admin group
+try:
+    group_controller.delete(user_in_group_3_ret['access_token'], {'id': ADMIN_GROUP_ID})
+    raise Exception("should be failed")
+except Exception as ex:
+    print(ex)
+    if str(ex) == "not permitted":
+        pass
+    else:
+        raise ex
+
+# 2-1. delete a group where the test user belongs and that has users
+try:
+    group_controller.delete(user_in_group_3_ret['access_token'], {'id': group_3_ret['id']})
+    raise Exception("should be failed")
+except Exception as ex:
+    print(ex)
+    if str(ex) == "not permitted":
+        pass
+    else:
+        raise ex
+
+# 2-2. delete a group where the test user belongs and that has NO users
+## TODO:
+
+# 2-3. delete a group where the test user does NOT belong and that has users
+## TODO:
+
+# 2-4. delete a group  where the test user does NOT belong and that has NO users
+## TODO:
+
+
+#########################################################################################################
+
+print("##########\nTest completed successfully")

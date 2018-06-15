@@ -22,7 +22,7 @@ class GroupController(MetaResourceController):
     def create(self, access_token, params):
         """
         possible attributes in params
-            - id, name
+            - [id], name
         """
         current_user = self.find_user_level(access_token)
         if current_user['level'] == self.USER_LEVEL_ADMIN:
@@ -32,11 +32,38 @@ class GroupController(MetaResourceController):
 
 
     def update(self, access_token, params):
-        raise Exception("not supported")
+        """
+        possible attributes in params
+            - id, name
+        """
+        # now allowed to change the admin group's name
+        if params['id'] == self.ADMIN_GROUP_ID:
+            raise Exception('You cannot update the admin group')
+        current_user = self.find_user_level(access_token, params['id'])
+        if current_user['level'] == self.USER_LEVEL_USER:
+            raise Exception('not permitted')
+        else:
+            return self.group.update({'id': params['id'], 'name': params['name']})
 
 
     def delete(self, access_token, params):
-        raise Exception("not supported")
+        """
+        possible attributes in params
+            - id
+        """
+        current_user = self.find_user_level(access_token, params['id'])
+        if current_user['level'] == self.USER_LEVEL_USER:
+            raise Exception('not permitted')
+
+        # cannot remove the admin group
+        if params['id'] == self.ADMIN_GROUP_ID:
+            raise Exception("You cannot remove the admin group")
+
+        # cannot remove it when it has users
+        user_groups = self.user_group_controller.find(access_token, {'group_id': params['id']})
+        if len(user_groups) > 0:
+            raise Exception("You must remove all users before removing this group")
+        return self.group.delete(params['id'])
 
 
     def find(self, access_token, params):
@@ -49,12 +76,13 @@ class GroupController(MetaResourceController):
             - name
         """
         if 'user_id' in params:
-            user_groups = self.user_group_controller.find(access_token, {'user_id': 'user_id'})
+            user_groups = self.user_group_controller.find(access_token, {'user_id': params['user_id']})
             group_ids = [ user_group['group_id'] for user_group in user_groups ]
+            if len(group_ids) == 0: return []
             return self.group.find_by_ids(group_ids)
 
         if 'id' in params:
-            user_groups = self.user_group_controller.find(access_token, {'user_id': 'user_id'})
+            user_groups = self.user_group_controller.find(access_token, {'group_id': params['id']})
             group_ids = [ user_group['group_id'] for user_group in user_groups ]
             if params['id'] in group_ids:
                 return self.group.find_by_id(params['id'])
@@ -62,8 +90,9 @@ class GroupController(MetaResourceController):
                 raise Exception('not permitted')
 
         if 'ids' in params:
-            user_groups = self.user_group_controller.find(access_token, {'user_id': 'user_id'})
-            group_ids = [ user_group['group_id'] for user_group in user_groups if user_group['gropu_id'] in params['ids'] ]
+            user_groups = self.user_group_controller.find(access_token, {'group_ids': params['ids']})
+            group_ids = [ user_group['group_id'] for user_group in user_groups if user_group['group_id'] in params['ids'] ]
+            if len(group_ids) == 0: return []
             return self.group.find_by_ids(group_ids)
 
         # find current user information including id and level
