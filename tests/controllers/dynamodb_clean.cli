@@ -1,0 +1,32 @@
+aws dynamodb scan --table-name $USER_TABLE_NAME | \
+  jq -c '.Items[] | { id }' | \
+  tr '\n' '\0' | \
+  xargs -0 -n1 -t aws dynamodb delete-item --table-name $USER_TABLE_NAME --key
+
+aws dynamodb scan --table-name $GROUP_TABLE_NAME | \
+  jq -c '.Items[] | { id }' | \
+  tr '\n' '\0' | \
+  xargs -0 -n1 -t aws dynamodb delete-item --table-name $GROUP_TABLE_NAME --key
+
+aws dynamodb scan --table-name $INVITED_USER_TABLE_NAME | \
+  jq -c '.Items[] | { email, auth_type }' | \
+  tr '\n' '\0' | \
+  xargs -0 -n1 -t aws dynamodb delete-item --table-name $INVITED_USER_TABLE_NAME --key
+
+aws dynamodb scan --table-name $USER_GROUP_REL_TABLE_NAME | \
+  jq -c '.Items[] | { user_id, group_id }' | \
+  tr '\n' '\0' | \
+  xargs -0 -n1 -t aws dynamodb delete-item --table-name $USER_GROUP_REL_TABLE_NAME --key
+
+aws dynamodb scan --table-name $ACCESS_TOKEN_TABLE_NAME | \
+  jq -c '.Items[] | { access_token }' | \
+  tr '\n' '\0' | \
+  xargs -0 -n1 -t aws dynamodb delete-item --table-name $ACCESS_TOKEN_TABLE_NAME --key
+
+aws dynamodb scan --table-name $PERMISSION_TABLE_NAME | \
+  jq -c '.Items[] | { id }' | \
+  tr '\n' '\0' | \
+  xargs -0 -n1 -t aws dynamodb delete-item --table-name $PERMISSION_TABLE_NAME --key
+
+aws dynamodb put-item --table-name $GROUP_TABLE_NAME --item '{"id": {"S": "ffffffff-ffff-ffff-ffff-ffffffffffff"}, "name": {"S": "admin"}}'
+aws dynamodb put-item --table-name $GROUP_TABLE_NAME --item '{"id": {"S": "435a6417-6c1f-4d7c-87dd-e8f6c0effc7a"}, "name": {"S": "public"}}'
