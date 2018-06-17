@@ -81,7 +81,7 @@ class Permission:
 
     def find(self, params):
 
-        if not params:
+        if not params or (not params.get('resource') and not params.get('action') and not params.get('value')):
             return self.table.scan()['Items']
 
         fe = ""
@@ -106,7 +106,7 @@ class Permission:
             eav[':value1'] = params['value']
             eav[':value2'] = '*'
             ean['#value'] = 'value'
-        if params.get('user_id'):
+        """if params.get('user_id'):
             if params.get('all'):
                 from user_group import UserGroup
                 user_group = UserGroup(self.dynamodb)
@@ -140,7 +140,7 @@ class Permission:
                 fe += " and "
             fe += "#group_id = :group_id"
             eav[':group_id'] = params['group_id']
-            ean['#group_id'] = 'group_id'
+            ean['#group_id'] = 'group_id'"""
         print(fe)
         print(ean)
         print(eav)
