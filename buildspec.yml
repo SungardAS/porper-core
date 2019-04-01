@@ -3,6 +3,7 @@ phases:
   install:
     commands:
       - pip install --upgrade --user awscli
+      - cd layer; pip install -r requirements.txt; cd ..
   build:
     commands:
       - aws cloudformation package
