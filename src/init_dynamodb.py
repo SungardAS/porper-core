@@ -8,7 +8,7 @@ from porper.models.group import Group
 
 def lambda_handler(event, context):
 
-    print('Received event:\n%s' % event)
+    print('Received event:\n{}'.format(event))
 
     try:
         region = os.environ.get('AWS_DEFAULT_REGION')
@@ -25,7 +25,7 @@ def lambda_handler(event, context):
         response['headers'] = { "Access-Control-Allow-Origin": "*" }
         response['body'] = json.dumps("successfully initialized")
         return response
-    except Exception, ex:
+    except Exception as ex:
         traceback.print_exc()
         err_msg = '%s' % ex
         response = { 'statusCode': 500 };
