@@ -4,8 +4,8 @@ import json
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
 from botocore.exceptions import ClientError
-from decimal_encoder import DecimalEncoder
-from resource import Resource
+#from decimal_encoder import DecimalEncoder
+from porper.models.resource import Resource
 
 import uuid
 
