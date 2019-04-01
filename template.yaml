@@ -148,7 +148,7 @@ Resources:
                   - "logs:CreateLogStream"
                   - "logs:PutLogEvents"
                 Resource: "arn:aws:logs:*:*:*"
-  TempConversionDepLayer:
+  PorperLambdaLayer:
       Type: AWS::Serverless::LayerVersion
       Properties:
           LayerName: porper-core-layer
@@ -200,7 +200,7 @@ Resources:
       Runtime: python3.6
       CodeUri: ./src
       Layers:
-        - !Ref PorperLambdaLayerARN
+        - !Ref PorperLambdaLayer
       Role: !GetAtt AuthorizerLambdaFunctionIAMRole.Arn
       Timeout: 300
   InitializerLambdaFunction:
@@ -211,7 +211,7 @@ Resources:
       Runtime: python3.6
       CodeUri: ./src
       Layers:
-        - !Ref PorperLambdaLayerARN
+        - !Ref PorperLambdaLayer
       Role: !GetAtt LambdaFunctionIAMRole.Arn
       Timeout: 300
       Environment:
