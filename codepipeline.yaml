@@ -28,7 +28,7 @@ Parameters:
     Default: 5
   ProjectImage:
     Type: String
-    Default: "aws/codebuild/python:3.6"
+    Default: "aws/codebuild/python:3.6.5-1.6.0"
     Description: Implemented Programming Language
 
 Resources:
