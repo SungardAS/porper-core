@@ -2,7 +2,7 @@ version: 0.1
 phases:
   install:
     commands:
-      - pip install --upgrade --user awscli
+      - pip install --upgrade pip
       - cd layer; pip install -r requirements.txt; cd ..
   build:
     commands:
