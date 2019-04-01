@@ -152,7 +152,7 @@ Resources:
       Type: AWS::Serverless::LayerVersion
       Properties:
           Description: Porper Core as a Layer
-          ContentUri: layer/
+          ContentUri: ./layer_src
           CompatibleRuntimes:
             - python3.6
             - python3.7
