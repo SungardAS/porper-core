@@ -152,12 +152,10 @@ Resources:
       Type: AWS::Serverless::LayerVersion
       Properties:
           Description: Porper Core as a Layer
-          ContentUri: ./layer_src
+          ContentUri: ./src
           CompatibleRuntimes:
             - python3.6
             - python3.7
-          LicenseInfo: 'MIT'
-          RetentionPolicy: Retain
   AuthorizerLambdaFunctionIAMRole:
       Type: "AWS::IAM::Role"
       Properties:
@@ -196,7 +194,7 @@ Resources:
     Properties:
       Handler: porper_authorizer.lambda_handler
       Runtime: python3.6
-      CodeUri: ./src
+      CodeUri: ./lambda
       Layers:
         - !Ref PorperLambdaLayer
       Role: !GetAtt AuthorizerLambdaFunctionIAMRole.Arn
@@ -206,7 +204,7 @@ Resources:
     Properties:
       Handler: init_dynamodb.lambda_handler
       Runtime: python3.6
-      CodeUri: ./src
+      CodeUri: ./lambda
       Layers:
         - !Ref PorperLambdaLayer
       Role: !GetAtt LambdaFunctionIAMRole.Arn
