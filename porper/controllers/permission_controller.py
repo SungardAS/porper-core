@@ -32,7 +32,7 @@ class PermissionController:
     def is_permitted(self, params):
         params['all'] = True
         rows = self.find(params)
-        print "permitted : %s" % rows
+        print("permitted : {}".format(rows))
         if len(rows) == 0:  return False
         return True
 

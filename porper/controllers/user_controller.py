@@ -44,7 +44,7 @@ class UserController:
 
         rows = self.user.find(params)
         if len(rows) > 0:
-            print 'already exists'
+            print('already exists')
             return rows[0]['id']
 
         # add the user if this user was invited before

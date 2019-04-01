@@ -21,13 +21,13 @@ class SsoAuthController(AuthController):
         redirect_uri = params['redirect_uri']
 
         # get the tokens to see if the given code is valid
-        print "code [%s], redirect_uri [%s]" % (code, redirect_uri)
+        print("code [{}], redirect_uri [{}]".format(code, redirect_uri))
         task_url = "service/oauth2/access_token?realm=SungardAS"
         url = "https://%s/%s"%(self.host, task_url)
         client_auth = requests.auth.HTTPBasicAuth(self.username, self.password)
         post_data = {"grant_type": "authorization_code", "code": code, "redirect_uri": redirect_uri}
         r = requests.post(url, auth=client_auth, data=post_data, verify=False)
-        print r._content
+        print(r._content)
         # {u'access_token': u'ed8f3af2-c28a-439f-aa0c-69e0fd620502', u'id_token': u'eyAidHl...', u'expires_in': 59, u'token_type': u'Bearer', u'scope': u'phone address email cloud openid profile', u'refresh_token': u'8e044a96-2be8-45a5-b9c6-08f118f26f42'}
         tokens = json.loads(r._content)
         if not tokens.get('access_token'):
@@ -35,7 +35,7 @@ class SsoAuthController(AuthController):
 
         # now retrieve user info from the returned access_token
         user_info = self.get_user_information(tokens['access_token'])
-        print user_info
+        print(user_info)
 
         # now save the user info & tokens
         access_token = tokens['access_token']
@@ -66,7 +66,7 @@ class SsoAuthController(AuthController):
         url = "https://%s/%s"%(self.host, task_url)
         headers = {"Authorization":"Bearer " + access_token}
         r = requests.get(url, headers=headers, verify=False)
-        #print r._content
+        #print(r._content)
         # {u'family_name': u'', u'userGuid': u'', u'displayName': u'', u'sub': u'', u'roles': [], u'cloudstack_secret_key': u'', u'zoneinfo': u'', u'company_guid': u'', u'updated_at': u'0', u'applications': [], u'given_name': u'', u'groups': [], u'cloudstack_api_key': u'', u'guid': u'', u'email': u'', u'employeeNumber': u''}
         return json.loads(r._content)
 

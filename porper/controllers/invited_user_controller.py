@@ -36,7 +36,7 @@ class InvitedUserController:
     def _save(self, user_id, params):
         invited_users = self.invited_user.find(params)
         if len(invited_users) > 0:
-            print 'already invited'
+            print('already invited')
             return True
         if not params.get('invited_by'):
             params['invited_by'] = user_id

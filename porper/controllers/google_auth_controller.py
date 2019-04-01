@@ -18,10 +18,10 @@ class GoogleAuthController(AuthController):
         id_token = params['id_token']
 
         # get the tokens to see if the given code is valid
-        print "id_token [%s]" % id_token
+        print("id_token [{}]".format(id_token))
         url = "%s%s"%(self.tokeninfo_endpoint, id_token)
         r = requests.get(url, verify=False)
-        print r._content
+        print(r._content)
         """{
             "iss": "accounts.google.com",
             "at_hash": "",

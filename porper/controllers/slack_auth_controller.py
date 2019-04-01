@@ -20,7 +20,7 @@ class SlackAuthController(AuthController):
         access_token = params.get('access_token')
         user_id = params.get('uid')
         team_id = params.get('tid')
-        print "code [%s], state [%s], access_token [%s], user_id [%s], team_id [%s]" % (code, state, access_token, user_id, team_id)
+        print("code [{}], state [{}], access_token [{}], user_id [{}], team_id [%s]".format(code, state, access_token, user_id, team_id))
         if access_token and user_id and team_id:
             return self.validate(access_token, user_id, team_id)
         else:
@@ -41,8 +41,8 @@ class SlackAuthController(AuthController):
         }
         headers = {"Content-Type":"application/json"}
         r = requests.get(api_url, headers=headers, params=payload, verify=False)
-        print r
-        print r._content
+        print(r)
+        print(r._content)
         user_info = json.loads(r._content)
         user_info['refresh_token'] = code
         return self.save(user_info)
@@ -75,8 +75,8 @@ class SlackAuthController(AuthController):
         }
         headers = {"Content-Type":"application/json"}
         r = requests.get(api_url, headers=headers, params=payload, verify=False)
-        print r
-        print r._content
+        print(r)
+        print(r._content)
         """
         {
             "ok": true,
@@ -154,7 +154,7 @@ class SlackAuthController(AuthController):
         from porper.models.user_group import UserGroup
         user_group = UserGroup(self.connection)
         user_group_info = {"user_id": uid, "group_id": team_id, "is_admin": is_admin}
-        print user_group_info
+        print(ser_group_info)
         user_group.create(user_group_info)
 
 

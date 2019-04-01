@@ -26,10 +26,10 @@ class TokenController:
         if user_id: params['user_id'] = user_id
         rows = self.access_token.find(params)
         if len(rows) == 0:
-            print 'saving tokens : %s' % params
+            print('saving tokens : {}'.format(params))
             return self.access_token.create(params)
         else:
-            print 'updating token : %s' % params
+            print('updating token : {}'.format(params))
             return self.access_token.update(params)
 
     def find(self, params):

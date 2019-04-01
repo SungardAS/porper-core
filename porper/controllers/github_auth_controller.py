@@ -23,8 +23,7 @@ class GithubAuthController(AuthController):
         state = params['state']
         #redirect_uri = params['redirect_uri']
 
-        #print "code [%s], state [%s], redirect_uri [%s]" % (code, state, redirect_uri)
-        print "code [%s], state [%s]" % (code, state)
+        print("code [{}], state [{}]".format(code, state))
 
         # first find the access token from the given code & state
         access_token_url = "%s/access_token" % (self.auth_endpoint)
@@ -37,8 +36,8 @@ class GithubAuthController(AuthController):
         }
         headers = {"Content-Type":"application/json"}
         r = requests.post(access_token_url, headers=headers, data=json.dumps(post_data), verify=False)
-        print r
-        print r._content
+        print(r)
+        print(r._content)
         """
         access_token=f378a5dd8da8422472d1875011db11ea9ccbd9c8&scope=&token_type=bearer
         """
@@ -89,7 +88,7 @@ class GithubAuthController(AuthController):
         # now find the user info from the access token
         user_url = "%s/user?access_token=%s"%(self.api_endpoint, access_token)
         r = requests.get(user_url, verify=False)
-        print r._content
+        print(r._content)
         """
         {
             "login": "",
@@ -130,7 +129,7 @@ class GithubAuthController(AuthController):
         if user_info['email'] is None:
             user_url = "%s/user/emails?access_token=%s"%(self.api_endpoint, access_token)
             r = requests.get(user_url, verify=False)
-            print r._content
+            print(r._content)
             emails = json.loads(r._content)
             primary_emails = [email['email'] for email in emails if email['primary']]
             if len(primary_emails) > 0:

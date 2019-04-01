@@ -107,7 +107,7 @@ class ResourceController():
         }
         if id: params['value'] = id
         permissions = self.permission_controller.find_using_user_id(user_id, params)
-        print 'permissions : %s' % permissions
+        print('permissions : {}'.format(permissions))
         return permissions
 
     def is_permitted(self, user_id, action, id):
@@ -131,7 +131,7 @@ class ResourceController():
 
         # create a new item
         ret = self.model.create(params)
-        print "%s is successfully created : %s" % (self.model_name, ret)
+        print("{} is successfully created : {}".format(self.model_name, ret))
 
         permissions = [
             {'action': 'read'},
@@ -167,7 +167,7 @@ class ResourceController():
     def update_using_user_id(self, user_id, params):
         if not self.is_permitted(user_id, 'update', params['id']):    raise Exception("not permitted")
         ret = self.model.update(params)
-        print "%s [%s] is successfully updated : %s" % (self.model_name, params['id'], ret)
+        print("{} [{}] is successfully updated : {}".format(self.model_name, params['id'], ret))
         return ret
 
     def delete(self, access_token, params):
@@ -177,7 +177,7 @@ class ResourceController():
     def delete_using_user_id(self, user_id, params):
         if not self.is_permitted(user_id, 'delete', params['id']):    raise Exception("not permitted")
         ret = self.model.delete(params['id'])
-        print "%s [%s] is successfully deleted : %s" % (self.model_name, params['id'], ret)
+        print("{} [{}] is successfully deleted : {}".format(self.model_name, params['id'], ret))
         return ret
 
     # find all read-permitted instances of the current resource, so 'id' is NOT given

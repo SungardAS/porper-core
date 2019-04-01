@@ -8,7 +8,7 @@ from porper.models.group import Group
 
 def lambda_handler(event, context):
 
-    print 'Received event:\n%s' % event
+    print('Received event:\n%s' % event)
 
     try:
         region = os.environ.get('AWS_DEFAULT_REGION')
