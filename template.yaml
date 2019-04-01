@@ -153,7 +153,7 @@ Resources:
       Properties:
           LayerName: porper-core-layer
           Description: Porper Core as a Layer
-          ContentUri: ./porper
+          ContentUri: ./layer
           CompatibleRuntimes:
             - python3.6
             - python3.7
