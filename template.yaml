@@ -151,7 +151,6 @@ Resources:
   PorperLambdaLayer:
       Type: AWS::Serverless::LayerVersion
       Properties:
-          LayerName: porper-core-layer
           Description: Porper Core as a Layer
           ContentUri: layer/
           CompatibleRuntimes:
