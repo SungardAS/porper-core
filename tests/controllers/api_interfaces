@@ -1,0 +1,116 @@
+
+===============================================================================================
+User
+===============================================================================================
+
+  Authenticate:
+    Method: POST
+    - Store authenticated user information
+      Path:
+      Params:
+        - auth_type
+        - code
+        - state
+
+
+  Create
+    Method: POST
+    - Add a user to a specific group
+        Path:
+        Params:
+          - id
+          - group_id
+          - is_admin
+
+
+  Delete
+    Method: DELETE
+    - Remove a user from a group
+        Path:
+        Params:
+          - id
+          - group_id
+
+
+  Find
+    Method: GET
+    - Find all users in a specific group
+        Path:
+        Params:
+          - group_id
+    - Find a specific user
+        Path:
+        Params:
+          - id
+    - Find specific users
+        Path:
+        Params:
+          - ids
+    - Find all users
+        Path:
+        Params:
+          - None
+    - Find users with their attributes
+        Path:
+        Params:
+          - any combination of email, auth_type, name, family_name and given_name
+
+
+
+===============================================================================================
+Group
+===============================================================================================
+
+  Create
+    Method: POST
+    - Create a new group
+        Path:
+        Params:
+          - [id]
+          - name
+
+
+  Update
+    Method: PUT
+    - Update a group's name
+        Path:
+        Params:
+          - id
+          - name: new name
+
+
+
+  Delete
+    Method: DELETE
+    - Create a group
+        Path:
+        Params:
+          - id
+
+
+  Find
+    Method: GET
+    - Find all groups where a specific user belongs
+        Path:
+        Params:
+          - user_id
+
+    - Find a specific group
+        Path:
+        Params:
+          - id
+
+    - Find specific groups
+        Path:
+        Params:
+          - ids
+
+    - Find all groups
+        Path:
+        Params:
+          - None
+
+    - Find a group with a specific name
+        Path:
+        Params:
+          - name

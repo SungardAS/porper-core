@@ -6,11 +6,13 @@ from boto3.dynamodb.conditions import Key, Attr
 from botocore.exceptions import ClientError
 from porper.models.decimal_encoder import DecimalEncoder
 
+import os
+
 class Permission:
 
     def __init__(self, dynamodb):
         self.dynamodb = dynamodb
-        self.table = dynamodb.Table('permissions')
+        self.table = dynamodb.Table(os.environ.get('PERMISSION_TABLE_NAME'))
 
     def _generate_id(self, params):
         id = ""
@@ -79,7 +81,7 @@ class Permission:
 
     def find(self, params):
 
-        if not params:
+        if not params or (not params.get('resource') and not params.get('action') and not params.get('value')):
             return self.table.scan()['Items']
 
         fe = ""
@@ -104,7 +106,7 @@ class Permission:
             eav[':value1'] = params['value']
             eav[':value2'] = '*'
             ean['#value'] = 'value'
-        if params.get('user_id'):
+        """if params.get('user_id'):
             if params.get('all'):
                 from user_group import UserGroup
                 user_group = UserGroup(self.dynamodb)
@@ -138,7 +140,7 @@ class Permission:
                 fe += " and "
             fe += "#group_id = :group_id"
             eav[':group_id'] = params['group_id']
-            ean['#group_id'] = 'group_id'
+            ean['#group_id'] = 'group_id'"""
         print(fe)
         print(ean)
         print(eav)

@@ -12,8 +12,8 @@ class SsoAuthController(AuthController):
         AuthController.__init__(self, permission_connection)
 
         self.host = os.environ.get('SSO_HOST')
-        self.username = os.environ.get('SSO_USER')
-        self.password = os.environ.get('SSO_PASSWORD')
+        self.username = os.environ.get('SSO_CLIENT_ID')
+        self.password = os.environ.get('SSO_CLIENT_SECRET')
 
     def authenticate(self, params):
 
