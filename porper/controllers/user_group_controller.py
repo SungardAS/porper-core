@@ -33,7 +33,7 @@ class UserGroupController:
 
         # find all groups where the given user belongs
         user_groups = self.user_group.find({'user_id': user_id})
-        print(user_groups)
+        print user_groups
         #group_ids = [ user_group['group_id'] for user_group in user_groups if user_group['is_admin'] ]
         group_ids = [ user_group['group_id'] for user_group in user_groups ]
         if len(group_ids) == 0: return []
@@ -46,7 +46,7 @@ class UserGroupController:
 
         # return only the groups where this user belongs also
         my_user_groups = self.user_group.find({'user_id': me})
-        print(my_user_groups)
+        print my_user_groups
         if len(my_user_groups) == 0: return []
         ids = []
         for my_user_group in my_user_groups:
@@ -54,7 +54,7 @@ class UserGroupController:
                 ids.append(my_user_group.group_id)
         if len(ids) == 0: return []
         params = {'ids': ids}
-        print(params)
+        print params
         return self.group.find(params)
 
 
@@ -67,11 +67,11 @@ class UserGroupController:
 
         if self.permission_controller.is_admin(user_id) or self.permission_controller.is_member(user_id, group_id):
             user_groups = self.user_group.find({'group_id': group_id})
-            print(user_groups)
+            print user_groups
             user_ids = [ user_group['user_id'] for user_group in user_groups ]
             if len(user_ids) == 0: return []
             params = {'ids': user_ids}
-            print(params)
+            print params
             return self.user.find(params)
 
         return []
