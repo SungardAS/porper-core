@@ -4,10 +4,9 @@ phases:
     commands:
       - pip install --upgrade pip
       - pip install --upgrade --user awscli
-      - export PY_DIR='src/python/lib/python3.6/site-packages'
-      - mkdir -p $PY_DIR
+      - mkdir -p $PYTHON_FOLDER
       - cp -r porper src
-      - cd src; pip install -r requirements.txt --no-deps -t $PY_DIR; cd ..
+      - cd src; pip install -r requirements.txt --no-deps -t $PYTHON_FOLDER; cd ..
   build:
     commands:
       - aws cloudformation package
