@@ -8,7 +8,7 @@ Parameters:
     Description: Owner of the Source Repository in GitHub
   GitHubSourceRepositoryName:
     Type: String
-    Default: aws-services-porper
+    Default: porper-core
     Description: Name of the Source Repository in GitHub
   GitHubSourceRepositoryBranch:
     Type: String
