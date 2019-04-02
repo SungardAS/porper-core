@@ -107,6 +107,14 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: !Ref ReadCapacityUnit
         WriteCapacityUnits: !Ref WriteCapacityUnit
+  PorperLambdaLayer:
+      Type: AWS::Serverless::LayerVersion
+      Properties:
+          Description: Porper Core as a Layer
+          ContentUri: ./src
+          CompatibleRuntimes:
+            - python3.6
+            - python3.7
   LambdaFunctionIAMRole:
     Type: "AWS::IAM::Role"
     Properties:
@@ -148,14 +156,6 @@ Resources:
                   - "logs:CreateLogStream"
                   - "logs:PutLogEvents"
                 Resource: "arn:aws:logs:*:*:*"
-  PorperLambdaLayer:
-      Type: AWS::Serverless::LayerVersion
-      Properties:
-          Description: Porper Core as a Layer
-          ContentUri: ./src
-          CompatibleRuntimes:
-            - python3.6
-            - python3.7
   AuthorizerLambdaFunctionIAMRole:
       Type: "AWS::IAM::Role"
       Properties:
