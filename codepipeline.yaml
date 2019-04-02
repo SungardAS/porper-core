@@ -30,7 +30,7 @@ Parameters:
     Type: String
     Default: "aws/codebuild/python:3.6.5-1.6.0"
     Description: Implemented Programming Language
-  Python_Folder:
+  PythonFolder:
     Type: String
     Default: "src/python/lib/python3.6/site-packages"
     Description: Lambda Layer Python Lib Folder
@@ -103,7 +103,7 @@ Resources:
         - Name: S3_BUCKET_NAME
           Value: !Ref InputArtifactS3Bucket
         - Name: PYTHON_FOLDER
-          Value: !Ref Python_Folder
+          Value: !Ref PythonFolder
       Source:
         Type: CODEPIPELINE
       TimeoutInMinutes: 60
