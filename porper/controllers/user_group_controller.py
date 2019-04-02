@@ -41,7 +41,7 @@ class UserGroupController:
         # if this user is admin, return all found groups
         if self.permission_controller.is_admin(me):
             params = {'ids': group_ids}
-            print(params)
+            print params
             return self.group.find(params)
 
         # return only the groups where this user belongs also
