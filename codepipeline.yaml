@@ -32,7 +32,7 @@ Parameters:
     Description: Implemented Programming Language
   PythonFolder:
     Type: String
-    Default: "src/python/lib/python3.6/site-packages"
+    Default: "python/lib/python3.6/site-packages"
     Description: Lambda Layer Python Lib Folder
 
 Resources:
