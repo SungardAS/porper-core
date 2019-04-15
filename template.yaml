@@ -216,6 +216,8 @@ Outputs:
   PorperLambdaLayerArn:
     Description: "Porper Lambda Layer ARN"
     Value: !Ref PorperLambdaLayer
+    Export:
+      Name: !Sub "${AWS::StackName}-PorperLambdaLayerArn"
   AuthorizerLambdaFunctionArn:
     Description: "Authorizer Lambda Function ARN"
     Value: !GetAtt AuthorizerLambdaFunction.Arn
@@ -225,18 +227,30 @@ Outputs:
   AccessTokenTableName:
     Description: "Access Token Table Name"
     Value: !Ref AccessTokenTable
+    Export:
+      Name: !Sub "${AWS::StackName}-AccessTokenTableName"
   GroupTableName:
     Description: "Group Table Name"
     Value: !Ref GroupTable
+    Export:
+      Name: !Sub "${AWS::StackName}-GroupTableName"
   InvitedUserTableName:
     Description: "Invited User Table Name"
     Value: !Ref InvitedUserTable
+    Export:
+      Name: !Sub "${AWS::StackName}-InvitedUserTableName"
   PermissionTableName:
     Description: "Permission Table Name"
     Value: !Ref PermissionTable
+    Export:
+      Name: !Sub "${AWS::StackName}-PermissionTableName"
   UserGroupTableName:
     Description: "User Group Table Name"
     Value: !Ref UserGroupTable
+    Export:
+      Name: !Sub "${AWS::StackName}-UserGroupTableName"
   UserTableName:
     Description: "User Table Name"
     Value: !Ref UserTable
+    Export:
+      Name: !Sub "${AWS::StackName}-UserTableName"
