@@ -17,3 +17,5 @@ build
 env.export.sh
 config.json
 .*.local
+src/*
+!src/requirements.txt
