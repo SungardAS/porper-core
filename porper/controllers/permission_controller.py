@@ -48,7 +48,7 @@ class PermissionController:
 
         #params['all'] = True
         rows = self.find(access_token, params)
-        print "permitted : %s" % rows
+        print("permitted : {}".format(rows))
         if len(rows) == 0:  return False
         return True
 

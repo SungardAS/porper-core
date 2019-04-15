@@ -1,5 +1,5 @@
 
-from meta_resource_controller import MetaResourceController
+from porper.controllers.meta_resource_controller import MetaResourceController
 
 class UserGroupController(MetaResourceController):
 

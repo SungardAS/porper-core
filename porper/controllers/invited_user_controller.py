@@ -1,6 +1,6 @@
 
 from datetime import datetime
-from meta_resource_controller import MetaResourceController
+from porper.controllers.meta_resource_controller import MetaResourceController
 
 ADMIN_GROUP_ID = 'ffffffff-ffff-ffff-ffff-ffffffffffff'
 
