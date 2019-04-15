@@ -222,3 +222,21 @@ Outputs:
   InitializerLambdaFunctionArn:
     Description: "Initializer Lambda Function ARN"
     Value: !GetAtt InitializerLambdaFunction.Arn
+  AccessTokenTableName:
+    Description: "Access Token Table Name"
+    Value: !Ref AccessTokenTable
+  GroupTableName:
+    Description: "Group Table Name"
+    Value: !Ref GroupTable
+  InvitedUserTableName:
+    Description: "Invited User Table Name"
+    Value: !Ref InvitedUserTable
+  PermissionTableName:
+    Description: "Permission Table Name"
+    Value: !Ref PermissionTable
+  UserGroupTableName:
+    Description: "User Group Table Name"
+    Value: !Ref UserGroupTable
+  UserTableName:
+    Description: "User Table Name"
+    Value: !Ref UserTable
