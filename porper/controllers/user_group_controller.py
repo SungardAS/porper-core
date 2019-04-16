@@ -100,7 +100,7 @@ class UserGroupController(MetaResourceController):
 
         # find all groups where the given user belongs
         user_groups = self.user_group.find({'user_id': user_id})
-        print user_groups
+        print(user_groups)
         #group_ids = [ user_group['group_id'] for user_group in user_groups ]
         #if len(group_ids) == 0: return []
 
@@ -113,7 +113,7 @@ class UserGroupController(MetaResourceController):
 
         # return only the groups where the current user belongs
         my_user_groups = self.user_group.find({'user_id': current_user['id']})
-        print my_user_groups
+        print(my_user_groups)
         if len(my_user_groups) == 0: return []
         my_group_ids = [ my_user_group['group_id'] for my_user_group in my_user_groups ]
         #allowed_ids = [group_id for group_id in group_ids if group_id in my_group_ids]
@@ -147,7 +147,7 @@ class UserGroupController(MetaResourceController):
     def find_by_group_id(self, current_user, group_id):
 
         user_groups = self.user_group.find({'group_id': group_id})
-        print user_groups
+        print(user_groups)
         user_ids = [ user_group['user_id'] for user_group in user_groups ]
         #if len(user_ids) == 0: return []
 
@@ -181,7 +181,7 @@ class UserGroupController(MetaResourceController):
     def find_by_user_ids(self, current_user, user_ids):
 
         user_groups = self.user_group.find_by_user_ids(user_ids)
-        print user_groups
+        print(user_groups)
         #if len(user_groups) == 0: return []
 
         if current_user['level'] == self.USER_LEVEL_ADMIN:
@@ -217,7 +217,7 @@ class UserGroupController(MetaResourceController):
     def find_by_group_ids(self, current_user, group_ids):
 
         user_groups = self.user_group.find_by_group_ids(group_ids)
-        print user_groups
+        print(user_groups)
         #if len(user_groups) == 0: return []
 
         if current_user['level'] == self.USER_LEVEL_ADMIN:
