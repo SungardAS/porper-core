@@ -42,7 +42,7 @@ class GithubAuthController(AuthController):
         access_token=f378a5dd8da8422472d1875011db11ea9ccbd9c8&scope=&token_type=bearer
         """
         try:
-            access_token = r._content.split('&')[0].split('=')[1]
+            access_token = str(r._content).split('&')[0].split('=')[1]
         except Exception:
             raise Exception("unauthorized")
 
