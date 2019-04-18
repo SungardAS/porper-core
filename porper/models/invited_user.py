@@ -57,10 +57,10 @@ class InvitedUser(Resource):
 
     def _fill_related_attrs(self, items):
         if len(items) == 0: return []
-        from porper.models. import User
+        from porper.models.user import User
         user = User(self.dynamodb)
         user_items = user.find({'ids': [item['invited_by'] for item in items]})
-        from porper.models. import Group
+        from porper.models.group import Group
         group = Group(self.dynamodb)
         group_items = group.find({'ids': [item['group_id'] for item in items]})
         if len(user_items) == 0 or len(group_items) == 0:    return []
