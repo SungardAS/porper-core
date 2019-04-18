@@ -23,38 +23,41 @@ class CognitoAuthController(AuthController):
         response = self.client.get_user(AccessToken=access_token)
         print(response)
         """{
-            'Username': 'string',
-            'UserAttributes': [
-                {
-                    'Name': 'string',
-                    'Value': 'string'
-                },
-            ],
-            'MFAOptions': [
-                {
-                    'DeliveryMedium': 'SMS'|'EMAIL',
-                    'AttributeName': 'string'
-                },
-            ],
-            'PreferredMfaSetting': 'string',
-            'UserMFASettingList': [
-                'string',
-            ]
-        }"""
+                'Username': '4de37a8c-c2c0-4cc4-9fbb-c578139fb861',
+                'UserAttributes': [
+                    {'Name': 'sub', 'Value': '4de37a8c-c2c0-4cc4-9fbb-c578139fb861'},
+                    {'Name': 'given_name', 'Value': 'TestA'},
+                    {'Name': 'family_name', 'Value': 'TestB'},
+                    {'Name': 'email', 'Value': 'abay.radhakrishnan@sungardas.com'}
+                ],
+                'ResponseMetadata': {
+                    'RequestId': '06ecec11-6187-11e9-aad6-45ac547975c8',
+                    'HTTPStatusCode': 200,
+                    'HTTPHeaders': {
+                        'date': 'Thu, 18 Apr 2019 03:06:57 GMT',
+                        'content-type': 'application/x-amz-json-1.1',
+                        'content-length': '269',
+                        'connection': 'keep-alive',
+                        'x-amzn-requestid': '06ecec11-6187-11e9-aad6-45ac547975c8'
+                    },
+                    'RetryAttempts': 0
+                }
+            }
+        """
         if not response.get('Username'):
             raise Exception("unauthorized")
 
         # now save the user info & tokens
         auth_params = {
             'user_id': response.get('Username'),
-            'email': response.get('Username'),
-            'family_name': "",
-            'given_name': "",
-            'name': "",
+            'email': [attr for attr in response.get('UserAttributes') if attr['Name'] == node['email']][0]['Value'],
+            'family_name': [attr for attr in response.get('UserAttributes') if attr['Name'] == node['family_name']][0]['Value'],
+            'given_name': [attr for attr in response.get('UserAttributes') if attr['Name'] == node['given_name']][0]['Value'],
             'auth_type': 'cognito',
             'access_token': access_token,
             'refresh_token': access_token
         }
+        auth_params['name'] = "{} {}".format(given_name, family_name)
         AuthController.authenticate(self, auth_params)
 
         # return the access_token if all completed successfully
