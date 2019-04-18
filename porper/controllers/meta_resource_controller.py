@@ -2,6 +2,9 @@
 import uuid
 import json
 
+ADMIN_GROUP_ID = 'e51a447d-cb0a-4166-870a-d74ce38add35'
+PUBLIC_GROUP_ID = '435a6417-6c1f-4d7c-87dd-e8f6c0effc7a'
+
 class MetaResourceController:
 
     def __init__(self, connection):
@@ -13,7 +16,7 @@ class MetaResourceController:
         self.token_controller = TokenController(self.connection)
         #self.permission_controller = PermissionController(self.connection)
 
-        self.ADMIN_GROUP_ID = 'ffffffff-ffff-ffff-ffff-ffffffffffff'
+        self.ADMIN_GROUP_ID = ADMIN_GROUP_ID
         self.USER_LEVEL_ADMIN = 'admin'
         self.USER_LEVEL_GROUP_ADMIN = 'group_admin'
         self.USER_LEVEL_USER = 'user'

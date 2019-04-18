@@ -8,6 +8,8 @@ from porper.models.decimal_encoder import DecimalEncoder
 
 import os
 
+ALL = "*"
+
 class Permission:
 
     def __init__(self, dynamodb):
@@ -104,7 +106,7 @@ class Permission:
                 fe += " and "
             fe += "#value in (:value1, :value2)"
             eav[':value1'] = params['value']
-            eav[':value2'] = '*'
+            eav[':value2'] = ALL
             ean['#value'] = 'value'
         """if params.get('user_id'):
             if params.get('all'):

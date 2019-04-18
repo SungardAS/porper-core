@@ -19,3 +19,7 @@ config.json
 .*.local
 src/*
 !src/requirements.txt
+bin
+include
+lib
+.Python

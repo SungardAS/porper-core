@@ -2,8 +2,8 @@
 import uuid
 import json
 
-ALL = "*"
-ADMIN_GROUP_ID = 'ffffffff-ffff-ffff-ffff-ffffffffffff'
+from porper.models.permission import ALL
+from porper.controllers.meta_resource_controller import ADMIN_GROUP_ID
 
 class ResourceController():
 

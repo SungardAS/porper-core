@@ -14,11 +14,13 @@ class PermissionController:
         from porper.controllers.user_group_controller import UserGroupController
         self.user_group_controller = UserGroupController(connection)
 
-        self.ADMIN_GROUP_ID = 'ffffffff-ffff-ffff-ffff-ffffffffffff'
+        from porper.controllers.meta_resource_controller import ADMIN_GROUP_ID
+        from porper.models.permission import ALL
+        self.ADMIN_GROUP_ID = ADMIN_GROUP_ID
         #self.USER_LEVEL_ADMIN = 'admin'
         #self.USER_LEVEL_GROUP_ADMIN = 'group_admin'
         #self.USER_LEVEL_USER = 'user'
-        self.PERMITTED_TO_ALL = '*'
+        self.PERMITTED_TO_ALL = ALL
         #self.PERMISSION_TO_CREATE = 'create'
 
 

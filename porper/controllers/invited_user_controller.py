@@ -2,7 +2,7 @@
 from datetime import datetime
 from porper.controllers.meta_resource_controller import MetaResourceController
 
-ADMIN_GROUP_ID = 'ffffffff-ffff-ffff-ffff-ffffffffffff'
+from porper.controllers.meta_resource_controller import ADMIN_GROUP_ID
 
 class InvitedUserController(MetaResourceController):
 
