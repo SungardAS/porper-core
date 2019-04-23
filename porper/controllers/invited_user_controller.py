@@ -53,13 +53,19 @@ class InvitedUserController(MetaResourceController):
 
     def update(self, access_token, params):
         """
-        possible attributes in params
-            - auth_type, email, group_id
+        attributes in params
+            - auth_type, email
         """
-        group_id = params['group_id']
+        items = self.invited_user.find({'email': params['email'], 'auth_type': params['auth_type']})
+        if not items:
+            raise Exception("not invited")
+        if items[0]['state'] == self.invited_user.REGISTERED:
+            raise Exception("Already registered")
+        group_id = items[0]['group_id']
         current_user = self.find_user_level(access_token, group_id)
         if current_user['level'] != self.USER_LEVEL_ADMIN and current_user['level'] != self.USER_LEVEL_GROUP_ADMIN:
             raise Exception("not permitted")
+        params['state'] = self.invited_user.INVITED
         return self.invited_user.update(params)
 
 
@@ -79,9 +85,9 @@ class InvitedUserController(MetaResourceController):
                 raise Exception("not permitted")
             return self.invited_user.find({'group_id': group_id})
 
-        if params.get("auth_type") and params.get("email"):
+        if params:
 
-            invited_users = self.invited_user.fin({'auth_type': params['auth_type'], 'email': params['email']})
+            invited_users = self.invited_user.find(params)
 
             # if the current user is admin, return all fetched invited_users
             if current_user['level'] == self.USER_LEVEL_ADMIN:
@@ -93,7 +99,7 @@ class InvitedUserController(MetaResourceController):
             allowed_invited_users = [ invited_user for invited_user in invited_users if invited_user['group_id'] in group_ids ]
             return allowed_invited_users
 
-        if not params:
+        else:
 
             # if the current user is admin, return all invited_users
             if current_user['level'] == self.USER_LEVEL_ADMIN:
@@ -107,3 +113,21 @@ class InvitedUserController(MetaResourceController):
                 return self.invited_user.find(params)
 
         return []
+
+
+    def delete(self, access_token, params):
+        """
+        attributes in params
+            - auth_type, email
+        """
+        items = self.invited_user.find({'email': params['email'], 'auth_type': params['auth_type']})
+        if not items:
+            raise Exception("not invited")
+        if items[0]['state'] == self.invited_user.REGISTERED:
+            raise Exception("Already registered")
+        group_id = items[0]['group_id']
+        current_user = self.find_user_level(access_token, group_id)
+        if current_user['level'] != self.USER_LEVEL_ADMIN and current_user['level'] != self.USER_LEVEL_GROUP_ADMIN:
+            raise Exception("not permitted")
+        params['state'] = self.invited_user.CANCELLED
+        return self.invited_user.update(params)

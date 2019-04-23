@@ -16,6 +16,7 @@ class InvitedUser(Resource):
         self.table = dynamodb.Table(os.environ.get('INVITED_USER_TABLE_NAME'))
         self.INVITED = 'invited'
         self.REGISTERED = 'registered'
+        self.CANCELLED = 'cancelled'
 
     """
     def create(self, params):
