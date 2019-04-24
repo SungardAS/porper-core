@@ -66,8 +66,12 @@ class CognitoAuthController(AuthController):
         AuthController.authenticate(self, auth_params)
 
         # return the access_token if all completed successfully
-        user_info = {}
-        user_info['user_id'] = user_id
-        user_info['access_token'] = access_token
+        user_info = {
+            'user_id': user_id,
+            'email': email,
+            'family_name': family_name,
+            'given_name': given_name,
+            'access_token': access_token,
+        }
         user_info['groups'] = AuthController.find_groups(self, user_id)
         return user_info
