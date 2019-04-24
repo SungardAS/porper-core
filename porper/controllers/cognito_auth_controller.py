@@ -50,9 +50,9 @@ class CognitoAuthController(AuthController):
         # now save the user info & tokens
         auth_params = {
             'user_id': response.get('Username'),
-            'email': [attr for attr in response.get('UserAttributes') if attr['Name'] == node['email']][0]['Value'],
-            'family_name': [attr for attr in response.get('UserAttributes') if attr['Name'] == node['family_name']][0]['Value'],
-            'given_name': [attr for attr in response.get('UserAttributes') if attr['Name'] == node['given_name']][0]['Value'],
+            'email': [attr for attr in response.get('UserAttributes') if attr['Name'] == 'email'][0]['Value'],
+            'family_name': [attr for attr in response.get('UserAttributes') if attr['Name'] == 'family_name'][0]['Value'],
+            'given_name': [attr for attr in response.get('UserAttributes') if attr['Name'] == 'given_name'][0]['Value'],
             'auth_type': 'cognito',
             'access_token': access_token,
             'refresh_token': access_token
