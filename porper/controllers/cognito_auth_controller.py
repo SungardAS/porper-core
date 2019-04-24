@@ -48,11 +48,16 @@ class CognitoAuthController(AuthController):
             raise Exception("unauthorized")
 
         # now save the user info & tokens
+        user_id = response.get('Username')
+        email = [attr for attr in response.get('UserAttributes') if attr['Name'] == 'email'][0]['Value']
+        family_name = [attr for attr in response.get('UserAttributes') if attr['Name'] == 'family_name'][0]['Value']
+        given_name = [attr for attr in response.get('UserAttributes') if attr['Name'] == 'given_name'][0]['Value']
+
         auth_params = {
-            'user_id': response.get('Username'),
-            'email': [attr for attr in response.get('UserAttributes') if attr['Name'] == 'email'][0]['Value'],
-            'family_name': [attr for attr in response.get('UserAttributes') if attr['Name'] == 'family_name'][0]['Value'],
-            'given_name': [attr for attr in response.get('UserAttributes') if attr['Name'] == 'given_name'][0]['Value'],
+            'user_id': user_id,
+            'email': email,
+            'family_name': family_name,
+            'given_name': given_name,
             'auth_type': 'cognito',
             'access_token': access_token,
             'refresh_token': access_token
@@ -61,7 +66,7 @@ class CognitoAuthController(AuthController):
         AuthController.authenticate(self, auth_params)
 
         # return the access_token if all completed successfully
-        user_info['user_id'] = user_info['sub']
+        user_info['user_id'] = user_id
         user_info['access_token'] = access_token
-        user_info['groups'] = AuthController.find_groups(self, auth_params['user_id'])
+        user_info['groups'] = AuthController.find_groups(self, user_id])
         return user_info
