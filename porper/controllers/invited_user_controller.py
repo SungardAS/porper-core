@@ -30,6 +30,9 @@ class InvitedUserController(MetaResourceController):
         current_user = self.find_user_level(access_token, group_id)
         if current_user['level'] != self.USER_LEVEL_ADMIN and current_user['level'] != self.USER_LEVEL_GROUP_ADMIN:
             raise Exception("not permitted")
+        items = self.invited_user.find({'email': params['email'], 'auth_type': params['auth_type']})
+        if items and items[0]['state'] == self.invited_user.REGISTERED:
+            raise Exception("Already registered")
         return self._save(current_user['id'], params)
 
 
