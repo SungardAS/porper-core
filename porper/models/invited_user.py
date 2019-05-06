@@ -17,6 +17,7 @@ class InvitedUser(Resource):
         self.INVITED = 'invited'
         self.REGISTERED = 'registered'
         self.CANCELLED = 'cancelled'
+        self.DELETED = 'deleted'
 
     """
     def create(self, params):
