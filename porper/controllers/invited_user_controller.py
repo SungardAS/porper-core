@@ -133,4 +133,5 @@ class InvitedUserController(MetaResourceController):
         if current_user['level'] != self.USER_LEVEL_ADMIN and current_user['level'] != self.USER_LEVEL_GROUP_ADMIN:
             raise Exception("not permitted")
         params['state'] = self.invited_user.CANCELLED
-        return self.invited_user.update(params)
+        self.invited_user.update(params)
+        return True
