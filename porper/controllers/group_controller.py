@@ -25,10 +25,15 @@ class GroupController(MetaResourceController):
             - [id], name
         """
         current_user = self.find_user_level(access_token)
-        if current_user['level'] == self.USER_LEVEL_ADMIN:
-            return self.group.create(params)
-        else:
+        if current_user['level'] != self.USER_LEVEL_ADMIN:
             raise Exception('not permitted')
+
+        # check if the group with the given customer already exists
+        ret = self.group.find({"name": params["name"], "customer_id": params["customer_id"]})
+        if ret:
+            raise Exception("alredy exists")
+
+        return self.group.create(params)
 
 
     def update(self, access_token, params):
