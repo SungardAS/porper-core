@@ -175,7 +175,8 @@ class SlackAuthController(AuthController):
             'slack_team_id': user_info['team']['id'],
             #'slack_bot_name': bot_name,
             'access_token': user_info['access_token'],
-            'refresh_token': user_info['refresh_token']
+            'refresh_token': user_info['refresh_token'],
+            'admin_access_token': params['access_token']
         }
         AuthController.authenticate(self, auth_params)
 

@@ -24,6 +24,7 @@ class AuthController():
         auth_type = params['auth_type']
         access_token = params['access_token']
         refresh_token = params['refresh_token']
+        admin_access_token = params['admin_access_token']
 
         user = self.user.find_by_id(user_id)
         if not user:
@@ -41,6 +42,7 @@ class AuthController():
             if email:
                 params['email'] = email.lower()
 
+            """
             # find admin user's access_token to replace this user's access_token to create a user
             admin_users = self.user_group.find({'group_id': ADMIN_GROUP_ID})
             if len(admin_users) == 0:
@@ -49,6 +51,7 @@ class AuthController():
             else:
                 admin_user_id = admin_users[0]['user_id']
                 admin_access_token = self.token_controller.find({'user_id': admin_user_id})[0]['access_token']
+            """
             user_id = self.user_controller.create(admin_access_token, params)
 
         # now save the tokens

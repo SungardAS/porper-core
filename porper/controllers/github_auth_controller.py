@@ -149,7 +149,8 @@ class GithubAuthController(AuthController):
             'name': user_info['name'],
             'auth_type': 'github',
             'access_token': access_token,
-            'refresh_token': code
+            'refresh_token': code,
+            'admin_access_token': params['access_token']
         }
         AuthController.authenticate(self, auth_params)
 

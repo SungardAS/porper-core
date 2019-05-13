@@ -16,11 +16,11 @@ class CognitoAuthController(AuthController):
 
     def authenticate(self, params):
 
-        access_token = params['access_token']
+        cognito_access_token = params['cognito_access_token']
 
         # get the tokens to see if the given code is valid
-        print("access_token [{}]".format(access_token))
-        response = self.client.get_user(AccessToken=access_token)
+        print("cognito_access_token [{}]".format(cognito_access_token))
+        response = self.client.get_user(AccessToken=cognito_access_token)
         print(response)
         """{
                 'Username': '4de37a8c-c2c0-4cc4-9fbb-c578139fb861',
@@ -59,19 +59,20 @@ class CognitoAuthController(AuthController):
             'family_name': family_name,
             'given_name': given_name,
             'auth_type': 'cognito',
-            'access_token': access_token,
-            'refresh_token': access_token
+            'access_token': cognito_access_token,
+            'refresh_token': cognito_access_token,
+            'admin_access_token': params['access_token']
         }
         auth_params['name'] = "{} {}".format(given_name, family_name)
         AuthController.authenticate(self, auth_params)
 
-        # return the access_token if all completed successfully
+        # return the cognito_access_token if all completed successfully
         user_info = {
             'user_id': user_id,
             'email': email,
             'family_name': family_name,
             'given_name': given_name,
-            'access_token': access_token,
+            'access_token': cognito_access_token,
         }
         user_info['groups'] = AuthController.find_groups(self, user_id)
         return user_info
