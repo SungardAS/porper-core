@@ -60,8 +60,7 @@ class CognitoAuthController(AuthController):
             'given_name': given_name,
             'auth_type': 'cognito',
             'access_token': cognito_access_token,
-            'refresh_token': cognito_access_token,
-            'admin_access_token': params['access_token']
+            'refresh_token': cognito_access_token
         }
         auth_params['name'] = "{} {}".format(given_name, family_name)
         AuthController.authenticate(self, auth_params)

@@ -51,8 +51,7 @@ class SsoAuthController(AuthController):
             'name': display_name,
             'auth_type': 'sso',
             'access_token': access_token,
-            'refresh_token': refresh_token,
-            'admin_access_token': params['access_token']
+            'refresh_token': refresh_token
         }
         AuthController.authenticate(self, auth_params)
 

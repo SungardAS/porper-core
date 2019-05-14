@@ -54,8 +54,7 @@ class GoogleAuthController(AuthController):
             'name': user_info['name'],
             'auth_type': 'google',
             'access_token': access_token,
-            'refresh_token': id_token,
-            'admin_access_token': params['access_token']
+            'refresh_token': id_token
         }
         AuthController.authenticate(self, auth_params)
 
