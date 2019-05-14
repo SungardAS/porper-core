@@ -42,13 +42,15 @@ class GroupController(MetaResourceController):
             - id, name
         """
         # now allowed to change the admin group's name
-        if params['id'] == self.ADMIN_GROUP_ID:
-            raise Exception('You cannot update the admin group')
+        if params['id'] == self.ADMIN_GROUP_ID and params.get('name'):
+            raise Exception('You cannot update the admin group name')
+        if params.get('customer_id'):
+            raise Exception('You cannot update the group customer')
         current_user = self.find_user_level(access_token, params['id'])
         if current_user['level'] == self.USER_LEVEL_USER:
             raise Exception('not permitted')
         else:
-            return self.group.update({'id': params['id'], 'name': params['name']})
+            return self.group.update(params)
 
 
     def delete(self, access_token, params):
