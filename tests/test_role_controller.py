@@ -11,8 +11,11 @@ dynamodb = boto3.resource('dynamodb',region_name=region)
 # Preparation
 # Find the access_token of an admin
 #########################################################################################################
-from util import find_admin_token
-admin_access_token = find_admin_token()
+
+from porper.controllers.meta_resource_controller import ADMIN_GROUP_ID, PUBLIC_GROUP_ID
+
+from util import find_token
+admin_access_token = find_token(ADMIN_GROUP_ID)
 
 
 from porper.controllers.function_controller import FunctionController
@@ -49,3 +52,18 @@ role = role_controller.find(admin_access_token, {"id": ret_1["id"]})
 role_controller.delete(admin_access_token, {"id": ret_1["id"]})
 
 roles = role_controller.find(admin_access_token, {})
+
+
+### Try to get a role that is not allowed to a user and a role that is permitted
+from porper.controllers.role_controller import RoleController
+role_controller = RoleController(dynamodb)
+
+public_access_token = find_token(PUBLIC_GROUP_ID)
+
+# not permitted
+admin_roles = role_controller.find(admin_access_token, {"name": "admin"})
+role_controller.find(public_access_token, {"id": admin_roles[0]['id']})
+
+# permitted
+user_roles = role_controller.find(admin_access_token, {"name": "user"})
+role_controller.find(public_access_token, {"id": user_roles[0]['id']})

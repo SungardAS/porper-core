@@ -9,6 +9,12 @@ class RoleController(MetaResourceController):
         self.role = Role(connection)
         from porper.models.function import Function
         self.function = Function(connection)
+        from porper.controllers.user_group_controller import UserGroupController
+        self.user_group_controller = UserGroupController(self.connection)
+        from porper.controllers.token_controller import TokenController
+        self.token_controller = TokenController(self.connection)
+        from porper.models.group import Group
+        self.group = Group(connection)
 
 
     def create(self, access_token, params):
@@ -76,17 +82,31 @@ class RoleController(MetaResourceController):
         """
 
         current_user = self.find_user_level(access_token)
-        if current_user['level'] != self.USER_LEVEL_ADMIN:
-            raise Exception("not permitted")
 
         if params.get("id"):
+            # check if this role is permitted to this user
+            user_id = self.token_controller.find_user_id(access_token)
+            user_groups = self.user_group_controller.find(access_token, {'user_id': user_id})
+            group_ids = [ user_group['group_id'] for user_group in user_groups]
+            groups = self.group.find_by_ids(group_ids)
+            role_ids = [group['role_id'] for group in groups if group['role_id'] == params['id']]
+            if not role_ids:
+                raise Exception("not permitted")
+
             role = self.role.find_by_id(params['id'])
             functions = self.validate_functions(role['functions'])
             role['functions'] = functions
             return role
 
-        # in case there is no params
-        roles = self.role.find({})
+        if current_user['level'] != self.USER_LEVEL_ADMIN:
+            raise Exception("not permitted")
+
+        if params:
+            roles = self.role.find(params)
+        else:
+            # in case there is no params
+            roles = self.role.find({})
+
         for role in roles:
             functions = self.validate_functions(role['functions'])
             role['functions'] = functions
