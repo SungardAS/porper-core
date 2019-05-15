@@ -12,12 +12,18 @@ class UserController(MetaResourceController):
         self.user = User(connection)
         #self.user_group = UserGroup(connection)
         self.invited_user = InvitedUser(connection)
+        from porper.models.access_token import AccessToken
+        self.access_token = AccessToken(connection)
+        from porper.models.group import Group
+        self.group = Group(connection)
         #from porper.controllers.token_controller import TokenController
         #self.token_controller = TokenController(connection)
         #from porper.controllers.permission_controller import PermissionController
         #self.permission_controller = PermissionController(self.connection)
         from porper.controllers.user_group_controller import UserGroupController
         self.user_group_controller = UserGroupController(self.connection)
+        from porper.controllers.role_controller import RoleController
+        self.role_controller = RoleController(self.connection)
 
 
     def create(self, access_token, params):
@@ -172,12 +178,16 @@ class UserController(MetaResourceController):
     def find(self, access_token, params):
         """
         possible attributes in params
+            - detail: find all groups and functions of the current user
             - group_id: find all users in this given group
             - id: find a specific user
             - ids: find specific users
             - None: No condition
             - any combination of email, auth_type, name, family_name and given_name
         """
+
+        if params.get("detail") and params['detail']:
+            return self.find_detail(access_token, params)
 
         ######### NOTICE
         #### When params has 'group_id', no other conditions cannot be used together!!!!
@@ -227,3 +237,23 @@ class UserController(MetaResourceController):
         user_groups = self.user_group_controller.find(access_token, {'group_ids': group_ids})
         user_ids = [ user_group['user_id'] for user_group in user_groups]
         return [ user for user in users if user['id'] in user_ids]
+
+
+    def find_detail(self, access_token, params):
+        current_users = self.access_token.find({'access_token': access_token})
+        if not current_users:
+            raise Exception("unauthorized")
+        user_id = current_users[0]['user_id']
+        current_user = self.user.find_by_id(user_id)
+        user_groups = self.user_group_controller.find(access_token, {'user_id': user_id})
+        group_ids = [ user_group['group_id'] for user_group in user_groups]
+        groups = self.group.find_by_ids(group_ids)
+        functions = []
+        for group in groups:
+            if group.get('role_id'):
+                role = self.role_controller.find(access_token, {'id': group['role_id']})
+                functions += role['functions']
+
+        current_user['groups'] = groups
+        current_user['functions'] = functions
+        return current_user
