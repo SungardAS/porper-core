@@ -84,14 +84,17 @@ class RoleController(MetaResourceController):
         current_user = self.find_user_level(access_token)
 
         if params.get("id"):
-            # check if this role is permitted to this user
-            user_id = self.token_controller.find_user_id(access_token)
-            user_groups = self.user_group_controller.find(access_token, {'user_id': user_id})
-            group_ids = [ user_group['group_id'] for user_group in user_groups]
-            groups = self.group.find_by_ids(group_ids)
-            role_ids = [group['role_id'] for group in groups if group['role_id'] == params['id']]
-            if not role_ids:
-                raise Exception("not permitted")
+            if current_user['level'] != self.USER_LEVEL_ADMIN:
+                # check if this role is permitted to this user
+                user_id = self.token_controller.find_user_id(access_token)
+                user_groups = self.user_group_controller.find(access_token, {'user_id': user_id})
+                group_ids = [ user_group['group_id'] for user_group in user_groups]
+                print(group_ids)
+                groups = self.group.find_by_ids(group_ids)
+                print(groups)
+                role_ids = [group['role_id'] for group in groups if group['role_id'] == params['id']]
+                if not role_ids:
+                    raise Exception("not permitted")
 
             role = self.role.find_by_id(params['id'])
             functions = self.validate_functions(role['functions'])

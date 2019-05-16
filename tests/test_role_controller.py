@@ -60,10 +60,11 @@ role_controller = RoleController(dynamodb)
 
 public_access_token = find_token(PUBLIC_GROUP_ID)
 
-# not permitted
 admin_roles = role_controller.find(admin_access_token, {"name": "admin"})
-role_controller.find(public_access_token, {"id": admin_roles[0]['id']})
+role_controller.find(public_access_token, {"id": admin_roles[0]['id']}) # not permitted
+role_controller.find(admin_access_token, {"id": admin_roles[0]['id']})  # permitted
 
 # permitted
 user_roles = role_controller.find(admin_access_token, {"name": "user"})
-role_controller.find(public_access_token, {"id": user_roles[0]['id']})
+role_controller.find(public_access_token, {"id": user_roles[0]['id']})  # permitted
+role_controller.find(admin_access_token, {"id": user_roles[0]['id']})   # permitted
