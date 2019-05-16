@@ -7,10 +7,10 @@ class UserController(MetaResourceController):
         #self.connection = connection
         MetaResourceController.__init__(self, connection)
         from porper.models.user import User
-        #from porper.models.user_group import UserGroup
+        from porper.models.user_group import UserGroup
         from porper.models.invited_user import InvitedUser
         self.user = User(connection)
-        #self.user_group = UserGroup(connection)
+        self.user_group = UserGroup(connection)
         self.invited_user = InvitedUser(connection)
         from porper.models.access_token import AccessToken
         self.access_token = AccessToken(connection)
@@ -197,7 +197,7 @@ class UserController(MetaResourceController):
             user_groups = self.user_group_controller.find(access_token, {'group_id': params['group_id']})
             user_ids = [ user_group['user_id'] for user_group in user_groups ]
             if len(user_ids) == 0:  return []
-            return self.user.find_by_ids(user_ids)
+            return self.add_groups(self.user.find_by_ids(user_ids))
 
         # find current user information including id and level
         current_user = self.find_user_level(access_token, params.get('group_id'))
@@ -207,13 +207,13 @@ class UserController(MetaResourceController):
         if params.get("id"):
             # it's me!
             if params['id'] == current_user['id']:
-                return self.user.find_by_id(params['id'])
+                return self.add_groups(self.user.find_by_id(params['id']))
             # if there is any group(s) where the current user and the given user belong together, return the given user info
             #group_ids = self.user_group_controller.find(access_token, {'user_id': params['id']})
             #if len(group_ids) == 0: raise Exception("not permitted")
             user_groups = self.user_group_controller.find(access_token, {'user_id': params['id']})
             if len(user_groups) == 0: raise Exception("not permitted")
-            return self.user.find_by_id(params['id'])
+            return self.add_groups(self.user.find_by_id(params['id']))
 
         ######### NOTICE
         #### When params has 'ids', no other conditions cannot be used together!!!!
@@ -221,7 +221,7 @@ class UserController(MetaResourceController):
             user_groups = self.user_group_controller.find(access_token, {'user_ids': params['ids']})
             user_ids = [ user_group['user_id'] for user_group in user_groups ]
             if len(user_ids) == 0:  return []
-            return self.user.find_by_ids(user_ids)
+            return self.add_groups(self.user.find_by_ids(user_ids))
 
         if not params:
             # in case there is no params
@@ -230,13 +230,13 @@ class UserController(MetaResourceController):
             # for other parameters
             users = self.user.find(params)
         if current_user['level'] == self.USER_LEVEL_ADMIN:
-            return users
+            return self.add_groups(users)
         # return only the users who are in the same group with the current user among the returned users
         user_groups = self.user_group_controller.find(access_token, {'user_id': current_user['id']})
         group_ids = [ user_group['group_id'] for user_group in user_groups]
         user_groups = self.user_group_controller.find(access_token, {'group_ids': group_ids})
         user_ids = [ user_group['user_id'] for user_group in user_groups]
-        return [ user for user in users if user['id'] in user_ids]
+        return self.add_groups([ user for user in users if user['id'] in user_ids])
 
 
     def find_detail(self, access_token, params):
@@ -257,3 +257,25 @@ class UserController(MetaResourceController):
         current_user['groups'] = groups
         current_user['functions'] = functions
         return current_user
+
+
+    def add_groups(self, user):
+        if isinstance(user, list):
+            return self.add_groups_to_users(user)
+        else:
+            return self.add_groups_to_user(user)
+
+
+    def add_groups_to_user(self, user):
+        user_groups = self.user_group.find({'user_id': user['id']})
+        group_ids = [ user_group['group_id'] for user_group in user_groups]
+        groups = self.group.find_by_ids(group_ids)
+        user['groups'] = groups
+        return user
+
+    def add_groups_to_users(self, users):
+        ret_users = []
+        for user in users:
+            new_user = self.add_groups_to_user(user)
+            ret_users.append(new_user)
+        return ret_users

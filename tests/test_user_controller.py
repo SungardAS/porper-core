@@ -25,3 +25,13 @@ for token in token_controller.find({}):
     user = user_controller.find(token['access_token'], {'detail': True})
     print(user)
     print("\n\n")
+
+
+for token in token_controller.find({}):
+    #user = user_controller.find_detail(token['access_token'], {})
+    user = user_controller.find(token['access_token'], {})
+    print(user)
+    print("\n\n")
+
+
+user = user_controller.find(token['access_token'], {"id": 'ac563dca-2069-4ffd-8ed5-b898a70406d0'})
