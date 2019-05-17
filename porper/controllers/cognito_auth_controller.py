@@ -52,12 +52,14 @@ class CognitoAuthController(AuthController):
         email = [attr for attr in response.get('UserAttributes') if attr['Name'] == 'email'][0]['Value']
         family_name = [attr for attr in response.get('UserAttributes') if attr['Name'] == 'family_name'][0]['Value']
         given_name = [attr for attr in response.get('UserAttributes') if attr['Name'] == 'given_name'][0]['Value']
+        customer_id = [attr for attr in response.get('UserAttributes') if attr['Name'] == 'custom:customer_id'][0]['Value']
 
         auth_params = {
             'user_id': user_id,
             'email': email,
             'family_name': family_name,
             'given_name': given_name,
+            'customer_id': customer_id,
             'auth_type': 'cognito',
             'access_token': cognito_access_token,
             'refresh_token': cognito_access_token
@@ -71,6 +73,7 @@ class CognitoAuthController(AuthController):
             'email': email,
             'family_name': family_name,
             'given_name': given_name,
+            'customer_id': customer_id,
             'access_token': cognito_access_token,
         }
         user_info['groups'] = AuthController.find_groups(self, user_id)
