@@ -101,7 +101,8 @@ class UserController(MetaResourceController):
             'auth_type': params['auth_type'],
             'name': params['name'],
             'family_name': params['family_name'],
-            'given_name': params['given_name']
+            'given_name': params['given_name'],
+            'customer_id': params['customer_id']
         })
         self.invited_user.update({
             'email':params['email'],
