@@ -7,12 +7,20 @@ class TokenController:
         self.connection = connection
         from porper.models.access_token import AccessToken
         self.access_token = AccessToken(connection)
+        from porper.models.user_group import UserGroup
+        self.user_group = UserGroup(connection)
 
     def find_user_id(self, access_token):
         params = {
             'access_token': access_token
         }
-        return self.find(params)[0]['user_id']
+        return self.access_token.find(params)[0]['user_id']
+
+    def is_admin(self, user_id):
+        from porper.controllers.meta_resource_controller import ADMIN_GROUP_ID
+        row = self.user_group.find({'user_id': user_id, 'group_id': ADMIN_GROUP_ID})
+        if len(row) > 0:  return True
+        else: return False
 
     def create(self, access_token, params):
         return self.save(params['access_token'], params['refresh_token'], params['user_id'])
@@ -33,8 +41,11 @@ class TokenController:
             return self.access_token.update(params)
 
     def find(self, access_token, params):
-        current_user = self.find_user_level(access_token)
-        if current_user['level'] != self.USER_LEVEL_ADMIN:
+        is_admin_user = False
+        user_id = self.find_user_id(access_token)
+        if user_id:
+            is_admin_user = self.is_admin(user_id)
+        if not is_admin_user:
             params = {'access_token': access_token}
         rows = self.access_token.find(params)
         if len(rows) == 0:
