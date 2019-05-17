@@ -41,12 +41,12 @@ class TokenController:
             return self.access_token.update(params)
 
     def find(self, access_token, params):
-        is_admin_user = False
-        user_id = self.find_user_id(access_token)
-        if user_id:
-            is_admin_user = self.is_admin(user_id)
-        if not is_admin_user:
-            params = {'access_token': access_token}
+        # is_admin_user = False
+        # user_id = self.find_user_id(access_token)
+        # if user_id:
+        #     is_admin_user = self.is_admin(user_id)
+        # if not is_admin_user:
+        #     params = {'access_token': access_token}
         rows = self.access_token.find(params)
         if len(rows) == 0:
             raise Exception("unauthorized")
