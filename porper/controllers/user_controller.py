@@ -255,8 +255,15 @@ class UserController(MetaResourceController):
                 role = self.role_controller.find(access_token, {'id': group['role_id']})
                 functions += role['functions']
 
+        # remove duplicates
+        unique_functions = []
+        for function in functions:
+            duplicates = [f["id"] for f in unique_functions if f["id"] == function["id"]]
+            if duplicates:  continue
+            unique_functions.append(function)
+
         current_user['groups'] = groups
-        current_user['functions'] = functions
+        current_user['functions'] = unique_functions
         return current_user
 
 
