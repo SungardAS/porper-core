@@ -103,7 +103,7 @@ class PermissionController:
 
 
 
-    def create_permissions_to_group(self, access_token, resource_name, resource_id, permissions, to_group_id):
+    def create_permissions_to_group(self, access_token, resource_name, resource_id, permissions, to_group_id, to_group_ids=None):
         #permissions:
         #[
         #    {
@@ -113,11 +113,18 @@ class PermissionController:
         #    ...
         #]
 
-        current_user_id = self.token_controller.find_user_id(access_token)
+        # current_user_id = self.token_controller.find_user_id(access_token)
+        #
+        # # if the current is admin, allow it
+        # if self.is_admin(current_user_id):
+        #     return self.add_permissions_to_group(resource_name, resource_id, permissions, to_group_id)
+        if to_group_ids:
+            for to_group_id in to_group_ids:
+                self.add_permissions_to_group(resource_name, resource_id, permissions, to_group_id)
+            return True
 
-        # if the current is admin, allow it
-        if self.is_admin(current_user_id):
-            return self.add_permissions_to_group(resource_name, resource_id, permissions, to_group_id)
+        self.add_permissions_to_group(resource_name, resource_id, permissions, to_group_id)
+        return True
 
         """
         # if the current user is NOT group admin of the given group, don't allow it
@@ -188,8 +195,8 @@ class PermissionController:
         #   'to_group_id'|'to_user_id': ''
         #}
 
-        if params.get('to_group_id'):
-            return self.create_permissions_to_group(access_token, params['resource_name'], params['resource_id'], params['permissions'], params['to_group_id'])
+        if params.get('to_group_id') or params.get('to_group_ids'):
+            return self.create_permissions_to_group(access_token, params['resource_name'], params['resource_id'], params['permissions'], params.get('to_group_id'), params.get('to_group_ids'))
         elif params.get('to_user_id'):
             return self.create_permissions_to_user(access_token, params['resource_name'], params['resource_id'], params['permissions'], params['to_user_id'])
 
@@ -315,5 +322,6 @@ class PermissionController:
     def get_values(self, permissions):
         ret = []
         for permission in permissions:
-            ret.append(permission['value'])
+            if permission['value'] not in ret:
+                ret.append(permission['value'])
         return ret

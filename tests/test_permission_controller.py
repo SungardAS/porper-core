@@ -19,22 +19,36 @@ public_access_token = find_token(PUBLIC_GROUP_ID)
 
 from porper.controllers.group_controller import GroupController
 group_controller = GroupController(dynamodb)
-admin_groups = group_controller.find(admin_access_token, {})
-public_groups = group_controller.find(public_access_token, {})
+
+all_groups = []
+for group in group_controller.find(admin_access_token, {}):
+    all_groups.append(group['id'])
+
+public_groups = []
+for group in group_controller.find(public_access_token, {}):
+    public_groups.append(group['id'])
+
+non_public_groups = []
+for group_id in all_groups:
+    if group_id not in public_groups:
+        non_public_groups.append(group_id)
 
 from porper.controllers.permission_controller import PermissionController
 permission_controller = PermissionController(dynamodb)
 
 # operations using admin user
-resource_name = 'sla'
-resource_id = 'first'
-permissions = [{'action': 'r'}, {'action': 'w'}]
-to_group_id = admin_groups[0]['id']
-permission_controller.add_permissions_to_group(resource_name, resource_id, permissions, to_group_id)
+params = {
+    'resource_name': 'sla',
+    'resource_id': 'first',
+    'permissions': [{'action': 'r'}, {'action': 'w'}],
+    #'to_group_id': <one_group>
+    'to_group_ids': non_public_groups[:2]
+}
+permission_controller.create(admin_access_token, params)
 
 params = {
     'action': 'r',
-    'resource': resource_name,
+    'resource': 'sla',
     #'value': resource_id
     'value_only': True
 }
@@ -43,15 +57,18 @@ print(ret)
 
 
 # operations using public user
-resource_name = 'sla'
-resource_id = 'second'
-permissions = [{'action': 'r'}, {'action': 'w'}]
-to_group_id = public_groups[0]['id']
-permission_controller.add_permissions_to_group(resource_name, resource_id, permissions, to_group_id)
+params = {
+    'resource_name': 'sla',
+    'resource_id': 'first',
+    'permissions': [{'action': 'r'}, {'action': 'w'}],
+    #'to_group_id': <one_group>
+    'to_group_ids': public_groups
+}
+permission_controller.create(public_access_token, params)
 
 params = {
     'action': 'w',
-    'resource': resource_name,
+    'resource': 'sla',
     #'value': resource_id,
     'value_only': True
 }
