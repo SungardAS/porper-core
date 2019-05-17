@@ -246,6 +246,9 @@ class PermissionController:
         if not params or (not params.get('group_id') and not params.get('user_id')):
 
             if self.is_admin(current_user_id):
+                if params.get("value_only"):
+                    #rows = self.get_values(rows)
+                    rows = [self.PERMITTED_TO_ALL]
                 return rows
 
             # find all 'group_ids' where the current user
@@ -301,4 +304,16 @@ class PermissionController:
 
         if len(rows) == 0:  return []
 
-        return self._filter_conditions(user_id, rows)
+        ret = self._filter_conditions(user_id, rows)
+
+        print(params.get("value_only"))
+        if params.get("value_only"):
+            ret = self.get_values(ret)
+
+        return ret
+
+    def get_values(self, permissions):
+        ret = []
+        for permission in permissions:
+            ret.append(permission['value'])
+        return ret
