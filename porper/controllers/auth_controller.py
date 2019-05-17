@@ -53,7 +53,7 @@ class AuthController():
                 admin_access_token = None
                 for admin_user in admin_users:
                     try:
-                        admin_access_tokens = self.token_controller.find({'user_id': admin_user['user_id']})
+                        admin_access_tokens = self.token_controller.find(None, {'user_id': admin_user['user_id']})
                         admin_access_token = admin_access_tokens[0]['access_token']
                         break
                     except:
