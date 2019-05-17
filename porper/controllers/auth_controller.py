@@ -21,6 +21,7 @@ class AuthController():
         family_name = params.get('family_name')
         given_name = params.get('given_name')
         name = params.get('name')
+        customer_id = params.get('customer_id')
         auth_type = params['auth_type']
         access_token = params['access_token']
         refresh_token = params['refresh_token']
@@ -38,6 +39,8 @@ class AuthController():
                 params['family_name'] = family_name
             if given_name:
                 params['given_name'] = given_name
+            if customer_id:
+                params['customer_id'] = customer_id
             if email:
                 params['email'] = email.lower()
 
