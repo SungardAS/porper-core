@@ -29,8 +29,8 @@ class AuthController():
         auth_type = params['auth_type']
         access_token = params['access_token']
         refresh_token = params['refresh_token']
-        
-        invited_user = self.invited_user.find_by_id(user_id)
+        print("Before invite")
+        invited_user = self.invited_user.find_by_id(email)
         if not invited_user:
            print("Invited user not found")
         else: 
