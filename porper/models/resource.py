@@ -26,6 +26,7 @@ class Resource:
             return params
 
     def update(self, params):
+        print(f"porper_put_params====={params}")
         if params.get('id') is None:
             raise Exception("no id is given in update")
         ue = ""
