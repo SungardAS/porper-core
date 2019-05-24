@@ -137,9 +137,6 @@ class UserController(MetaResourceController):
 
             # set this user's invite state to deleted
             user = self.user.find_by_id(params['id'])
-            print("Before Delete")
-            self.user.delete(params['id'])
-            print("After Delete")
             self.invited_user.find({'email':user['email'], 'auth_type':user['auth_type'], 'state':invited_user.DELETED})
 
 
