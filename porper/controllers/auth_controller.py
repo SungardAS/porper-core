@@ -30,7 +30,10 @@ class AuthController():
         access_token = params['access_token']
         refresh_token = params['refresh_token']
         print("Before invite")
-        #invited_user = self.invited_user.find_by_id(email)
+        items = self.invited_user.find({'email': params['email'], 'auth_type': params['auth_type']})
+        if items and auth_type == "sso":
+           customer_id=items[0]['customer_id']
+           print(customer_id) 
         #if not invited_user:
         #   print("Invited user not found")
         #else: 
