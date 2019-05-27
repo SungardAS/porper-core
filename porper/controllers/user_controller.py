@@ -129,7 +129,7 @@ class UserController(MetaResourceController):
                 self.user_group_controller.delete(access_token, user_group)
                 # set this user's invite state to deleted
             user = self.user.find_by_id(params['id'])
-            self.invited_user.find({'email':user['email'], 'auth_type':user['auth_type'], 'state':invited_user.DELETED})
+            self.invited_user.delete({'email': params['email'], 'auth_type': params['auth_type']})
             return self.user.delete(params['id'])
 
         current_user = self.find_user_level(access_token, params['group_id'])
