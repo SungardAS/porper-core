@@ -119,11 +119,18 @@ class UserController(MetaResourceController):
         possible attributes in params
             - id, group_id
         """
+        if not params.get('id'):
+           raise Exception("id must be provided")
         removeuser=params.get('removeuser')
         if removeuser=="Y": 
-           return self.user.delete(params['id'])
-        if not params.get('id'):
-            raise Exception("id must be provided")
+            # remove this user from all groups
+            user_groups = self.user_group_controller.find(access_token, {'user_id': params['id']})
+            for user_group in user_groups:
+                self.user_group_controller.delete(access_token, user_group)
+                # set this user's invite state to deleted
+            user = self.user.find_by_id(params['id'])
+            self.invited_user.find({'email':user['email'], 'auth_type':user['auth_type'], 'state':invited_user.DELETED})
+            return self.user.delete(params['id'])
 
         current_user = self.find_user_level(access_token, params['group_id'])
 
