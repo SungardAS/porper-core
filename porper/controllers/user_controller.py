@@ -119,7 +119,9 @@ class UserController(MetaResourceController):
         possible attributes in params
             - id, group_id
         """
-
+        removeuser=params.get('removeuser')
+        if removeuser=="Y": 
+           return self.user.delete(params['id'])
         if not params.get('id'):
             raise Exception("id must be provided")
 
@@ -164,7 +166,7 @@ class UserController(MetaResourceController):
 
         ###TODO: remove all permissions assigned to this user!!!!
 
-
+    
 
 
 
