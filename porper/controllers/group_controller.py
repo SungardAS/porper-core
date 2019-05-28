@@ -26,7 +26,7 @@ class GroupController(MetaResourceController):
 
 
     # only the admin can create a group
-    def create(self, access_token, params):
+    def create(self, access_token, params, paths):
         """
         possible attributes in params
             - [id], name
@@ -45,7 +45,7 @@ class GroupController(MetaResourceController):
         return self.group.create(params)
 
 
-    def update(self, access_token, params):
+    def update(self, access_token, params, paths):
         """
         possible attributes in params
             - id, name
@@ -64,7 +64,7 @@ class GroupController(MetaResourceController):
             return self.group.update(params)
 
 
-    def delete(self, access_token, params):
+    def delete(self, access_token, params, paths):
         """
         possible attributes in params
             - id
@@ -84,7 +84,7 @@ class GroupController(MetaResourceController):
         return self.group.delete(params['id'])
 
 
-    def find(self, access_token, params):
+    def find(self, access_token, params, paths):
         """
         possible attributes in params
             - user_id: find all groups where this given user belongs
