@@ -1,5 +1,12 @@
 
 from porper.controllers.meta_resource_controller import MetaResourceController
+import aws_lambda_logging
+import logging
+
+logger = logging.getLogger()
+loglevel = "INFO"
+logging.basicConfig(level=logging.ERROR)
+aws_lambda_logging.setup(level=loglevel)
 
 class GroupController(MetaResourceController):
 
@@ -41,6 +48,8 @@ class GroupController(MetaResourceController):
         possible attributes in params
             - id, name
         """
+        logger.info(f'group_controller_update-params={params}')
+        logger.info(f'group_controller_update-access_token={access_token}')
         # now allowed to change the admin group's name
         if params['id'] == self.ADMIN_GROUP_ID and params.get('name'):
             raise Exception('You cannot update the admin group name')

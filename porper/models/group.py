@@ -9,6 +9,13 @@ from porper.models.resource import Resource
 
 import os
 import uuid
+import aws_lambda_logging
+import logging
+
+logger = logging.getLogger()
+loglevel = "INFO"
+logging.basicConfig(level=logging.ERROR)
+aws_lambda_logging.setup(level=loglevel)
 
 class Group(Resource):
 
