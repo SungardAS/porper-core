@@ -31,6 +31,8 @@ class GroupController(MetaResourceController):
         possible attributes in params
             - [id], name
         """
+        logger.info(f"params={params}")
+        logger.info(f"access_token={access_token}")
         current_user = self.find_user_level(access_token)
         if current_user['level'] != self.USER_LEVEL_ADMIN:
             raise Exception('not permitted')
