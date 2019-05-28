@@ -33,6 +33,7 @@ class GroupController(MetaResourceController):
         """
         logger.info(f"params={params}")
         logger.info(f"access_token={access_token}")
+        logger.info(f"paths={paths}")
         current_user = self.find_user_level(access_token)
         if current_user['level'] != self.USER_LEVEL_ADMIN:
             raise Exception('not permitted')
@@ -42,7 +43,7 @@ class GroupController(MetaResourceController):
         if ret:
             raise Exception("alredy exists")
 
-        return self.group.create(params)
+        return self.group.create(params, paths)
 
 
     def update(self, access_token, params, paths):

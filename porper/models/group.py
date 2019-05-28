@@ -23,7 +23,7 @@ class Group(Resource):
         self.dynamodb = dynamodb
         self.table = dynamodb.Table(os.environ.get('GROUP_TABLE_NAME'))
 
-    def create(self, params):
+    def create(self, params, paths):
         if not params.get('id'):
             params['id'] = str(uuid.uuid4())
         return Resource.create(self, params)
