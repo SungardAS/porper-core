@@ -7,13 +7,17 @@ class AuthController():
         self.connection = permission_connection
         from porper.controllers.user_controller import UserController
         self.user_controller = UserController(self.connection)
+        from porper.controllers.invited_user_controller import InvitedUserController
+        self.invited_user_controller = InvitedUserController(self.connection)   
         from porper.controllers.token_controller import TokenController
         self.token_controller = TokenController(self.connection)
         from porper.models.user_group import UserGroup
         self.user_group = UserGroup(self.connection)
         from porper.models.user import User
         self.user = User(self.connection)
-
+        from porper.models.invited_user import InvitedUser
+        self.invited_user = InvitedUser(self.connection)
+        
     def authenticate(self, params):
 
         user_id = params['user_id']
@@ -25,7 +29,16 @@ class AuthController():
         auth_type = params['auth_type']
         access_token = params['access_token']
         refresh_token = params['refresh_token']
-
+        print("Before invite")
+        items = self.invited_user.find({'email': params['email'], 'auth_type': params['auth_type']})
+        if items and auth_type == "sso":
+           customer_id=items[0]['customer_id']
+           print(customer_id) 
+        #if not invited_user:
+        #   print("Invited user not found")
+        #else: 
+        #   print("Printing invited user") 
+        #   print(invited_user) 
         user = self.user.find_by_id(user_id)
         if not user:
             # create this user
