@@ -126,6 +126,10 @@ class InvitedUserController(MetaResourceController):
         items = self.invited_user.find({'email': params['email'], 'auth_type': params['auth_type']})
         if not items:
             raise Exception("not invited")
+        removeuser=params.get('removeuser')    
+        if removeuser=="Y":
+            self.invited_user.delete(params)
+            return True
         if items[0]['state'] == self.invited_user.REGISTERED:
             raise Exception("Already registered")
         group_id = items[0]['group_id']
