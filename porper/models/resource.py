@@ -5,6 +5,13 @@ import boto3
 from boto3.dynamodb.conditions import Key, Attr
 from botocore.exceptions import ClientError
 from porper.models.decimal_encoder import DecimalEncoder
+import aws_lambda_logging
+import logging
+
+logger = logging.getLogger()
+loglevel = "INFO"
+logging.basicConfig(level=logging.ERROR)
+aws_lambda_logging.setup(level=loglevel)
 
 class Resource:
 
@@ -18,15 +25,14 @@ class Resource:
                Item=params
             )
         except ClientError as e:
-            print(e.response['Error']['Message'])
+            logger.info(f"{e.response['Error']['Message']}")
             raise
         else:
-            print("PutItem succeeded:")
-            print(json.dumps(response, indent=4, cls=DecimalEncoder))
+            logger.info(f"PutItem succeeded:{json.dumps(response, indent=4, cls=DecimalEncoder)}")
             return params
 
     def update(self, params):
-        print(f"porper_put_params====={params}")
+        logger.info(f"porper_put_params====={params}")
         if params.get('id') is None:
             raise Exception("no id is given in update")
         ue = ""
@@ -40,9 +46,9 @@ class Resource:
             eav[':%s' % key] = params[key]
             ean['#%s' % key] = key
         ue = "set " + ue
-        print(ue)
-        print(eav)
-        print(ean)
+        logger.info(f"ue={ue}")
+        logger.info(f"eav={eav}")
+        logger.info(f"ean={ean}")
         try:
             response = self.table.update_item(
                 Key={
@@ -54,11 +60,10 @@ class Resource:
                 ReturnValues="UPDATED_NEW"
             )
         except ClientError as e:
-            print(e.response['Error']['Message'])
+            logger.info(f"{e.response['Error']['Message']}")
             raise
         else:
-            print("UpdateItem succeeded:")
-            print(json.dumps(response, indent=4, cls=DecimalEncoder))
+            logger.info(f"UpdateItem succeeded:{json.dumps(response, indent=4, cls=DecimalEncoder)}")
 
     def find_by_id(self, id):
         response = self.table.get_item(
@@ -68,11 +73,10 @@ class Resource:
         )
         if response.get('Item'):
             item = response['Item']
-            print("GetItem succeeded:")
-            print(json.dumps(item, indent=4, cls=DecimalEncoder))
+            logger.info(f"GetItem succeeded:{json.dumps(item, indent=4, cls=DecimalEncoder)}")
             return item
         else:
-            print("GetItem returns no item:")
+            logger.info("GetItem returns no item:")
             return None
 
     def add_filter_with_multiple_values(self, fe, ean, eav, key, values):
@@ -120,10 +124,8 @@ class Resource:
             eav[id_name] = id
         fe += ')'"""
         fe += self.add_filter_with_multiple_values(fe, ean, eav, "id", ids)
-        print(fe)
-
-        print(fe)
-        print(eav)
+        logger.info(f"fe={fe}")
+        logger.info(f"eav={eav}")
         return self.table.scan(
             FilterExpression=fe,
             ExpressionAttributeNames=ean,
@@ -132,7 +134,7 @@ class Resource:
 
     def find(self, params):
 
-        print('resource find params : %s' % params)
+        logger.info(f'resource find params : {params}')
 
         if not params:
             return self.table.scan()['Items']
@@ -176,18 +178,18 @@ class Resource:
             ean['#id'] = 'id'
             fe += ')'"""
 
-        print(fe)
-        print(ean)
-        print(eav)
+        logger.info(f"fe={fe}")
+        logger.info(f"ean={ean}")
+        logger.info(f"eav={eav}")
 
-        print(self.table)
+        logger.info(f"table={self.table}")
         response = self.table.scan(
             FilterExpression=fe,
             ExpressionAttributeNames=ean,
             ExpressionAttributeValues=eav
         )
         for i in response['Items']:
-            print(json.dumps(i, cls=DecimalEncoder))
+            logger.info(f"response_Items={json.dumps(i, cls=DecimalEncoder)}")
         return response["Items"]
 
     def delete(self, id):
@@ -198,8 +200,7 @@ class Resource:
                 },
             )
         except ClientError as e:
-            print(e.response['Error']['Message'])
+            logger.info(f"{e.response['Error']['Message']}")
             raise
         else:
-            print("DeleteItem succeeded:")
-            print(json.dumps(response, indent=4, cls=DecimalEncoder))
+            logger.info(f"DeleteItem succeeded:{json.dumps(response, indent=4, cls=DecimalEncoder)}")

@@ -8,6 +8,13 @@ from porper.models.decimal_encoder import DecimalEncoder
 from porper.models.resource import Resource
 
 import os
+import aws_lambda_logging
+import logging
+
+logger = logging.getLogger()
+loglevel = "INFO"
+logging.basicConfig(level=logging.ERROR)
+aws_lambda_logging.setup(level=loglevel)
 
 class InvitedUser(Resource):
 
@@ -51,11 +58,10 @@ class InvitedUser(Resource):
                 ReturnValues="UPDATED_NEW"
             )
         except ClientError as e:
-            print(e.response['Error']['Message'])
+            logger.info(f"{e.response['Error']['Message']}")
             raise
         else:
-            print("UpdateItem succeeded:")
-            print(json.dumps(response, indent=4, cls=DecimalEncoder))
+            logger.info(f"UpdateItem succeeded:{json.dumps(response, indent=4, cls=DecimalEncoder)}")
 
     def _fill_related_attrs(self, items):
         if len(items) == 0: return []
@@ -89,7 +95,7 @@ class InvitedUser(Resource):
         if len(items) == 0: return []
         return self._fill_related_attrs(items)"""
 
-        print(params)
+        logger.info(f"params={params}")
 
         if params.get('email') and params.get('auth_type'):
             if len(params.keys()) > 2:
@@ -105,7 +111,7 @@ class InvitedUser(Resource):
                     ExpressionAttributeValues=eav
                 )
                 for i in response['Items']:
-                    print(json.dumps(i, cls=DecimalEncoder))
+                    logger.info(f"response_Items={json.dumps(i, cls=DecimalEncoder)}")
                 return self._fill_related_attrs(response["Items"])
             else:
                 response = self.table.get_item(
@@ -116,11 +122,10 @@ class InvitedUser(Resource):
                 )
                 if response.get('Item'):
                     item = response['Item']
-                    print("GetItem succeeded:")
-                    print(json.dumps(item, indent=4, cls=DecimalEncoder))
+                    logger.info(f"GetItem succeeded:{json.dumps(item, indent=4, cls=DecimalEncoder)}")
                     return self._fill_related_attrs([item])
                 else:
-                    print("GetItem returns no item:")
+                    logger.info(f"GetItem returns no item:")
                     return []
 
         items = Resource.find(self, params)

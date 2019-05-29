@@ -8,6 +8,13 @@ from porper.models.decimal_encoder import DecimalEncoder
 from porper.models.resource import Resource
 
 import os
+import aws_lambda_logging
+import logging
+
+logger = logging.getLogger()
+loglevel = "INFO"
+logging.basicConfig(level=logging.ERROR)
+aws_lambda_logging.setup(level=loglevel)
 
 class UserGroup(Resource):
 
@@ -41,11 +48,10 @@ class UserGroup(Resource):
                 },
             )
         except ClientError as e:
-            print(e.response['Error']['Message'])
+            logger.info(f"{e.response['Error']['Message']}")
             raise
         else:
-            print("DeleteItem succeeded:")
-            print(json.dumps(response, indent=4, cls=DecimalEncoder))
+            logger.info(f"DeleteItem succeeded:{json.dumps(response, indent=4, cls=DecimalEncoder)}")
 
     def find_by_user_ids(self, user_ids):
         eav = {}
@@ -58,8 +64,8 @@ class UserGroup(Resource):
                 fe += ', ' + user_id_name
             eav[user_id_name] = user_id
         fe += ')'
-        print(fe)
-        print(eav)
+        logger.info(f"fe={fe}")
+        logger.info(f"eav={eav}")
         return self.table.scan(
             FilterExpression=fe,
             ExpressionAttributeValues=eav
@@ -76,8 +82,8 @@ class UserGroup(Resource):
                 fe += ', ' + group_id_name
             eav[group_id_name] = group_id
         fe += ')'
-        print(fe)
-        print(eav)
+        logger.info(f"fe={fe}")
+        logger.info(f"eav={eav}")
         return self.table.scan(
             FilterExpression=fe,
             ExpressionAttributeValues=eav
@@ -97,11 +103,10 @@ class UserGroup(Resource):
             )
             if response.get('Item'):
                 item = response['Item']
-                print("GetItem succeeded:")
-                print(json.dumps(item, indent=4, cls=DecimalEncoder))
+                logger.info(f"GetItem succeeded:{json.dumps(item, indent=4, cls=DecimalEncoder)}")
                 return [item]
             else:
-                print("GetItem returns no item:")
+                logger.info("GetItem returns no item:")
                 return []
 
         if params.get('user_id'):
@@ -110,7 +115,7 @@ class UserGroup(Resource):
                 FilterExpression=fe,
             )
             for i in response['Items']:
-                print(json.dumps(i, cls=DecimalEncoder))
+                logger.info(f"response_items={json.dumps(i, cls=DecimalEncoder)}")
             return response['Items']
 
         if params.get('group_id'):
@@ -119,7 +124,7 @@ class UserGroup(Resource):
                 FilterExpression=fe,
             )
             for i in response['Items']:
-                print(json.dumps(i, cls=DecimalEncoder))
+                logger.info(f"response_items={json.dumps(i, cls=DecimalEncoder)}")
             return response['Items']
 
         if params.get('email'):
@@ -132,7 +137,7 @@ class UserGroup(Resource):
                 FilterExpression=fe,
             )
             for i in response['Items']:
-                print(json.dumps(i, cls=DecimalEncoder))
+                logger.info(f"response_items={json.dumps(i, cls=DecimalEncoder)}")
             return response['Items']
 
         return []

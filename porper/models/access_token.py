@@ -9,6 +9,13 @@ from porper.models.resource import Resource
 
 import os
 import dateutil.parser
+import aws_lambda_logging
+import logging
+
+logger = logging.getLogger()
+loglevel = "INFO"
+logging.basicConfig(level=logging.ERROR)
+aws_lambda_logging.setup(level=loglevel)
 
 class AccessToken(Resource):
 
@@ -46,11 +53,10 @@ class AccessToken(Resource):
                 ReturnValues="UPDATED_NEW"
             )
         except ClientError as e:
-            print(e.response['Error']['Message'])
+            logger.info(f"{e.response['Error']['Message']}")
             raise
         else:
-            print("UpdateItem succeeded:")
-            print(json.dumps(response, indent=4, cls=DecimalEncoder))
+            logger.info(f"UpdateItem succeeded:{json.dumps(response, indent=4, cls=DecimalEncoder)}")
 
     def find(self, params):
 
@@ -65,11 +71,10 @@ class AccessToken(Resource):
             )
             if response.get('Item'):
                 item = response['Item']
-                print("GetItem succeeded:")
-                print(json.dumps(item, indent=4, cls=DecimalEncoder))
+                logger.info(f"GetItem succeeded:{json.dumps(item, indent=4, cls=DecimalEncoder)}")
                 return [item]
             else:
-                print("GetItem returns no item:")
+                logger.info("GetItem returns no item:")
                 return []
 
         if params.get('user_id'):
