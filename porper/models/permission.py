@@ -7,6 +7,13 @@ from botocore.exceptions import ClientError
 from porper.models.decimal_encoder import DecimalEncoder
 
 import os
+import aws_lambda_logging
+import logging
+
+logger = logging.getLogger()
+loglevel = "INFO"
+logging.basicConfig(level=logging.ERROR)
+aws_lambda_logging.setup(level=loglevel)
 
 ALL = "*"
 
@@ -31,11 +38,10 @@ class Permission:
                Item=params
             )
         except ClientError as e:
-            print(e.response['Error']['Message'])
+            logger.info(f"{e.response['Error']['Message']}")
             raise
         else:
-            print("PutItem succeeded:")
-            print(json.dumps(response, indent=4, cls=DecimalEncoder))
+            logger.info(f"PutItem succeeded:{json.dumps(response, indent=4, cls=DecimalEncoder)}")
             return params
 
     def _find_id(self, params):
@@ -65,7 +71,7 @@ class Permission:
         if id is None:
             id = self._find_id(params)
         if id is None:
-            print("No item found to delete")
+            logger.info("No item found to delete")
             return None
         try:
             response = self.table.delete_item(
@@ -74,11 +80,10 @@ class Permission:
                 },
             )
         except ClientError as e:
-            print(e.response['Error']['Message'])
+            logger.info(f"{e.response['Error']['Message']}")
             raise
         else:
-            print("DeleteItem succeeded:")
-            print(json.dumps(response, indent=4, cls=DecimalEncoder))
+            logger.info(f"DeleteItem succeeded:{json.dumps(response, indent=4, cls=DecimalEncoder)}")
             return id
 
     def find(self, params):
@@ -143,14 +148,14 @@ class Permission:
             fe += "#group_id = :group_id"
             eav[':group_id'] = params['group_id']
             ean['#group_id'] = 'group_id'"""
-        print(fe)
-        print(ean)
-        print(eav)
+        logger.info(f"{fe}")
+        logger.info(f"{ean}")
+        logger.info(f"{eav}")
         response = self.table.scan(
             FilterExpression=fe,
             ExpressionAttributeNames=ean,
             ExpressionAttributeValues=eav
         )
         for i in response['Items']:
-            print(json.dumps(i, cls=DecimalEncoder))
+            logger.info(f"response_items={json.dumps(i, cls=DecimalEncoder)}")
         return response["Items"]
