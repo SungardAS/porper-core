@@ -41,7 +41,7 @@ class GroupController(MetaResourceController):
         # check if the group with the given customer already exists
         ret = self.group.find({"name": params["name"], "customer_id": params["customer_id"]})
         if ret:
-            raise Exception("alredy exists")
+            raise Exception("already exists")
 
         return self.group.create(params, paths)
 
