@@ -51,7 +51,11 @@ class MetaResourceController:
         elif group_id and self.is_group_admin(user_id, group_id):
             user_level = self.USER_LEVEL_GROUP_ADMIN
         return {"id": user_id, "level": user_level, "group_id": group_id}
-
+    
+    def find_user_val(self, access_token):
+        #This is used only for the invite block
+        user_id = self.token_controller.find_user_id(access_token)
+        return {"id": user_id}
 
     #def is_group_admin(self, user_id, group_id):
     #    return self.permission_controller.is_group_admin(user_id, group_id)

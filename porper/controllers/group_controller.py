@@ -102,6 +102,8 @@ class GroupController(MetaResourceController):
 
         if 'id' in params:
             user_groups = self.user_group_controller.find(access_token, {'group_id': params['id']})
+            if len(user_groups) == 0:
+               return self.group.find_by_id(params['id'])
             group_ids = [ user_group['group_id'] for user_group in user_groups ]
             if params['id'] in group_ids:
                 return self.group.find_by_id(params['id'])
