@@ -59,6 +59,7 @@ class Resource:
                 ExpressionAttributeNames=ean,
                 ReturnValues="UPDATED_NEW"
             )
+            return self.find_by_id(params["id"])
         except ClientError as e:
             logger.info(f"{e.response['Error']['Message']}")
             raise
