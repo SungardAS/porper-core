@@ -38,9 +38,14 @@ class UserController(MetaResourceController):
         if len(users) == 0:
             # set this user to the admin
             self.user.create(params)
+            from porper.models.group import Group
+            group = Group(self.dynamodb)
+            admin_groups = group.find_admin_groups()
+            if not admin_groups:
+                raise Exception("No admin group found")
             self.user_group.create({
                 'user_id': params['id'],
-                'group_id': self.ADMIN_GROUP_ID
+                'group_id': admin_groups[0]['id']
             })
             return params['id']
 
@@ -122,7 +127,7 @@ class UserController(MetaResourceController):
         if not params.get('id'):
            raise Exception("id must be provided")
         removeuser=params.get('removeuser')
-        if removeuser=="Y": 
+        if removeuser=="Y":
             # remove this user from all groups
             user_groups = self.user_group_controller.find(access_token, {'user_id': params['id']})
             for user_group in user_groups:
@@ -148,21 +153,13 @@ class UserController(MetaResourceController):
             user = self.user.find_by_id(params['id'])
             self.invited_user.find({'email':user['email'], 'auth_type':user['auth_type'], 'state':invited_user.DELETED})
 
-
-
-
-        """if params['group_id'] == self.ADMIN_GROUP_ID:
-            if current_user['level'] != self.USER_LEVEL_ADMIN:
-                raise Exception("not permitted")
-        elif current_user['level'] != self.USER_LEVEL_GROUP_ADMIN:
-            raise Exception("not permitted")"""
         if current_user['level'] != self.USER_LEVEL_ADMIN and current_user['level'] != self.USER_LEVEL_GROUP_ADMIN:
             raise Exception("not permitted")
 
-        user_groups = self.user_group_controller.find(access_token, {'group_id': params['group_id']})
-        if params['group_id'] == self.ADMIN_GROUP_ID:
-            if len(user_groups) == 1:
-                raise Exception("You cannot remove this user because there must be at least one user in admin group")
+        # user_groups = self.user_group_controller.find(access_token, {'group_id': params['group_id']})
+        # if params['group_id'] == self.ADMIN_GROUP_ID:
+        #     if len(user_groups) == 1:
+        #         raise Exception("You cannot remove this user because there must be at least one user in admin group")
         return self.user_group_controller.delete(
             access_token,
             {
@@ -173,7 +170,7 @@ class UserController(MetaResourceController):
 
         ###TODO: remove all permissions assigned to this user!!!!
 
-    
+
 
 
 

@@ -23,10 +23,33 @@ class Group(Resource):
         self.dynamodb = dynamodb
         self.table = dynamodb.Table(os.environ.get('GROUP_TABLE_NAME'))
 
-    def create(self, params, paths):
+    def create(self, params, paths=None):
         if not params.get('id'):
             params['id'] = str(uuid.uuid4())
         return Resource.create(self, params)
+
+
+    def is_admin_group(self, group):
+        from porper.models.role import Role
+        self.role = Role(self.dynamodb)
+        from porper.models.function import Function
+        self.function = Function(self.dynamodb)
+        admin_permission = {'resource': 'admin', 'action': 'w'}
+        if group.get('role_id'):
+            role = self.role.find_by_id(group['role_id'])
+            for function in self.function.find_by_ids(role['functions']):
+                for permission in function['permissions']:
+                    if permission['resource'] == admin_permission['resource'] and permission['action'] == admin_permission['action']:
+                        return True
+        return False
+
+
+    def find_admin_groups(self):
+        admin_groups = []
+        for group in self.find({}):
+            if self.is_admin_group(group):
+                admin_groups.append(group)
+        return admin_groups
 
     """def _find_by_ids(self, ids):
         eav = {}

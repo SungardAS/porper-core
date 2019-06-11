@@ -1,6 +1,4 @@
 
-from porper.controllers.meta_resource_controller import ADMIN_GROUP_ID
-
 class AuthController():
 
     def __init__(self, permission_connection):
@@ -8,16 +6,16 @@ class AuthController():
         from porper.controllers.user_controller import UserController
         self.user_controller = UserController(self.connection)
         from porper.controllers.invited_user_controller import InvitedUserController
-        self.invited_user_controller = InvitedUserController(self.connection)   
+        self.invited_user_controller = InvitedUserController(self.connection)
         from porper.controllers.token_controller import TokenController
         self.token_controller = TokenController(self.connection)
-        from porper.models.user_group import UserGroup
-        self.user_group = UserGroup(self.connection)
+        from porper.models.access_token import AccessToken
+        self.access_token = AccessToken(self.connection)
         from porper.models.user import User
         self.user = User(self.connection)
         from porper.models.invited_user import InvitedUser
         self.invited_user = InvitedUser(self.connection)
-        
+
     def authenticate(self, params):
 
         user_id = params['user_id']
@@ -33,12 +31,12 @@ class AuthController():
         items = self.invited_user.find({'email': params['email'], 'auth_type': params['auth_type']})
         if items and auth_type == "sso":
            customer_id=items[0]['customer_id']
-           print(customer_id) 
+           print(customer_id)
         #if not invited_user:
         #   print("Invited user not found")
-        #else: 
-        #   print("Printing invited user") 
-        #   print(invited_user) 
+        #else:
+        #   print("Printing invited user")
+        #   print(invited_user)
         user = self.user.find_by_id(user_id)
         if not user:
             # create this user
@@ -58,19 +56,12 @@ class AuthController():
                 params['email'] = email.lower()
 
             # find admin user's access_token to replace this user's access_token to create a user
-            admin_users = self.user_group.find({'group_id': ADMIN_GROUP_ID})
-            if len(admin_users) == 0:
+            users = self.user.find({})
+            if not users:
                 # this is the first user, so no need to set access_token
                 admin_access_token = None
             else:
-                admin_access_token = None
-                for admin_user in admin_users:
-                    try:
-                        admin_access_tokens = self.token_controller.find(None, {'user_id': admin_user['user_id']})
-                        admin_access_token = admin_access_tokens[0]['access_token']
-                        break
-                    except:
-                        pass
+                admin_access_token = self.access_token.find_admin_token()
             user_id = self.user_controller.create(admin_access_token, params)
 
         # now save the tokens

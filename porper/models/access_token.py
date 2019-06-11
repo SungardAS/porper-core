@@ -84,3 +84,23 @@ class AccessToken(Resource):
             )['Items']
 
         raise Exception("not permitted")
+
+
+    def find_admin_token(self):
+
+        from porper.models.group import Group
+        group = Group(self.dynamodb)
+        admin_groups = group.find_admin_groups()
+        if not admin_groups:
+            print("No admin group found")
+            return None
+        admin_group_ids = [group['id'] for group in admin_groups]
+
+        from porper.models.user_group import UserGroup
+        user_group = UserGroup(self.dynamodb)
+        access_tokens = self.find({})
+        for access_token in access_tokens:
+            token_groups = user_group.find({'user_id': access_token['user_id']})
+            if token_groups and token_groups[0]['group_id'] in admin_group_ids:
+                print(access_token)
+                return access_token['access_token']
