@@ -16,12 +16,6 @@ class TokenController:
         }
         return self.access_token.find(params)[0]['user_id']
 
-    def is_admin(self, user_id):
-        from porper.controllers.meta_resource_controller import ADMIN_GROUP_ID
-        row = self.user_group.find({'user_id': user_id, 'group_id': ADMIN_GROUP_ID})
-        if len(row) > 0:  return True
-        else: return False
-
     def create(self, access_token, params):
         return self.save(params['access_token'], params['refresh_token'], params['user_id'])
 

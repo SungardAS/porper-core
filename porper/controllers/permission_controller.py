@@ -14,30 +14,18 @@ class PermissionController:
         from porper.controllers.user_group_controller import UserGroupController
         self.user_group_controller = UserGroupController(connection)
 
-        from porper.controllers.meta_resource_controller import ADMIN_GROUP_ID
         from porper.models.permission import ALL
-        self.ADMIN_GROUP_ID = ADMIN_GROUP_ID
-        #self.USER_LEVEL_ADMIN = 'admin'
-        #self.USER_LEVEL_GROUP_ADMIN = 'group_admin'
-        #self.USER_LEVEL_USER = 'user'
         self.PERMITTED_TO_ALL = ALL
-        #self.PERMISSION_TO_CREATE = 'create'
 
 
     def is_admin(self, user_id):
-        row = self.user_group.find({'user_id': user_id, 'group_id': self.ADMIN_GROUP_ID})
-        if len(row) > 0:  return True
-        else: return False
+        return self.user_group_controller.is_admin(user_id)
 
     def is_group_admin(self, user_id, group_id):
-        rows = self.user_group.find({'user_id': user_id, 'group_id': group_id})
-        if len(rows) > 0 and rows[0]['is_admin']:  return True
-        else: return False
+        return self.user_group_controller.is_group_admin(user_id, group_id)
 
     def is_member(self, user_id, group_id):
-        rows = self.user_group.find({'user_id': user_id, 'group_id': group_id})
-        if len(rows) > 0:  return True
-        else: return False
+        return self.user_group_controller.is_member(user_id, group_id)
 
     def is_permitted(self, access_token, params):
         """
