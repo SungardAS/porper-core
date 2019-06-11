@@ -86,16 +86,21 @@ class AccessToken(Resource):
         raise Exception("not permitted")
 
 
-    def delete(self, access_token):
-        try:
-            response = self.table.delete_item(
-                Key={
-                    'access_token': access_token
-                },
-            )
-        except ClientError as e:
-            logger.info(f"{e.response['Error']['Message']}")
-            raise
-        else:
-            logger.info(f"DeleteItem succeeded:{json.dumps(response, indent=4, cls=DecimalEncoder)}")
-        return True
+    def find_admin_token(self):
+
+        from porper.models.group import Group
+        group = Group(self.dynamodb)
+        admin_groups = group.find_admin_groups()
+        if not admin_groups:
+            print("No admin group found")
+            return None
+        admin_group_ids = [group['id'] for group in admin_groups]
+
+        from porper.models.user_group import UserGroup
+        user_group = UserGroup(self.dynamodb)
+        access_tokens = self.find({})
+        for access_token in access_tokens:
+            token_groups = user_group.find({'user_id': access_token['user_id']})
+            if token_groups and token_groups[0]['group_id'] in admin_group_ids:
+                print(access_token)
+                return access_token['access_token']

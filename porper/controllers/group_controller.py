@@ -15,18 +15,12 @@ class GroupController(MetaResourceController):
         MetaResourceController.__init__(self, connection)
         from porper.models.group import Group
         self.group = Group(connection)
-        #from porper.models.user_group import UserGroup
-        #self.user_group = UserGroup(connection)
-        #from porper.controllers.token_controller import TokenController
-        #self.token_controller = TokenController(connection)
-        #from porper.controllers.permission_controller import PermissionController
-        #self.permission_controller = PermissionController(self.connection)
         from porper.controllers.user_group_controller import UserGroupController
         self.user_group_controller = UserGroupController(self.connection)
 
 
     # only the admin can create a group
-    def create(self, access_token, params, paths):
+    def create(self, access_token, params, paths=None):
         """
         possible attributes in params
             - [id], name
@@ -46,16 +40,13 @@ class GroupController(MetaResourceController):
         return self.group.create(params, paths)
 
 
-    def update(self, access_token, params, paths):
+    def update(self, access_token, params, paths=None):
         """
         possible attributes in params
             - id, name
         """
         logger.info(f'group_controller_update-params={params}')
         logger.info(f'group_controller_update-access_token={access_token}')
-        # now allowed to change the admin group's name
-        if params['id'] == self.ADMIN_GROUP_ID and params.get('name'):
-            raise Exception('You cannot update the admin group name')
         if params.get('customer_id'):
             raise Exception('You cannot update the group customer')
         current_user = self.find_user_level(access_token, params['id'])
@@ -65,7 +56,7 @@ class GroupController(MetaResourceController):
             return self.group.update(params)
 
 
-    def delete(self, access_token, params, paths):
+    def delete(self, access_token, params, paths=None):
         """
         possible attributes in params
             - id
@@ -74,10 +65,6 @@ class GroupController(MetaResourceController):
         if current_user['level'] == self.USER_LEVEL_USER:
             raise Exception('not permitted')
 
-        # cannot remove the admin group
-        if params['id'] == self.ADMIN_GROUP_ID:
-            raise Exception("You cannot remove the admin group")
-
         # cannot remove it when it has users
         user_groups = self.user_group_controller.find(access_token, {'group_id': params['id']})
         if len(user_groups) > 0:
@@ -85,7 +72,7 @@ class GroupController(MetaResourceController):
         return self.group.delete(params['id'])
 
 
-    def find(self, access_token, params, paths):
+    def find(self, access_token, params, paths=None):
         """
         possible attributes in params
             - user_id: find all groups where this given user belongs

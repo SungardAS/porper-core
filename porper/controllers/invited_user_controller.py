@@ -2,21 +2,12 @@
 from datetime import datetime
 from porper.controllers.meta_resource_controller import MetaResourceController
 
-from porper.controllers.meta_resource_controller import ADMIN_GROUP_ID
-
 class InvitedUserController(MetaResourceController):
 
     def __init__(self, connection):
-        #self.connection = connection
         MetaResourceController.__init__(self, connection)
         from porper.models.invited_user import InvitedUser
         self.invited_user = InvitedUser(connection)
-        #from porper.models.user_group import UserGroup
-        #self.user_group = UserGroup(connection)
-        #from porper.controllers.token_controller import TokenController
-        #self.token_controller = TokenController(connection)
-        #from porper.controllers.permission_controller import PermissionController
-        #self.permission_controller = PermissionController(self.connection)
         from porper.controllers.user_group_controller import UserGroupController
         self.user_group_controller = UserGroupController(self.connection)
 
@@ -127,9 +118,9 @@ class InvitedUserController(MetaResourceController):
         items = self.invited_user.find({'email': params['email'], 'auth_type': params['auth_type']})
         if not items:
             raise Exception("not invited")
-        removeuser=params.get('removeuser')    
+        removeuser=params.get('removeuser')
         if removeuser=="Y":
-           print("Skip registered check") 
+           print("Skip registered check")
         else:
             if items[0]['state'] == self.invited_user.REGISTERED:
                 raise Exception("Already registered")
