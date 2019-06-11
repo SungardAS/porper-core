@@ -25,6 +25,8 @@ class MetaResourceController:
 
     def is_admin(self, user_id):
         user_groups = self.user_group.find({'user_id': user_id})
+        if not user_groups:
+            return False
         group_ids = [ user_group['group_id'] for user_group in user_groups]
         groups = self.group.find_by_ids(group_ids)
         print("groups = {}".format(groups))

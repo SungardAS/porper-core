@@ -12,10 +12,12 @@ dynamodb = boto3.resource('dynamodb',region_name=region)
 # Find the access_token of an admin
 #########################################################################################################
 
-from porper.controllers.meta_resource_controller import ADMIN_GROUP_ID, PUBLIC_GROUP_ID
+from porper.models.group import Group
+group = Group(dynamodb)
+admin_group = group.find({'name': 'admin'})[0]
 
 from util import find_token
-admin_access_token = find_token(ADMIN_GROUP_ID)
+admin_access_token = find_token(admin_group['id'])
 
 
 from porper.controllers.function_controller import FunctionController

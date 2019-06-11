@@ -252,21 +252,27 @@ class UserController(MetaResourceController):
             raise Exception("unauthorized")
         user_id = current_users[0]['user_id']
         current_user = self.user.find_by_id(user_id)
+        if not current_user:
+            raise Exception("invalid access token")
         user_groups = self.user_group_controller.find(access_token, {'user_id': user_id})
-        group_ids = [ user_group['group_id'] for user_group in user_groups]
-        groups = self.group.find_by_ids(group_ids)
-        functions = []
-        for group in groups:
-            if group.get('role_id'):
-                role = self.role_controller.find(access_token, {'id': group['role_id']})
-                functions += role['functions']
+        if user_groups:
+            group_ids = [ user_group['group_id'] for user_group in user_groups]
+            groups = self.group.find_by_ids(group_ids)
+            functions = []
+            for group in groups:
+                if group.get('role_id'):
+                    role = self.role_controller.find(access_token, {'id': group['role_id']})
+                    functions += role['functions']
 
-        # remove duplicates
-        unique_functions = []
-        for function in functions:
-            duplicates = [f["id"] for f in unique_functions if f["id"] == function["id"]]
-            if duplicates:  continue
-            unique_functions.append(function)
+            # remove duplicates
+            unique_functions = []
+            for function in functions:
+                duplicates = [f["id"] for f in unique_functions if f["id"] == function["id"]]
+                if duplicates:  continue
+                unique_functions.append(function)
+        else:
+            groups = []
+            unique_functions = []
 
         current_user['groups'] = groups
         current_user['functions'] = unique_functions
