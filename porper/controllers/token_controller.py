@@ -51,3 +51,6 @@ class TokenController:
         if len(rows) == 0:
             raise Exception("unauthorized")
         return rows
+
+    def delete(self, access_token, params):
+        return self.access_token.delete(access_token)

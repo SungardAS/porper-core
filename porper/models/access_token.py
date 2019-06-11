@@ -84,3 +84,18 @@ class AccessToken(Resource):
             )['Items']
 
         raise Exception("not permitted")
+
+
+    def delete(self, access_token):
+        try:
+            response = self.table.delete_item(
+                Key={
+                    'access_token': access_token
+                },
+            )
+        except ClientError as e:
+            logger.info(f"{e.response['Error']['Message']}")
+            raise
+        else:
+            logger.info(f"DeleteItem succeeded:{json.dumps(response, indent=4, cls=DecimalEncoder)}")
+        return True
