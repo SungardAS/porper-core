@@ -122,7 +122,7 @@ class UserController(MetaResourceController):
         if not params.get('id'):
            raise Exception("id must be provided")
         removeuser=params.get('removeuser')
-        if removeuser=="Y": 
+        if removeuser=="Y":
             # remove this user from all groups
             user_groups = self.user_group_controller.find(access_token, {'user_id': params['id']})
             for user_group in user_groups:
@@ -173,7 +173,7 @@ class UserController(MetaResourceController):
 
         ###TODO: remove all permissions assigned to this user!!!!
 
-    
+
 
 
 
@@ -285,9 +285,12 @@ class UserController(MetaResourceController):
 
     def add_groups_to_user(self, user):
         user_groups = self.user_group.find({'user_id': user['id']})
-        group_ids = [ user_group['group_id'] for user_group in user_groups]
-        groups = self.group.find_by_ids(group_ids)
-        user['groups'] = groups
+        if user_groups:
+            group_ids = [ user_group['group_id'] for user_group in user_groups]
+            groups = self.group.find_by_ids(group_ids)
+            user['groups'] = groups
+        else:
+            user['groups'] = []
         return user
 
     def add_groups_to_users(self, users):
