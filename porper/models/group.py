@@ -30,6 +30,7 @@ class Group(Resource):
 
 
     def is_admin_group(self, group):
+        print(group)
         from porper.models.role import Role
         self.role = Role(self.dynamodb)
         from porper.models.function import Function
@@ -37,10 +38,11 @@ class Group(Resource):
         admin_permission = {'resource': 'admin', 'action': 'w'}
         if group.get('role_id'):
             role = self.role.find_by_id(group['role_id'])
-            for function in self.function.find_by_ids(role['functions']):
-                for permission in function['permissions']:
-                    if permission['resource'] == admin_permission['resource'] and permission['action'] == admin_permission['action']:
-                        return True
+            if role['functions']:
+                for function in self.function.find_by_ids(role['functions']):
+                    for permission in function['permissions']:
+                        if permission['resource'] == admin_permission['resource'] and permission['action'] == admin_permission['action']:
+                            return True
         return False
 
 
