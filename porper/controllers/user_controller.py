@@ -135,12 +135,13 @@ class UserController(MetaResourceController):
                 # set this user's invite state to deleted
             user = self.user.find_by_id(params['id'])
             # find if the given user already exists
+            # Remove the access tokens of the user that is being deleted
             access_token_rows = self.access_token.find({"user_id": params['id']})
             if len(access_token_rows) > 0:
-                print('already Access Token exists')
-                access_token_id=access_token_rows[0]['access_token']
-                params1={"access_token": access_token_id}
-                self.access_token.delete(access_token, params1)
+                for acctoken in access_token_rows:
+                    access_token_id=acctoken.get('access_token')
+                    print(access_token_id)
+                    self.access_token.delete(access_token_id)
                 
             #self.invited_user.delete({'email': params['email'], 'auth_type': params['auth_type']})
             return self.user.delete(params['id'])
