@@ -137,6 +137,7 @@ class UserController(MetaResourceController):
             # find if the given user already exists
             # Remove the access tokens of the user that is being deleted
             access_token_rows = self.access_token.find({"user_id": params['id']})
+            print("Access Tokens found")
             if len(access_token_rows) > 0:
                 for acctoken in access_token_rows:
                     access_token_id=acctoken.get('access_token')
