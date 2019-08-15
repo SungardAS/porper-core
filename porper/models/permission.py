@@ -5,6 +5,7 @@ import boto3
 from boto3.dynamodb.conditions import Key, Attr
 from botocore.exceptions import ClientError
 from porper.models.decimal_encoder import DecimalEncoder
+from porper.models.resource import Resource
 
 import os
 import aws_lambda_logging
@@ -17,7 +18,7 @@ aws_lambda_logging.setup(level=loglevel)
 
 ALL = "*"
 
-class Permission:
+class Permission(Resource):
 
     def __init__(self, dynamodb):
         self.dynamodb = dynamodb
@@ -86,76 +87,76 @@ class Permission:
             logger.info(f"DeleteItem succeeded:{json.dumps(response, indent=4, cls=DecimalEncoder)}")
             return id
 
-    def find(self, params):
-
-        if not params or (not params.get('resource') and not params.get('action') and not params.get('value')):
-            return self.table.scan()['Items']
-
-        fe = ""
-        ean = {}
-        eav = {}
-        if params.get('resource'):
-            if fe != "":
-                fe += " and "
-            fe += "#resource = :resource"
-            eav[':resource'] = params['resource']
-            ean['#resource'] = 'resource'
-        if params.get('action'):
-            if fe != "":
-                fe += " and "
-            fe += "#action = :action"
-            eav[':action'] = params['action']
-            ean['#action'] = 'action'
-        if params.get('value'):
-            if fe != "":
-                fe += " and "
-            fe += "#value in (:value1, :value2)"
-            eav[':value1'] = params['value']
-            eav[':value2'] = ALL
-            ean['#value'] = 'value'
-        """if params.get('user_id'):
-            if params.get('all'):
-                from user_group import UserGroup
-                user_group = UserGroup(self.dynamodb)
-                user_group_items = user_group.find({'user_id': params['user_id']})
-                group_ids = [ user_group_item['group_id'] for user_group_item in user_group_items ]
-                if fe != "":
-                    fe += " and "
-                if len(group_ids) == 0:
-                    fe += "#user_id = :user_id"
-                else:
-                    fe += "(#user_id = :user_id or group_id in ("
-                    for index, group_id in enumerate(group_ids):
-                        group_id_name = ':group_id_%s' % index
-                        if index == 0:
-                            fe += group_id_name
-                        else:
-                            fe += ', ' + group_id_name
-                        eav[group_id_name] = group_id
-                    fe += '))'
-                eav[':user_id'] = params['user_id']
-                print(fe)
-                print(eav)
-            else:
-                if fe != "":
-                    fe += " and "
-                fe += "#user_id = :user_id"
-                eav[':user_id'] = params['user_id']
-            ean['#user_id'] = 'user_id'
-        elif params.get('group_id'):
-            if fe != "":
-                fe += " and "
-            fe += "#group_id = :group_id"
-            eav[':group_id'] = params['group_id']
-            ean['#group_id'] = 'group_id'"""
-        logger.info(f"{fe}")
-        logger.info(f"{ean}")
-        logger.info(f"{eav}")
-        response = self.table.scan(
-            FilterExpression=fe,
-            ExpressionAttributeNames=ean,
-            ExpressionAttributeValues=eav
-        )
-        for i in response['Items']:
-            logger.info(f"response_items={json.dumps(i, cls=DecimalEncoder)}")
-        return response["Items"]
+    # def find(self, params):
+    #
+    #     if not params or (not params.get('resource') and not params.get('action') and not params.get('value')):
+    #         return self.table.scan()['Items']
+    #
+    #     fe = ""
+    #     ean = {}
+    #     eav = {}
+    #     if params.get('resource'):
+    #         if fe != "":
+    #             fe += " and "
+    #         fe += "#resource = :resource"
+    #         eav[':resource'] = params['resource']
+    #         ean['#resource'] = 'resource'
+    #     if params.get('action'):
+    #         if fe != "":
+    #             fe += " and "
+    #         fe += "#action = :action"
+    #         eav[':action'] = params['action']
+    #         ean['#action'] = 'action'
+    #     if params.get('value'):
+    #         if fe != "":
+    #             fe += " and "
+    #         fe += "#value in (:value1, :value2)"
+    #         eav[':value1'] = params['value']
+    #         eav[':value2'] = ALL
+    #         ean['#value'] = 'value'
+    #     """if params.get('user_id'):
+    #         if params.get('all'):
+    #             from user_group import UserGroup
+    #             user_group = UserGroup(self.dynamodb)
+    #             user_group_items = user_group.find({'user_id': params['user_id']})
+    #             group_ids = [ user_group_item['group_id'] for user_group_item in user_group_items ]
+    #             if fe != "":
+    #                 fe += " and "
+    #             if len(group_ids) == 0:
+    #                 fe += "#user_id = :user_id"
+    #             else:
+    #                 fe += "(#user_id = :user_id or group_id in ("
+    #                 for index, group_id in enumerate(group_ids):
+    #                     group_id_name = ':group_id_%s' % index
+    #                     if index == 0:
+    #                         fe += group_id_name
+    #                     else:
+    #                         fe += ', ' + group_id_name
+    #                     eav[group_id_name] = group_id
+    #                 fe += '))'
+    #             eav[':user_id'] = params['user_id']
+    #             print(fe)
+    #             print(eav)
+    #         else:
+    #             if fe != "":
+    #                 fe += " and "
+    #             fe += "#user_id = :user_id"
+    #             eav[':user_id'] = params['user_id']
+    #         ean['#user_id'] = 'user_id'
+    #     elif params.get('group_id'):
+    #         if fe != "":
+    #             fe += " and "
+    #         fe += "#group_id = :group_id"
+    #         eav[':group_id'] = params['group_id']
+    #         ean['#group_id'] = 'group_id'"""
+    #     logger.info(f"{fe}")
+    #     logger.info(f"{ean}")
+    #     logger.info(f"{eav}")
+    #     response = self.table.scan(
+    #         FilterExpression=fe,
+    #         ExpressionAttributeNames=ean,
+    #         ExpressionAttributeValues=eav
+    #     )
+    #     for i in response['Items']:
+    #         logger.info(f"response_items={json.dumps(i, cls=DecimalEncoder)}")
+    #     return response["Items"]
