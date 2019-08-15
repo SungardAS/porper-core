@@ -1,58 +1,29 @@
 
 from __future__ import print_function # Python 2/3 compatibility
-import json
-import boto3
-from boto3.dynamodb.conditions import Key, Attr
-from botocore.exceptions import ClientError
-from porper.models.decimal_encoder import DecimalEncoder
 from porper.models.resource import Resource
-
-import os
-import aws_lambda_logging
-import logging
-
-logger = logging.getLogger()
-loglevel = "INFO"
-logging.basicConfig(level=logging.ERROR)
-aws_lambda_logging.setup(level=loglevel)
 
 class UserGroup(Resource):
 
-    def __init__(self, dynamodb):
-        self.dynamodb = dynamodb
-        self.table = dynamodb.Table(os.environ.get('USER_GROUP_REL_TABLE_NAME'))
+    def __init__(self, connection=None):
+        Resource.__init__(self, connection)
+        self.table_name = "`Group_User`"
 
-    def create(self, params):
-        if params.get('is_admin'):
-            params["is_admin"] = True
-        else:
-            params["is_admin"] = False
-        return Resource.create(self, params)
-        """try:
-            response = self.table.put_item(
-               Item=params
-            )
-        except ClientError as e:
-            print(e.response['Error']['Message'])
-            raise
-        else:
-            print("PutItem succeeded:")
-            print(json.dumps(response, indent=4, cls=DecimalEncoder))"""
 
-    def delete(self, params):
-        try:
-            response = self.table.delete_item(
-                Key={
-                    'user_id': params['user_id'],
-                    'group_id': params['group_id'],
-                },
-            )
-        except ClientError as e:
-            logger.info(f"{e.response['Error']['Message']}")
-            raise
+    def delete(self, user_id=None, group_id=None):
+        sql = "DELETE FROM {}".format(self.table_name)
+        if user_id and group_id:
+            where_clause = "user_id = '{}' AND group_id = '{}'".format(user_id, group_id)
+        elif user_id:
+            where_clause = "user_id = '{}'".format(user_id)
+        elif group_id:
+            where_clause = "group_id = '{}'".format(group_id)
         else:
-            logger.info(f"DeleteItem succeeded:{json.dumps(response, indent=4, cls=DecimalEncoder)}")
+            raise Exception("either user_id or group_is must be given")
+        sql += " WHERE {}".format(where_clause)
+        return self.execute(sql)
 
+
+    """
     def find_by_user_ids(self, user_ids):
         eav = {}
         fe = 'user_id in ('
@@ -71,6 +42,7 @@ class UserGroup(Resource):
             ExpressionAttributeValues=eav
         )['Items']
 
+
     def find_by_group_ids(self, group_ids):
         eav = {}
         fe = 'group_id in ('
@@ -88,6 +60,7 @@ class UserGroup(Resource):
             FilterExpression=fe,
             ExpressionAttributeValues=eav
         )['Items']
+
 
     def find(self, params):
 
@@ -141,3 +114,4 @@ class UserGroup(Resource):
             return response['Items']
 
         return []
+    """

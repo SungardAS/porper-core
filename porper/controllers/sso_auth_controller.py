@@ -7,7 +7,7 @@ from porper.controllers.auth_controller import AuthController
 
 class SsoAuthController(AuthController):
 
-    def __init__(self, permission_connection):
+    def __init__(self, permission_connection=None):
 
         AuthController.__init__(self, permission_connection)
 
@@ -53,12 +53,12 @@ class SsoAuthController(AuthController):
             'access_token': access_token,
             'refresh_token': refresh_token
         }
-        AuthController.authenticate(self, auth_params)
+        user_info = AuthController.authenticate(self, auth_params)
 
         # return the access_token if all completed successfully
-        user_info['user_id'] = user_info['guid']
-        user_info['access_token'] = access_token
-        user_info['groups'] = AuthController.find_groups(self, auth_params['user_id'])
+        # user_info['user_id'] = user_info['guid']
+        # user_info['access_token'] = access_token
+        # user_info['groups'] = AuthController.find_groups(self, auth_params['user_id'])
         return user_info
 
     def get_user_information(self, access_token):

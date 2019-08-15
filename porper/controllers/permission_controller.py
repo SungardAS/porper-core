@@ -3,44 +3,45 @@ import json
 
 class PermissionController:
 
-    def __init__(self, connection):
+    def __init__(self, connection=None):
         self.connection = connection
         from porper.models.permission import Permission
         from porper.models.user_group import UserGroup
-        self.permission = Permission(connection)
-        self.user_group = UserGroup(connection)
+        self.permission = Permission(self.connection)
+        self.user_group = UserGroup(self.connection)
         from porper.controllers.token_controller import TokenController
-        self.token_controller = TokenController(connection)
+        self.token_controller = TokenController(self.connection)
         from porper.controllers.user_group_controller import UserGroupController
-        self.user_group_controller = UserGroupController(connection)
+        self.user_group_controller = UserGroupController(self.connection)
 
         from porper.models.permission import ALL
         self.PERMITTED_TO_ALL = ALL
 
 
-    def is_admin(self, user_id):
-        return self.user_group_controller.is_admin(user_id)
 
-    def is_group_admin(self, user_id, group_id):
-        return self.user_group_controller.is_group_admin(user_id, group_id)
-
-    def is_member(self, user_id, group_id):
-        return self.user_group_controller.is_member(user_id, group_id)
-
-    def is_permitted(self, access_token, params):
-        """
-        possible attributes in params
-            - None
-            - [user_id | group_id], action, resource, value
-        """
-        current_user_id = self.token_controller.find_user_id(access_token)
-        if self.is_admin(current_user_id):    return True
-
-        #params['all'] = True
-        rows = self.find(access_token, params)
-        print("permitted : {}".format(rows))
-        if len(rows) == 0:  return False
-        return True
+    # def is_admin(self, user_id):
+    #     return self.user_group_controller.is_admin(user_id)
+    #
+    # def is_group_admin(self, user_id, group_id):
+    #     return self.user_group_controller.is_group_admin(user_id, group_id)
+    #
+    # def is_member(self, user_id, group_id):
+    #     return self.user_group_controller.is_member(user_id, group_id)
+    #
+    # def is_permitted(self, access_token, params):
+    #     """
+    #     possible attributes in params
+    #         - None
+    #         - [user_id | group_id], action, resource, value
+    #     """
+    #     current_user_id = self.token_controller.find_user_id(access_token)
+    #     if self.is_admin(current_user_id):    return True
+    #
+    #     #params['all'] = True
+    #     rows = self.find(access_token, params)
+    #     print("permitted : {}".format(rows))
+    #     if len(rows) == 0:  return False
+    #     return True
 
 
     def add_permissions_to_group(self, resource_name, resource_id, permissions, to_group_id):

@@ -7,7 +7,7 @@ from porper.controllers.auth_controller import AuthController
 
 class CognitoAuthController(AuthController):
 
-    def __init__(self, permission_connection):
+    def __init__(self, permission_connection=None):
 
         AuthController.__init__(self, permission_connection)
 
@@ -65,16 +65,16 @@ class CognitoAuthController(AuthController):
             'refresh_token': cognito_access_token
         }
         auth_params['name'] = "{} {}".format(given_name, family_name)
-        AuthController.authenticate(self, auth_params)
+        user_info = AuthController.authenticate(self, auth_params)
 
         # return the cognito_access_token if all completed successfully
-        user_info = {
-            'user_id': user_id,
-            'email': email,
-            'family_name': family_name,
-            'given_name': given_name,
-            'customer_id': customer_id,
-            'access_token': cognito_access_token,
-        }
-        user_info['groups'] = AuthController.find_groups(self, user_id)
+        # user_info = {
+        #     'user_id': user_id,
+        #     'email': email,
+        #     'family_name': family_name,
+        #     'given_name': given_name,
+        #     'customer_id': customer_id,
+        #     'access_token': cognito_access_token,
+        # }
+        # user_info['groups'] = AuthController.find_groups(self, user_id)
         return user_info

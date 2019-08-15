@@ -6,7 +6,7 @@ from porper.controllers.auth_controller import AuthController
 
 class SlackAuthController(AuthController):
 
-    def __init__(self, permission_connection):
+    def __init__(self, permission_connection=None):
 
         AuthController.__init__(self, permission_connection)
 
@@ -177,9 +177,9 @@ class SlackAuthController(AuthController):
             'access_token': user_info['access_token'],
             'refresh_token': user_info['refresh_token']
         }
-        AuthController.authenticate(self, auth_params)
+        user_info = AuthController.authenticate(self, auth_params)
 
         # return the access_token if all completed successfully
-        user_info['user_id'] = auth_params['user_id']
-        user_info['groups'] = AuthController.find_groups(self, auth_params['user_id'])
+        # user_info['user_id'] = auth_params['user_id']
+        # user_info['groups'] = AuthController.find_groups(self, auth_params['user_id'])
         return user_info
