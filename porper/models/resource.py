@@ -55,7 +55,7 @@ class Resource:
             sets.append("{} = {}".format(key, vals[idx]))
         sql = "UPDATE {} SET {} WHERE id = '{}'".format(self.table_name, ", ".join(sets), id)
         if self.execute(sql):
-            return params
+            return self.find_by_id(id)
 
 
     def delete(self, id):

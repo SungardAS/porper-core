@@ -6,11 +6,11 @@ class UserGroupController(MetaResourceController):
     def __init__(self, connection=None):
         #self.connection = connection
         MetaResourceController.__init__(self, connection)
-        #from porper.models.user import User
-        #from porper.models.group import Group
+        from porper.models.user import User
+        from porper.models.group import Group
         from porper.models.user_group import UserGroup
-        #self.user = User(self.connection)
-        #self.group = Group(self.connection)
+        self.user = User(self.connection)
+        self.group = Group(self.connection)
         self.user_group = UserGroup(self.connection)
         #from porper.controllers.token_controller import TokenController
         #self.token_controller = TokenController(self.connection)
@@ -18,28 +18,50 @@ class UserGroupController(MetaResourceController):
         #self.permission_controller = PermissionController(self.connection)
 
 
-    # def create(self, access_token, params):
-    #     """
-    #     possible attributes in params
-    #         - user_id, group_id, is_admin
-    #     """
-    #     current_user = self.find_user_level(access_token, params['group_id'])
-    #     if current_user['level'] == self.USER_LEVEL_ADMIN or current_user['level'] == self.USER_LEVEL_GROUP_ADMIN:
-    #         return self.user_group.create(params)
-    #     else:
-    #         raise Exception('not permitted')
+    def create(self, access_token, params):
+        """
+        possible attributes in params
+            - user_id, group_id, is_admin
+        """
+
+        if 'is_admin' in params:
+            del params['is_admin']
+
+        self.find_user_level(access_token)
+        if self.is_admin:
+            return self.user_group.create(params)
+        elif self.is_customer_admin:
+            # check if the user and group belongs to this customer
+            ret = self.user.find({'user_id': params['user_id']}, customer_id=self.customer_id)
+            if not ret:
+                raise Exception('not permitted')
+            ret = self.group.find({'group_id': params['group_id']}, customer_id=self.customer_id)
+            if not ret:
+                raise Exception('not permitted')
+            return self.user_group.create(params)
+        else:
+            raise Exception('not permitted')
 
 
-    # def delete(self, access_token, params):
-    #     """
-    #     possible attributes in params
-    #         - user_id, group_id
-    #     """
-    #     current_user = self.find_user_level(access_token, params['group_id'])
-    #     if current_user['level'] == self.USER_LEVEL_ADMIN or current_user['level'] == self.USER_LEVEL_GROUP_ADMIN:
-    #         return self.user_group.delete(params)
-    #     else:
-    #         raise Exception('not permitted')
+    def delete(self, access_token, params):
+        """
+        possible attributes in params
+            - user_id, group_id
+        """
+        self.find_user_level(access_token)
+        if self.is_admin:
+            return self.user_group.delete(user_id=params.get('user_id'), group_id=params.get('group_id'))
+        elif self.is_customer_admin:
+            # check if the user and group belongs to this customer
+            ret = self.user.find({'user_id': params['user_id']}, customer_id=self.customer_id)
+            if not ret:
+                raise Exception('not permitted')
+            ret = self.group.find({'group_id': params['group_id']}, customer_id=self.customer_id)
+            if not ret:
+                raise Exception('not permitted')
+            return self.user_group.delete(user_id=params.get('user_id'), group_id=params.get('group_id'))
+        else:
+            raise Exception('not permitted')
 
 
     def find(self, access_token, params):

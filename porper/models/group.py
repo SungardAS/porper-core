@@ -133,10 +133,11 @@ class Group(Resource):
 
     def find(self, params, customer_id=None, user_id=None):
 
+        # user 'left' join to get the group even when there is no user in that group
         sql = """
             select distinct g.*
             from `Group` g
-            inner join Group_User gu on g.id = gu.group_id
+            left join Group_User gu on g.id = gu.group_id
             where 1 = 1
         """
 

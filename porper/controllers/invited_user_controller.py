@@ -10,6 +10,8 @@ class InvitedUserController(MetaResourceController):
         self.invited_user = InvitedUser(self.connection)
         from porper.models.user_group import UserGroup
         self.user_group = UserGroup(self.connection)
+        from porper.models.group import Group
+        self.group = Group(self.connection)
         # from porper.controllers.user_group_controller import UserGroupController
         # self.user_group_controller = UserGroupController(self.connection)
 
@@ -46,6 +48,10 @@ class InvitedUserController(MetaResourceController):
         # if len(invited_users) > 0:
         #     print('already invited')
         #     return True
+        customer_id = None
+        if 'customer_id' in params:
+            customer_id = params['customer_id']
+            del params['customer_id']
         if not params.get('invited_by'):
             params['invited_by'] = user_id
         if not params.get('invited_at'):
@@ -56,7 +62,10 @@ class InvitedUserController(MetaResourceController):
         #     params['is_admin'] = False
         # else:
         #     params['is_admin'] = True
-        return self.invited_user.create(params)
+        params = self.invited_user.create(params)
+        if customer_id:
+            params['customer_id'] = customer_id
+        return params
 
 
     def update(self, access_token, params):
@@ -69,13 +78,25 @@ class InvitedUserController(MetaResourceController):
         if not self.is_permitted(self.permission_name, self.permission_write):
             raise Exception("not permitted")
 
-        items = self.invited_user.find({'email': params['email'], 'auth_type': params['auth_type']})
-        if not items or not self.is_member(group_id=items[0]['group_id']):
+        items = self.invited_user.find_simple({'email': params['email'], 'auth_type': params['auth_type']})
+        if not items:
             raise Exception("not permitted")
 
         if items[0]['state'] == self.invited_user.REGISTERED:
             raise Exception("Already registered")
 
+        ret = self.group.find_by_id(items[0]['group_id'])
+        if not ret:
+            raise Exception("not permitted")
+
+        if self.is_customer_admin:
+            if self.customer_id != ret['customer_id']:
+                raise Exception("not permitted")
+        elif not self.is_admin:
+            if not self.is_member(group_id=items[0]['group_id']):
+                raise Exception("not permitted")
+
+        params['state'] = self.invited_user.INVITED
         return self.invited_user.update_state(params['email'], params['auth_type'], params['state'])
 
 
@@ -110,12 +131,23 @@ class InvitedUserController(MetaResourceController):
         if not self.is_permitted(self.permission_name, self.permission_write):
             raise Exception("not permitted")
 
-        items = self.invited_user.find({'email': params['email'], 'auth_type': params['auth_type']})
-        if not items or not self.is_member(group_id=items[0]['group_id']):
+        items = self.invited_user.find_simple({'email': params['email'], 'auth_type': params['auth_type']})
+        if not items:
             raise Exception("not permitted")
 
         if items[0]['state'] == self.invited_user.REGISTERED:
             raise Exception("Already registered")
+
+        ret = self.group.find_by_id(items[0]['group_id'])
+        if not ret:
+            raise Exception("not permitted")
+
+        if self.is_customer_admin:
+            if self.customer_id != ret['customer_id']:
+                raise Exception("not permitted")
+        elif not self.is_admin:
+            if not self.is_member(group_id=items[0]['group_id']):
+                raise Exception("not permitted")
 
         params['state'] = self.invited_user.CANCELLED
         self.invited_user.update_state(params['email'], params['auth_type'], params['state'])
