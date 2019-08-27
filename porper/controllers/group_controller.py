@@ -40,11 +40,6 @@ class GroupController(MetaResourceController):
         if "customer_id" not in params or not self.is_member(customer_id=params['customer_id']):
             raise Exception("not permitted")
 
-        # check if the group with the given customer already exists
-        ret = self.group.find({"name": params["name"]}, customer_id=params["customer_id"])
-        if ret:
-            raise Exception("already exists")
-
         return self.group.create(params)
 
 
@@ -66,6 +61,10 @@ class GroupController(MetaResourceController):
 
         if params.get('customer_id'):
             raise Exception('You cannot update the group customer')
+
+        if 'name' in params:
+            if self.group.find({'name': params['name']}):
+                raise Exception("the group name already exists")
 
         return self.group.update(params)
 
@@ -105,7 +104,7 @@ class GroupController(MetaResourceController):
         self.find_user_level(access_token)
         customer_id = None
         user_id = None
-        if self.is_customer_admin():
+        if self.is_customer_admin:
             customer_id = self.customer_id
         elif not self.is_admin:
             user_id = self.user_id

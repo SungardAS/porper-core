@@ -11,6 +11,7 @@ CREATE TABLE `Group` (
   `customer_id` varchar(50) NOT NULL DEFAULT '',
   `role_id` varchar(50) DEFAULT '',
   PRIMARY KEY (`id`),
+  UNIQUE KEY `name_idx` (`name`),
   KEY `Group_Role` (`role_id`),
   KEY `Customer_Group` (`customer_id`),
 --  CONSTRAINT `Group_Role` FOREIGN KEY (`role_id`) REFERENCES `Role` (`id`)
@@ -64,8 +65,8 @@ CREATE TABLE `InvitedUser` (
 
 CREATE TABLE `Token` (
   `id` varchar(50) NOT NULL DEFAULT '',
-  `access_token` tinytext NOT NULL,
-  `refresh_token` tinytext NOT NULL,
+  `access_token` mediumtext NOT NULL,
+  `refresh_token` mediumtext NOT NULL,
   `user_id` varchar(100) NOT NULL DEFAULT '',
   `refreshed_time` datetime NOT NULL,
   PRIMARY KEY (`id`),

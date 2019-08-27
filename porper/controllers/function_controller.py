@@ -127,5 +127,15 @@ class FunctionController(MetaResourceController):
             return function
 
         # in case there is no params
-        functions = self.function.find({})
-        return functions
+        function = {}
+        for f in self.function.find({}):
+            id = f['id']
+            if id not in function:
+                function[id] = {
+                    'id': id,
+                    'name': f['name'],
+                    'permissions': [{'resource': f['p_resource_name'], 'action': f['p_action']}]
+                }
+            else:
+                function[id]['permissions'].append({'resource': f['p_resource_name'], 'action': f['p_action']})
+        return list(function.values())

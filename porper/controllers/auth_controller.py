@@ -1,4 +1,7 @@
 
+import os
+import pymysql
+
 class AuthController():
 
     def __init__(self, connection=None):
@@ -23,6 +26,8 @@ class AuthController():
         self.user = User(self.connection)
         from porper.models.user_group import UserGroup
         self.user_group = UserGroup(self.connection)
+        from porper.models.group import Group
+        self.group = Group(self.connection)
         from porper.models.invited_user import InvitedUser
         self.invited_user = InvitedUser(self.connection)
         from porper.models.access_token import AccessToken
@@ -79,12 +84,13 @@ class AuthController():
 
         # now save the tokens
         # return self.token_controller.save(access_token, refresh_token, user_id)
-        self.access_token.create(access_token, refresh_token, user_id)
+        params = {"access_token": access_token, "refresh_token": refresh_token, "user_id": user_id}
+        self.access_token.create(params)
 
         user_info = self.user.find_by_id(user_id)
         user_info['user_id'] = user_info['id']
         user_info['access_token'] = access_token
-        user_info['groups'] = self.user_group.find_groups([user_id])
+        user_info['groups'] = self.group.find({"user_id": user_id})
         user_info['customer_id'] = user_info['groups'][0]['customer_id']
 
         return user_info
@@ -163,3 +169,11 @@ class AuthController():
     #     user_group = UserGroup(self.connection)
     #     user_groups = user_group.find({'user_id': user_id})
     #     return user_groups
+
+
+    def commit(self):
+        self.connection.commit()
+
+
+    def rollback(self):
+        self.connection.rollback()

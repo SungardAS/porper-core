@@ -7,6 +7,8 @@ class RoleController(MetaResourceController):
         MetaResourceController.__init__(self, connection)
         from porper.models.role import Role
         self.role = Role(self.connection)
+        from porper.models.role_function import RoleFunction
+        self.role_function = RoleFunction(self.connection)
         # from porper.models.function import Function
         # self.function = Function(self.connection)
         # from porper.controllers.user_group_controller import UserGroupController
@@ -37,7 +39,11 @@ class RoleController(MetaResourceController):
             return rows[0]['id']
 
         # create a role
-        params = self.role.create(params)
+        ret = self.role.create({'name': params['name']})
+
+        for function in params['functions']:
+            self.role_function.create({'role_id': ret['id'], 'function_id': function})
+
         return params
 
 
@@ -54,6 +60,8 @@ class RoleController(MetaResourceController):
         if not params.get('id'):
             raise Exception("id must be provided")
 
+        self.role_function.delete(role_id=params['id'])
+        
         # remove this role
         return self.role.delete(params['id'])
 
@@ -72,8 +80,18 @@ class RoleController(MetaResourceController):
         if not params.get('id'):
             raise Exception("id must be provided")
 
+        functions = [rf['function_id'] for rf in self.role_function.find_simple({'role_id': params['id']})]
+        for nf in params['functions']:
+            if nf not in functions:
+                self.role_function.create({"role_id": params['id'], 'function_id': nf})
+        for of in functions:
+            if of not in params['functions']:
+                self.role_function.delete(role_id=params['id'], function_id=of)
+
         # update this role
-        return self.role.update(params)
+        self.role.update({'id': params['id'], 'name': params['name']})
+
+        return params
 
 
     def find(self, access_token, params):

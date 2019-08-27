@@ -1,5 +1,6 @@
 
 from __future__ import print_function # Python 2/3 compatibility
+import datetime
 from porper.models.resource import Resource
 
 class AccessToken(Resource):
@@ -7,6 +8,20 @@ class AccessToken(Resource):
     def __init__(self, connection=None):
         Resource.__init__(self, connection)
         self.table_name = "`Token`"
+
+
+    def create(self, params):
+        if 'refreshed_time' not in params:
+            params['refreshed_time'] = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')
+        return Resource.create(self, params)
+
+
+    def find(self, access_token):
+        sql = """
+            select * from {}
+            where access_token = '{}'
+        """
+        return self.find_one(sql.format(self.table_name, access_token))
 
 
     def find_user(self, access_token):

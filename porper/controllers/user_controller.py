@@ -16,6 +16,8 @@ class UserController(MetaResourceController):
         self.customer = Customer(self.connection)
         from porper.models.access_token import AccessToken
         self.access_token = AccessToken(self.connection)
+        from porper.models.function import Function
+        self.function = Function(self.connection)
         # from porper.models.group import Group
         # self.group = Group(connection)
         #from porper.controllers.token_controller import TokenController
@@ -222,10 +224,10 @@ class UserController(MetaResourceController):
             - any combination of email, auth_type, name, family_name and given_name
         """
 
+        self.find_user_level(access_token)
+
         if params.get("detail"):
             return self.find_detail(access_token, params)
-
-        self.find_user_level(access_token)
 
         # This is to get information of myself
         if params.get("id") and self.user_id == params['id']:
@@ -240,19 +242,51 @@ class UserController(MetaResourceController):
         #### When params has 'ids', no other conditions cannot be used together!!!!
         if params.get("ids"):
             if self.is_admin:
-                return self.user.find_by_ids(self.params['ids'])
-            if self.is_customer_admin:
-                return self.user.find_by_ids(self.params['ids'], customer_id=current_user.customer_id)
+                ret = self.user.find_by_ids(self.params['ids'])
+            elif self.is_customer_admin:
+                ret = self.user.find_by_ids(self.params['ids'], customer_id=self.customer_id)
             else:
-                return self.user.find_by_ids(self.params['ids'], user_id=current_user.user_id)
+                ret = self.user.find_by_ids(self.params['ids'], user_id=self.user_id)
 
         else:
             if self.is_admin:
-                return self.user.find(params)
-            if self.is_customer_admin:
-                return self.user.find(params, customer_id=current_user.customer_id)
+                ret = self.user.find(params)
+            elif self.is_customer_admin:
+                ret = self.user.find(params, customer_id=self.customer_id)
             else:
-                return self.user.find(params, user_id=current_user.user_id)
+                ret = self.user.find(params, user_id=self.user_id)
+
+        user = {}
+        for u in ret:
+            id = u['id']
+            if id not in user:
+                user[id] = {
+                    'id': id,
+                    "email": u['email'],
+                    "customer_id": u['customer_id'],
+                    "family_name": u['family_name'],
+                    "given_name": u['given_name'],
+                    "name": u['name'],
+                    "auth_type": u['auth_type'],
+                    'groups': [
+                        {
+                            'id': u['group_id'],
+                            'name': u['group_name'],
+                            'customer_id': u['customer_id'],
+                            'role_id': u['role_id']
+                        }
+                    ]
+                }
+            else:
+                user[id]['groups'].append(
+                    {
+                        'id': u['group_id'],
+                        'name': u['group_name'],
+                        'customer_id': u['customer_id'],
+                        'role_id': u['role_id']
+                    }
+                )
+        return list(user.values())
 
 
         # ######### NOTICE
@@ -302,12 +336,25 @@ class UserController(MetaResourceController):
         #     raise Exception("unauthorized")
         # user_id = current_users[0]['user_id']
         # current_user = self.user.find_by_id(user_id)
-        current_user = self.access_token.find_user(access_token)
-        if not current_user:
+        user = self.access_token.find_user(access_token)
+        if not user:
             raise Exception("not unauthorized")
 
-        current_user['groups'] = self.group.find({'user_id': current_user.user_id})
-        current_user['functions'] = self.function.find({'user_id': current_user.user_id})
+        user['groups'] = self.group.find({'user_id': self.user_id})
+        user['customer_id'] = user['groups'][0]['customer_id']
+
+        function = {}
+        for f in self.function.find({'user_id': self.user_id}):
+            id = f['id']
+            if id not in function:
+                function[id] = {
+                    'id': id,
+                    'name': f['name'],
+                    'permissions': [{'resource': f['p_resource_name'], 'action': f['p_action']}]
+                }
+            else:
+                function[id]['permissions'].append({'resource': f['p_resource_name'], 'action': f['p_action']})
+        user['functions'] = list(function.values())
 
         # user_groups = self.user_group_controller.find(access_token, {'user_id': user_id})
         # if user_groups:
@@ -331,7 +378,7 @@ class UserController(MetaResourceController):
         #
         # current_user['groups'] = groups
         # current_user['functions'] = unique_functions
-        return current_user
+        return user
 
 
     # def add_groups(self, user):

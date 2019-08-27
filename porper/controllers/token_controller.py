@@ -1,14 +1,20 @@
 
+from porper.controllers.meta_resource_controller import MetaResourceController
 from datetime import datetime
 
-class TokenController:
+class TokenController(MetaResourceController):
 
     def __init__(self, connection=None):
-        self.connection = connection
-        # from porper.models.access_token import AccessToken
-        # self.access_token = AccessToken(self.connection)
-        # from porper.models.user_group import UserGroup
-        # self.user_group = UserGroup(self.connection)
+        #self.connection = connection
+        MetaResourceController.__init__(self, connection)
+        from porper.models.access_token import AccessToken
+        self.access_token = AccessToken(self.connection)
+
+        self.permission_name = 'Token'
+
+
+    def find(self, access_token, params):
+        return self.access_token.find(access_token)
 
 
     # def find_user_id(self, access_token):

@@ -19,7 +19,10 @@ class User(Resource):
         """
 
         if params:
-            where_clause = self.get_where_clause(params, table_abbr="gu")
+            if 'customer_id' in params:
+                where_clause = self.get_where_clause(params, table_abbr="g")
+            else:
+                where_clause = self.get_where_clause(params, table_abbr="gu")
             sql += " and {}".format(where_clause)
         # else:
         #     raise Exception("no params given")
@@ -35,7 +38,7 @@ class User(Resource):
             sql += """
                 and gu.group_id in
                 (select group_id from Group_User
-                    and gu.user_id = '{}')
+                    where gu.user_id = '{}')
             """.format(user_id)
 
         return self.find_by_sql(sql)

@@ -42,29 +42,23 @@ class UserGroupController(MetaResourceController):
     #         raise Exception('not permitted')
 
 
-    # def find(self, access_token, params):
-    #     """
-    #     possible attributes in params
-    #         - user_id
-    #         - group_id
-    #         - user_ids
-    #         - group_ids
-    #     """
-    #     current_user = self.find_user_level(access_token)
-    #     if params.get('user_id'):
-    #         #return self.find_group_ids_by_user_id(current_user, params['user_id'])
-    #         return self.find_by_user_id(current_user, params['user_id'])
-    #     elif params.get('group_id'):
-    #         #return self.find_user_ids_by_group_id(current_user, params['group_id'])
-    #         return self.find_by_group_id(current_user, params['group_id'])
-    #     elif params.get('user_ids'):
-    #         return self.find_by_user_ids(current_user, params['user_ids'])
-    #     elif params.get('group_ids'):
-    #         #return self.find_user_ids_by_group_ids(current_user, params['group_ids'])
-    #         return self.find_by_group_ids(current_user, params['group_ids'])
-    #     return []
-    #
-    #
+    def find(self, access_token, params):
+        """
+        possible attributes in params
+            - user_id
+            - group_id
+            - user_ids
+            - group_ids
+        """
+        self.find_user_level(access_token)
+        if self.is_admin:
+            return self.user_group.find(params)
+        if self.is_customer_admin:
+            return self.user_group.find(params, customer_id=self.customer_id)
+        else:
+            return self.user_group.find(params, user_id=self.user_id)
+
+
     # def find_by_user_id(self, current_user, user_id):
     #
     #     # find all groups where the given user belongs

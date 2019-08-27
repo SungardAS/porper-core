@@ -29,7 +29,10 @@ class Role(Resource):
         """
 
         if params:
-            where_clause = self.get_where_clause(params, "r")
+            if 'group_id' in params:
+                where_clause = self.get_where_clause(params, "gu")
+            else:
+                where_clause = self.get_where_clause(params, "r")
             if where_clause:
                 sql += " and {}".format(where_clause)
         # else:

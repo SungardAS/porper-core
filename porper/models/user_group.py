@@ -9,6 +9,32 @@ class UserGroup(Resource):
         self.table_name = "`Group_User`"
 
 
+    def find(self, params, customer_id=None, user_id=None):
+        sql = """
+            select gu.*
+            from Group_User gu
+            inner join `Group` g on g.id = gu.group_id
+            where 1 = 1
+        """
+        user_ids = []
+        group_ids = []
+        if 'user_id' in params:
+            user_ids.append(params['user_id'])
+        if 'group_id' in params:
+            group_ids.append(params['group_id'])
+
+        if user_id:
+            user_ids.append(user_id)
+
+        if user_ids:
+            sql += " and gu.user_id in ('{}')".format("','".join(user_ids))
+        if group_ids:
+            sql += " and gu.group_id in ('{}')".format("','".join(group_ids))
+        if customer_id:
+            sql += " and g.customer_id = '{}'".format(customer_id)
+        return self.find_by_sql(sql)
+
+
     def delete(self, user_id=None, group_id=None):
         sql = "DELETE FROM {}".format(self.table_name)
         if user_id and group_id:
