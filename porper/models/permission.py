@@ -109,6 +109,28 @@ class Permission(Resource):
         return self.find_by_sql(sql)
 
 
+    def find_resource_permissions(self, params, customer_id=None, group_ids=None, user_ids=None):
+
+        sql = """
+            select res_name as resource, action, value, customer_id, group_id, user_id
+            from Permission
+            where 1 = 1
+        """
+
+        if params:
+            where_clause = self.get_where_clause(params)
+            sql += where_clause
+
+        if customer_id:
+            sql += " and customer_id = '{}'".format(customer_id)
+        if group_ids:
+            sql += " and group_id in ('{}')".format("','".join(group_ids))
+        if user_ids:
+            sql += " and user_id in ('{}')".format("','".join(user_ids))
+
+        return self.find_by_sql(sql)
+
+
     # def find(self, params):
     #
     #     if not params or (not params.get('resource') and not params.get('action') and not params.get('value')):
