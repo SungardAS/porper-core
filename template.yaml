@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 Transform: "AWS::Serverless-2016-10-31"
 
 Resources:
-  PorperLambdaLayerMySQL2:
+  PorperLambdaMySQL2Layer:
       Type: AWS::Serverless::LayerVersion
       Properties:
           Description: Porper Core as a Layer
@@ -11,8 +11,8 @@ Resources:
             - python3.6
             - python3.7
 Outputs:
-  PorperLambdaLayerArn:
-    Description: "Porper Lambda Layer ARN"
-    Value: !Ref PorperLambdaLayer
+  PorperLambdaMySQL2LayerArn:
+    Description: "Porper Lambda MySQL2 Layer ARN"
+    Value: !Ref PorperLambdaMySQL2Layer
     Export:
-      Name: !Sub "${AWS::StackName}-PorperLambdaLayerArn"
+      Name: !Sub "${AWS::StackName}-PorperLambdaMySQL2LayerArn"
