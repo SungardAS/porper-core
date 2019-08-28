@@ -7,6 +7,10 @@ class PermissionController:
         self.connection = connection
         from porper.models.permission import Permission
         from porper.models.user_group import UserGroup
+        # self.permission = Permission(connection)
+        # self.user_group = UserGroup(connection)
+        # from porper.models.group import Group
+        # self.group = Group(connection)
         self.permission = Permission(self.connection)
         self.user_group = UserGroup(self.connection)
         from porper.controllers.token_controller import TokenController
