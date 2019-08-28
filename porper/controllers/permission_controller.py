@@ -229,7 +229,7 @@ class PermissionController:
         if current_user_id != owner_id:
             raise Exception("not permitted")
 
-        if params.get('to_group_ids') or params.get('to_group_ids'):
+        if params.get('to_group_ids'):
             return self.create_permissions_to_groups(current_user_id, params['res_name'], params['res_id'], params['permissions'], params.get('to_group_ids'))
         elif params.get('to_user_ids'):
             return self.create_permissions_to_users(current_user_id, params['res_name'], params['res_id'], params['permissions'], params['to_user_ids'])
