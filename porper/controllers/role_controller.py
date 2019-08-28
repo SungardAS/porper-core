@@ -39,7 +39,10 @@ class RoleController(MetaResourceController):
             return rows[0]['id']
 
         # create a role
-        ret = self.role.create({'name': params['name']})
+        role_params = {'name': params['name']}
+        if 'id' in params:
+            role_params['id'] = params['id']
+        ret = self.role.create(role_params)
 
         for function in params['functions']:
             self.role_function.create({'role_id': ret['id'], 'function_id': function})
@@ -61,7 +64,7 @@ class RoleController(MetaResourceController):
             raise Exception("id must be provided")
 
         self.role_function.delete(role_id=params['id'])
-        
+
         # remove this role
         return self.role.delete(params['id'])
 
@@ -107,10 +110,10 @@ class RoleController(MetaResourceController):
 
         if self.is_admin:
             return self.role.find(params)
-        if self.is_customer_admin:
-            return self.role.find(params, customer_id=current_user.customer_id)
+        elif self.is_customer_admin:
+            return self.role.find(params, customer_id=self.customer_id)
         else:
-            return self.role.find(params, user_id=current_user.user_id)
+            return self.role.find(params, user_id=self.user_id)
 
         # if params.get("id"):
         #     if current_user['level'] != self.USER_LEVEL_ADMIN:

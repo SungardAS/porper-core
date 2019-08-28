@@ -153,7 +153,7 @@ class Group(Resource):
 
         if customer_id:
             sql += """
-                and gu.group_id in (select id
+                and g.id in (select id
                 	from `Group`
                 	where customer_id = '{}')
             """.format(customer_id)
@@ -173,12 +173,13 @@ class Group(Resource):
         sql = """
             select distinct *
             from `Group`
+            left join Group_User gu on g.id = gu.group_id
             where id = in ('{}')
         """.format("','".join(group_ids))
 
         if customer_id:
             sql += """
-                and gu.group_id in (select id
+                and g.id in (select id
                 	from `Group`
                 	where customer_id = '{}')
             """.format(customer_id)
@@ -197,13 +198,13 @@ class Group(Resource):
         sql = """
             select distinct gu.user_id, g.*
             from `Group` g
-            inner join Group_User gu on g.id = gu.group_id
-            where gu.user_id in ({})
+            left join Group_User gu on g.id = gu.group_id
+            where gu.user_id in ('{}')
         """.format("','".join(user_ids))
 
         if customer_id:
             sql += """
-                and gu.group_id in (select id
+                and g.id in (select id
                 	from `Group`
                 	where customer_id = '{}')
             """.format(customer_id)

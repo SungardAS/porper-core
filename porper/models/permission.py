@@ -4,7 +4,7 @@ from porper.models.resource import Resource
 
 ALL = "*"
 ADMIN_PERMISSION = 'admin'
-CUSTOMER_ADMIN_PERMISSION = 'customer admin'
+CUSTOMER_ADMIN_PERMISSION = 'customeradmin'
 PERMISSION_READ = 'r'
 PERMISSION_WRITE = 'w'
 

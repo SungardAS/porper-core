@@ -63,7 +63,8 @@ class GroupController(MetaResourceController):
             raise Exception('You cannot update the group customer')
 
         if 'name' in params:
-            if self.group.find({'name': params['name']}):
+            ret = self.group.find({'name': params['name']})
+            if ret and ret[0]['id'] != params['id']:
                 raise Exception("the group name already exists")
 
         return self.group.update(params)

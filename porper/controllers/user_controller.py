@@ -164,11 +164,7 @@ class UserController(MetaResourceController):
             self.user_group.delete(user_id=params['id'])
 
             # set this user's invite state to deleted
-            self.invited_user.update_state({
-                'email':user_info['email'],
-                'auth_type':user_info['auth_type'],
-                'state':self.invited_user.DELETED
-            })
+            self.invited_user.update_state(user_info['email'], user_info['auth_type'], self.invited_user.DELETED)
 
         else:
             if not self.is_member(group_id=params['group_id']):

@@ -29,16 +29,16 @@ class User(Resource):
 
         if customer_id:
             sql += """
-                and gu.group_id in (select id
+                and g.id in (select id
                 	from `Group`
                 	where customer_id = '{}')
             """.format(customer_id)
 
-        if user_id:
+        elif user_id:
             sql += """
                 and gu.group_id in
                 (select group_id from Group_User
-                    where gu.user_id = '{}')
+                    where user_id = '{}')
             """.format(user_id)
 
         return self.find_by_sql(sql)
@@ -50,12 +50,12 @@ class User(Resource):
             from User u
             inner join Group_User gu on u.id = gu.user_id
             inner join `Group` g on g.id = gu.group_id
-            where u.id in ({})
+            where u.id in ('{}')
         """.format("','".join(user_ids))
 
         if customer_id:
             sql += """
-                and gu.group_id in (select id
+                and g.id in (select id
                 	from `Group`
                 	where customer_id = '{}')
             """.format(customer_id)

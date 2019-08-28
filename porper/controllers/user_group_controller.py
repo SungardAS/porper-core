@@ -75,7 +75,7 @@ class UserGroupController(MetaResourceController):
         self.find_user_level(access_token)
         if self.is_admin:
             return self.user_group.find(params)
-        if self.is_customer_admin:
+        elif self.is_customer_admin:
             return self.user_group.find(params, customer_id=self.customer_id)
         else:
             return self.user_group.find(params, user_id=self.user_id)

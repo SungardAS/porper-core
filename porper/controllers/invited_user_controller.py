@@ -116,9 +116,9 @@ class InvitedUserController(MetaResourceController):
         if self.is_admin:
             return self.invited_user.find(params)
         elif self.is_customer_admin:
-            return self.invited_user.find(params, customer_id=current_user.customer_id)
+            return self.invited_user.find(params, customer_id=self.customer_id)
         else:
-            return self.invited_user.find(params, user_id=current_user.user_id)
+            return self.invited_user.find(params, user_id=self.user_id)
 
 
     def delete(self, access_token, params):

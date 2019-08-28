@@ -19,19 +19,36 @@ class UserGroup(Resource):
         user_ids = []
         group_ids = []
         if 'user_id' in params:
-            user_ids.append(params['user_id'])
+            # user_ids.append(params['user_id'])
+            sql += " and gu.user_id = '{}'".format(params['user_id'])
         if 'group_id' in params:
-            group_ids.append(params['group_id'])
+            # group_ids.append(params['group_id'])
+            sql += " and gu.group_id = '{}'".format(params['group_id'])
 
-        if user_id:
-            user_ids.append(user_id)
+        # if user_id:
+        #     user_ids.append(user_id)
+        #
+        # if user_ids:
+        #     sql += " and gu.user_id in ('{}')".format("','".join(user_ids))
+        # if group_ids:
+        #     sql += " and gu.group_id in ('{}')".format("','".join(group_ids))
+        # if customer_id:
+        #     sql += " and g.customer_id = '{}'".format(customer_id)
 
-        if user_ids:
-            sql += " and gu.user_id in ('{}')".format("','".join(user_ids))
-        if group_ids:
-            sql += " and gu.group_id in ('{}')".format("','".join(group_ids))
         if customer_id:
-            sql += " and g.customer_id = '{}'".format(customer_id)
+            sql += """
+                and g.id in (select id
+                	from `Group`
+                	where customer_id = '{}')
+            """.format(customer_id)
+
+        elif user_id:
+            sql += """
+                and gu.group_id in (select group_id
+                	from Group_User
+                	where user_id = '{}')
+            """.format(user_id)
+
         return self.find_by_sql(sql)
 
 

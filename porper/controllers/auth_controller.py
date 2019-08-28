@@ -80,7 +80,7 @@ class AuthController():
             # else:
             #     admin_access_token = self.access_token.find_admin_token()
             # user_id = self.user_controller.create(admin_access_token, params)
-            user_id = add_user(params)
+            user_id = self.add_user(params)
 
         # now save the tokens
         # return self.token_controller.save(access_token, refresh_token, user_id)
@@ -150,17 +150,13 @@ class AuthController():
             'name': params['name'],
             'family_name': params['family_name'],
             'given_name': params['given_name'],
-            'customer_id': params['customer_id']
+            #'customer_id': params['customer_id']
         })
         self.user_group.create({
             'user_id': params['id'],
             'group_id': invited_users[0]['group_id']
         })
-        self.invited_user.update_state({
-            'email':params['email'],
-            'auth_type':params['auth_type'],
-            'state':self.invited_user.REGISTERED
-        })
+        self.invited_user.update_state(params['email'], params['auth_type'], self.invited_user.REGISTERED)
         return params['id']
 
 

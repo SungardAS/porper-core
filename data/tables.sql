@@ -1,13 +1,13 @@
 CREATE TABLE `Customer` (
   `id` varchar(50) NOT NULL DEFAULT '',
-  `name` varchar(45) NOT NULL DEFAULT '',
+  `name` varchar(100) NOT NULL DEFAULT '',
   `created_time` datetime NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 CREATE TABLE `Group` (
   `id` varchar(50) NOT NULL DEFAULT '',
-  `name` varchar(20) NOT NULL DEFAULT '',
+  `name` varchar(100) NOT NULL DEFAULT '',
   `customer_id` varchar(50) NOT NULL DEFAULT '',
   `role_id` varchar(50) DEFAULT '',
   PRIMARY KEY (`id`),
@@ -29,13 +29,13 @@ CREATE TABLE `User` (
 
 CREATE TABLE `Role` (
   `id` varchar(50) NOT NULL DEFAULT '',
-  `name` varchar(20) NOT NULL DEFAULT '',
+  `name` varchar(100) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 CREATE TABLE `Function` (
   `id` varchar(50) NOT NULL DEFAULT '',
-  `name` varchar(50) NOT NULL DEFAULT '',
+  `name` varchar(100) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
