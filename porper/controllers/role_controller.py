@@ -119,16 +119,17 @@ class RoleController(MetaResourceController):
         f_permission = {}
         for r in ret:
             function_id = r['function_id']
-            if function_id not in f_permission:
-                f_permission[function_id] = [{'resource': r['resource_name'], 'action': r['action']}]
-            else:
-                found = False
-                for p in f_permission[function_id]:
-                    if p['resource'] == r['resource_name'] and p['action'] == r['action']:
-                        found = True
-                        break
-                if not found:
-                    f_permission[function_id].append({'resource': r['resource_name'], 'action': r['action']})
+            if function_id:
+                if function_id not in f_permission:
+                    f_permission[function_id] = [{'resource': r['resource_name'], 'action': r['action']}]
+                else:
+                    found = False
+                    for p in f_permission[function_id]:
+                        if p['resource'] == r['resource_name'] and p['action'] == r['action']:
+                            found = True
+                            break
+                    if not found:
+                        f_permission[function_id].append({'resource': r['resource_name'], 'action': r['action']})
 
         # now build functions by role
         role = {}
@@ -138,17 +139,21 @@ class RoleController(MetaResourceController):
             if role_id not in role:
                 role[role_id] = {
                     'id': role_id,
-                    'name': r['role_name'],
-                    'functions': [{'id': function_id, 'name': r['function_name'], 'permissions': f_permission[function_id]}]
+                    'name': r['role_name']
                 }
+                if function_id:
+                    role[role_id]['functions'] = [{'id': function_id, 'name': r['function_name'], 'permissions': f_permission.get(function_id)}]
+                else:
+                    role[role_id]['functions'] = []
             else:
-                found = False
-                for f in role[role_id]['functions']:
-                    if f['id'] == function_id:
-                        found = True
-                        break
-                if not found:
-                    role[role_id]['functions'].append({'id': function_id, 'name': r['function_name'], 'permissions': f_permission[function_id]})
+                if function_id:
+                    found = False
+                    for f in role[role_id]['functions']:
+                        if f['id'] == function_id:
+                            found = True
+                            break
+                    if not found:
+                        role[role_id]['functions'].append({'id': function_id, 'name': r['function_name'], 'permissions': f_permission.get(function_id)})
 
         return list(role.values())
 
