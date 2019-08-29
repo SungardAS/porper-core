@@ -119,7 +119,7 @@ class Permission(Resource):
 
         if params:
             where_clause = self.get_where_clause(params)
-            sql += where_clause
+            sql += " and {}".format(where_clause)
 
         if customer_id:
             sql += " and customer_id = '{}'".format(customer_id)

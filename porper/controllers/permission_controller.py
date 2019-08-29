@@ -232,6 +232,8 @@ class PermissionController(MetaResourceController):
         #   'to_group_ids'|'to_user_ids|to_customer_id': ''
         #}
 
+        owner_id = params.get('owner_id')
+        
         self.find_user_level(access_token)
         if self.user_id != owner_id:
             raise Exception("not permitted")
