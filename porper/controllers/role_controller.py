@@ -109,11 +109,48 @@ class RoleController(MetaResourceController):
             raise Exception("not permitted")
 
         if self.is_admin:
-            return self.role.find(params)
+            ret = self.role.find(params)
         elif self.is_customer_admin:
-            return self.role.find(params, customer_id=self.customer_id)
+            ret = self.role.find(params, customer_id=self.customer_id)
         else:
-            return self.role.find(params, user_id=self.user_id)
+            ret = self.role.find(params, user_id=self.user_id)
+
+        # build permissions by function
+        f_permission = {}
+        for r in ret:
+            function_id = r['function_id']
+            if function_id not in f_permission:
+                f_permission[function_id] = [{'resource': r['resource_name'], 'action': r['action']}]
+            else:
+                found = False
+                for p in f_permission[function_id]:
+                    if p['resource'] == r['resource_name'] and p['action'] == r['action']:
+                        found = True
+                        break
+                if not found:
+                    f_permission[function_id].append({'resource': r['resource_name'], 'action': r['action']})
+
+        # now build functions by role
+        role = {}
+        for r in ret:
+            role_id = r['role_id']
+            function_id = r['function_id']
+            if role_id not in role:
+                role[role_id] = {
+                    'id': role_id,
+                    'name': r['role_name'],
+                    'functions': [{'id': function_id, 'name': r['function_name'], 'permissions': f_permission[function_id]}]
+                }
+            else:
+                found = False
+                for f in role[role_id]['functions']:
+                    if f['id'] == function_id:
+                        found = True
+                        break
+                if not found:
+                    role[role_id]['functions'].append({'id': function_id, 'name': r['function_name'], 'permissions': f_permission[function_id]})
+
+        return list(role.values())
 
         # if params.get("id"):
         #     if current_user['level'] != self.USER_LEVEL_ADMIN:

@@ -17,16 +17,21 @@ class Role(Resource):
             select distinct r.id role_id, r.name role_name,
             f.id function_id, f.name function_name, p.id permission_id,
             p.res_name resource_name, p.action action, p.value value
-            from User u
-            inner join Group_User gu on gu.user_id = u.id
-            inner join `Group` g on g.id = gu.group_id
-            inner join Role r on g.role_id = r.id
-            inner join Role_Function rf on rf.role_id = r.id
-            inner join Function f on rf.function_id = f.id
-            inner join Function_Permission fp on fp.function_id = f.id
-            inner join Permission p on fp.permission_id = p.id
-            where p.group_id is null and p.user_id is null
+            from Role r
+            left join Role_Function rf on rf.role_id = r.id
+            left join Function f on rf.function_id = f.id
+            left join Function_Permission fp on fp.function_id = f.id
+            left join Permission p on fp.permission_id = p.id
         """
+
+        if params or customer_id or user_id:
+            sel += """
+                inner join `Group` g on g.role_id = r.id
+                inner join Group_User gu on gu.group_id = g.id
+                inner join User u on u.id = gu.user_id
+            """
+
+        sql += " where p.group_id is null and p.user_id is null"
 
         if params:
             if 'group_id' in params:
