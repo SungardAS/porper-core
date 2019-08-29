@@ -163,7 +163,7 @@ class PermissionController(MetaResourceController):
         #raise Exception("not permitted")
 
 
-    def create_permissions_to_user(self, resource_name, resource_id, permissions, to_user_ids):
+    def create_permissions_to_users(self, resource_name, resource_id, permissions, to_user_ids):
         #permissions:
         #[
         #    {"action": "r"},
@@ -233,7 +233,7 @@ class PermissionController(MetaResourceController):
         #}
 
         owner_id = params.get('owner_id')
-        
+
         self.find_user_level(access_token)
         if self.user_id != owner_id:
             raise Exception("not permitted")
