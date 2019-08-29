@@ -21,7 +21,7 @@ class AccessToken(Resource):
             select * from {}
             where access_token = '{}'
         """
-        return self.find_one(sql.format(self.table_name, access_token))
+        return self.find_by_sql(sql.format(self.table_name, access_token))
 
 
     def find_user(self, access_token):
