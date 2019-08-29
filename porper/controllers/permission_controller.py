@@ -204,7 +204,7 @@ class PermissionController(MetaResourceController):
         #raise Exception("not permitted")
 
 
-   def create_permissions_to_customer(self, resource_name, resource_id, permissions, to_customer_id):
+    def create_permissions_to_customer(self, resource_name, resource_id, permissions, to_customer_id):
         #permissions:
         #[
         #    {"action": "r"},
