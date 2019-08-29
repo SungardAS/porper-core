@@ -116,4 +116,6 @@ class GroupController(MetaResourceController):
 
         else:
             groups = self.group.find(params, customer_id=customer_id, user_id=user_id)
+            if groups and 'id' in params:
+                return groups[0]
             return groups

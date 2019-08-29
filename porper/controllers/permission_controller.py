@@ -8,12 +8,12 @@ class PermissionController(MetaResourceController):
         MetaResourceController.__init__(self, connection)
         from porper.models.permission import Permission
         from porper.models.user_group import UserGroup
-        self.permission = Permission(connection)
-        self.user_group = UserGroup(connection)
+        self.permission = Permission(self.connection)
+        self.user_group = UserGroup(self.connection)
         from porper.models.user import User
         from porper.models.group import Group
-        self.user = User(connection)
-        self.group = Group(connection)
+        self.user = User(self.connection)
+        self.group = Group(self.connection)
         from porper.models.access_token import AccessToken
         self.access_token = AccessToken(self.connection)
         # from porper.controllers.token_controller import TokenController

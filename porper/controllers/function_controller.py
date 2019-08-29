@@ -138,4 +138,10 @@ class FunctionController(MetaResourceController):
                 }
             else:
                 function[id]['permissions'].append({'resource': f['p_resource_name'], 'action': f['p_action']})
-        return list(function.values())
+
+        ret = list(function.values())
+
+        if ret and 'id' in params:
+            return ret[0]
+
+        return ret

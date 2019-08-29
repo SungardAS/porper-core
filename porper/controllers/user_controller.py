@@ -282,7 +282,13 @@ class UserController(MetaResourceController):
                         'role_id': u['role_id']
                     }
                 )
-        return list(user.values())
+
+        ret = list(user.values())
+
+        if ret and 'id' in params:
+            return ret[0]
+
+        return ret
 
 
         # ######### NOTICE

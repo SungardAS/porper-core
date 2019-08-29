@@ -155,7 +155,12 @@ class RoleController(MetaResourceController):
                     if not found:
                         role[role_id]['functions'].append({'id': function_id, 'name': r['function_name'], 'permissions': f_permission.get(function_id)})
 
-        return list(role.values())
+        ret = list(role.values())
+
+        if ret and 'id' in params:
+            return ret[0]
+
+        return ret
 
         # if params.get("id"):
         #     if current_user['level'] != self.USER_LEVEL_ADMIN:

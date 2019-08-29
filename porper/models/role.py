@@ -25,7 +25,7 @@ class Role(Resource):
         """
 
         if params or customer_id or user_id:
-            sel += """
+            sql += """
                 inner join `Group` g on g.role_id = r.id
                 inner join Group_User gu on gu.group_id = g.id
                 inner join User u on u.id = gu.user_id
