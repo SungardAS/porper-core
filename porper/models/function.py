@@ -13,16 +13,21 @@ class Function(Resource):
         sql = """
             select distinct f.id id, f.name name, p.id p_id,
             p.res_name p_resource_name, p.action p_action, p.value p_resource_id
-            from User u
-            inner join Group_User gu on gu.user_id = u.id
-            inner join `Group` g on g.id = gu.group_id
-            inner join Role r on g.role_id = r.id
-            inner join Role_Function rf on rf.role_id = r.id
-            inner join Function f on rf.function_id = f.id
-            inner join Function_Permission fp on fp.function_id = f.id
-            inner join Permission p on fp.permission_id = p.id
-            where 1 = 1
+            from Function f
+            left join Function_Permission fp on fp.function_id = f.id
+            left join Permission p on p.id = fp.permission_id
         """
+
+        if params:
+            sql += """
+                inner join Role_Function rf on rf.function_id = f.id
+                inner join Role r on r.id = rf.role_id
+                inner join `Group` g on g.role_id = r.id
+                inner join Group_User gu on gu.group_id = g.id
+                inner join User u on u.id = gu.user_id
+            """
+
+        sql += " where 1 = 1"
 
         if params:
             if 'user_id' in params:
