@@ -47,7 +47,7 @@ class RoleController(MetaResourceController):
         for function in params['functions']:
             self.role_function.create({'role_id': ret['id'], 'function_id': function})
 
-        return params
+        return ret
 
 
     def delete(self, access_token, params):
