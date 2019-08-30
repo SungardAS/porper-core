@@ -57,64 +57,79 @@ class PermissionController(MetaResourceController):
         return self.access_token.find(params)[0]['user_id']
 
 
-    def add_permissions_to_group(self, resource_name, resource_id, permissions, to_group_id):
+    def add_permissions_to_groups(self, resource_name, resource_id, permissions):
         #permissions:
         #[
         #    {"action": "r"},
         #    ...
         #]
 
-        group_permission_params = {
-            "group_id": to_group_id,
+        permission_params = {
             "resource": resource_name,
             "value": resource_id
         }
         for permission in permissions:
-            group_permission_params["action"] = permission['action']
+            permission_params["group_id"] = permission['id']
+            permission_params["action"] = permission['action']
             if permission.get('condition'):
-                group_permission_params['condition'] = permission['condition']
-            self.permission.create(group_permission_params)
+                permission_params['condition'] = permission['condition']
+            if permission['state'].lower() == "a":
+                self.permission.create(permission_params)
+            elif permission['state'].lower() == "u":
+                self.permission.update(permission_params)
+            elif permission['state'].lower() == "d":
+                self.permission.delete(permission_params)
 
 
-    def add_permissions_to_user(self, resource_name, resource_id, permissions, to_user_id):
+    def add_permissions_to_users(self, resource_name, resource_id, permissions):
         #permissions:
         #[
         #    {"action": "r"},
         #    ...
         #]
 
-        user_permission_params = {
-            "user_id": to_user_id,
+        permission_params = {
             "resource": resource_name,
             "value": resource_id
         }
         for permission in permissions:
-            user_permission_params["action"] = permission['action']
+            permission_params["user_id"] = permission['id']
+            permission_params["action"] = permission['action']
             if permission.get('condition'):
-                user_permission_params['condition'] = permission['condition']
-            self.permission.create(user_permission_params)
+                permission_params['condition'] = permission['condition']
+            if permission['state'].lower() == "a":
+                self.permission.create(permission_params)
+            elif permission['state'].lower() == "u":
+                self.permission.update(permission_params)
+            elif permission['state'].lower() == "d":
+                self.permission.create(permission_params)
 
 
-    def add_permissions_to_customer(self, resource_name, resource_id, permissions, to_customer_id):
+    def add_permissions_to_customers(self, resource_name, resource_id, permissions):
         #permissions:
         #[
         #    {"action": "r"},
         #    ...
         #]
 
-        user_permission_params = {
-            "customer_id": to_customer_id,
+        permission_params = {
             "resource": resource_name,
             "value": resource_id
         }
         for permission in permissions:
-            user_permission_params["action"] = permission['action']
+            permission_params["customer_id"] = permission['id']
+            permission_params["action"] = permission['action']
             if permission.get('condition'):
-                user_permission_params['condition'] = permission['condition']
-            self.permission.create(user_permission_params)
+                permission_params['condition'] = permission['condition']
+            if permission['state'].lower() == "a":
+                self.permission.create(permission_params)
+            elif permission['state'].lower() == "u":
+                self.permission.update(permission_params)
+            elif permission['state'].lower() == "d":
+                self.permission.create(permission_params)
 
 
-    def create_permissions_to_group(self, resource_name, resource_id, permissions, to_group_ids):
+    def create_permissions_to_groups(self, resource_name, resource_id, to_group_ids):
        #permissions:
         #[
         #    {"action": "r"},
@@ -128,20 +143,19 @@ class PermissionController(MetaResourceController):
         #     return self.add_permissions_to_group(resource_name, resource_id, permissions, to_group_id)
 
         if not self.is_admin:
+            group_ids = [g['id'] for g in to_group_ids]
             customer_id = None
             user_id = None
             if self.is_customer_admin:
                 customer_id = self.customer_id
             else:
                 user_id = self.user_id
-            groups = self.group.find_by_ids(to_group_ids, customer_id= customer_id, user_id=user_id)
-            if len(groups) != len(to_group_ids):
-                print("len(groups) = {} whereas len(to_group_ids) = {}".format(len(groups), len(to_group_ids)))
+            groups = self.group.find_by_ids(group_ids, customer_id= customer_id, user_id=user_id)
+            if len(groups) != len(group_ids):
+                print("len(groups) = {} whereas len(to_group_ids) = {}".format(len(groups), len(group_ids)))
                 raise Exception("not permitted")
 
-        for to_group_id in to_group_ids:
-            self.add_permissions_to_group(resource_name, resource_id, permissions, to_group_id)
-        return True
+        return self.add_permissions_to_groups(resource_name, resource_id, to_group_ids)
 
         """
         # if the current user is NOT group admin of the given group, don't allow it
@@ -163,7 +177,7 @@ class PermissionController(MetaResourceController):
         #raise Exception("not permitted")
 
 
-    def create_permissions_to_users(self, resource_name, resource_id, permissions, to_user_ids):
+    def create_permissions_to_users(self, resource_name, resource_id, to_user_ids):
         #permissions:
         #[
         #    {"action": "r"},
@@ -171,21 +185,19 @@ class PermissionController(MetaResourceController):
         #]
 
         if not self.is_admin:
+            user_ids = [u['id'] for u in to_user_ids]
             customer_id = None
             user_id = None
             if self.is_customer_admin:
                 customer_id = self.customer_id
             else:
                 user_id = self.user_id
-            users = self.user.find_by_ids(to_user_ids, customer_id= customer_id, user_id=user_id)
-            if len(users) != len(to_user_ids):
-                print("len(users) = {} whereas len(to_user_ids) = {}".format(len(groups), len(to_user_ids)))
+            users = self.user.find_by_ids(user_ids, customer_id=customer_id, user_id=user_id)
+            if len(users) != len(user_ids):
+                print("len(users) = {} whereas len(to_user_ids) = {}".format(len(groups), len(user_ids)))
                 raise Exception("not permitted")
 
-        # if the current user is admin, allow it
-        for to_user_id in to_user_ids:
-            self.add_permissions_to_user(resource_name, resource_id, permissions, to_user_id)
-        return True
+        return self.add_permissions_to_users(resource_name, resource_id, to_user_ids)
 
         """
         # if 'create' is NOT in permissions to give
@@ -204,7 +216,7 @@ class PermissionController(MetaResourceController):
         #raise Exception("not permitted")
 
 
-    def create_permissions_to_customer(self, resource_name, resource_id, permissions, to_customer_id):
+    def create_permissions_to_customer(self, resource_name, resource_id, to_customer_ids):
         #permissions:
         #[
         #    {"action": "r"},
@@ -213,24 +225,23 @@ class PermissionController(MetaResourceController):
 
         if not self.is_admin:
             # check if this user is in the same customer with the customer to give access
-            if self.customer_id != to_customer_id:
-                raise Exception("not permitted")
+            for customer_id in [c['id'] for c in to_customer_ids]:
+                if self.customer_id != to_customer_id:
+                    raise Exception("not permitted")
 
-        return self.add_permissions_to_customer(resource_name, resource_id, permissions, to_customer_id)
+        return self.add_permissions_to_customers(resource_name, resource_id, to_customer_ids)
 
 
     def create(self, access_token, params):
-        #params: {
-        #   'owner_id': '',
-        #   'resource_name': '',
-        #   'resource_id': '',
-        #   'permissions':
-        #   [
-        #       {"action": "r"}
-        #       ...
-        #   ]
-        #   'to_group_ids'|'to_user_ids|to_customer_id': ''
-        #}
+        # {
+        #     "owner_id": "35925", "res_name": "meta", "res_id": "d392909c-d15f-43ff-98b4-9fd7e3ca80e9",
+        #     "to_user_ids": [{"id": "user1@ctotest.com", "action": "w", "state": "A"},
+        #                     {"id": "user2@ctotest.com", "action": "r", "state, "state": "A"}],
+        #     "to_group_ids": [{"id": "group_id1", "action": "w", "state": "A"},
+        #                     {"id": "group_id2", "action": "r", "state": "A"}],
+        #     "to_customer_ids": [{"id": "customer_id1", "action": "w", "state": "A"}
+        #                     {"id": "customer_id1", "action": "r", "state": "A"}]
+        # }
 
         owner_id = params.get('owner_id')
 
@@ -239,12 +250,13 @@ class PermissionController(MetaResourceController):
             raise Exception("not permitted")
 
         if params.get('to_group_ids'):
-            return self.create_permissions_to_groups(params['res_name'], params['res_id'], params['permissions'], params.get('to_group_ids'))
-        elif params.get('to_user_ids'):
-            return self.create_permissions_to_users(params['res_name'], params['res_id'], params['permissions'], params['to_user_ids'])
-        elif params.get('to_customer_id'):
-            return self.create_permissions_to_customer(params['res_name'], params['res_id'], params['permissions'], params['to_customer_id'])
-        raise Exception("not supported")
+            self.create_permissions_to_groups(params['res_name'], params['res_id'], params['to_group_ids'])
+        if params.get('to_user_ids'):
+            self.create_permissions_to_users(params['res_name'], params['res_id'], params['to_user_ids'])
+        if params.get('to_customer_ids'):
+            self.create_permissions_to_customer(params['res_name'], params['res_id'], params['to_customer_ids'])
+
+        return True
 
 
     def update(self, access_token, params):
