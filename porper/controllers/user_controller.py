@@ -229,7 +229,9 @@ class UserController(MetaResourceController):
         if params.get("id") and self.user_id == params['id']:
             params['user_id'] = params['id']
             del params['id']
-            return self.user.find_one(params, user_id=self.user_id)
+            ret = self.user.find(params, user_id=self.user_id)
+            if ret:
+                return ret[0]
 
         if not self.is_permitted(self.permission_name, self.permission_read):
             raise Exception("not permitted")
