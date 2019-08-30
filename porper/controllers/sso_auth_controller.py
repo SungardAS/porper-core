@@ -2,6 +2,7 @@
 import os
 import json
 import requests
+import boto3
 
 from porper.controllers.auth_controller import AuthController
 
@@ -11,10 +12,20 @@ class SsoAuthController(AuthController):
 
         AuthController.__init__(self, permission_connection)
 
+        client = boto3.client('ssm')
         self.host = os.environ.get('SSO_HOST')
+        if self.host is None:
+            self.host = client.get_parameter(Name='SSO_HOST', WithDecryption=True)['Parameter']['Value']
         self.username = os.environ.get('SSO_CLIENT_ID')
+        if self.username is None:
+            self.username = client.get_parameter(Name='SSO_CLIENT_ID', WithDecryption=True)['Parameter']['Value']
         self.password = os.environ.get('SSO_CLIENT_SECRET')
+        if self.password is None:
+            self.password = client.get_parameter(Name='SSO_CLIENT_SECRET', WithDecryption=True)['Parameter']['Value']
         self.redirect_uri = os.environ.get('SSO_REDIRECT_URI')
+        if self.redirect_uri is None:
+            self.redirect_uri = client.get_parameter(Name='SSO_REDIRECT_URI', WithDecryption=True)['Parameter']['Value']
+
 
     def authenticate(self, params):
 
