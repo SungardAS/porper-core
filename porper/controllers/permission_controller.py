@@ -306,7 +306,7 @@ class PermissionController(MetaResourceController):
             else:
                 user_id = self.user_id
             groups = self.group.find({}, customer_id= customer_id, user_id=user_id)
-            users = self.user.find_({}, customer_id= customer_id, user_id=user_id)
+            users = self.user.find({}, customer_id= customer_id, user_id=user_id)
 
             search_cid = self.customer_id
             search_gids = [g['id'] for g in groups]
