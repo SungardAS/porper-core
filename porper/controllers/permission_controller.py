@@ -298,12 +298,12 @@ class PermissionController(MetaResourceController):
 
         search_params = {}
         if params:
-            if 'resource' in params:
-                search_params['res_name'] = params['resource']
+            if 'res_name' in params:
+                search_params['res_name'] = params['res_name']
             if 'action' in params:
                 search_params['action'] = params['action']
-            if 'value' in params:
-                search_params['value'] = params['value']
+            if 'res_id' in params:
+                search_params['value'] = params['res_id']
 
         self.find_user_level(access_token)
 
