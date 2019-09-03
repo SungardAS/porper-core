@@ -45,7 +45,22 @@ class Permission(Resource):
 
     def update(self, params):
         params = self._replace_attr_name(params)
-        return Resource.update(self, params)
+        new_action = params['action']
+        del params['action']
+        sql = "UPDATE Permission set action = '{}'".format(new_action)
+        where_clause = self.get_where_clause(params)
+        if where_clause:
+            sql += " WHERE {}".format(where_clause)
+        return self.execute(sql)
+
+
+    def delete(self, params):
+        params = self._replace_attr_name(params)
+        sql = "DELETE FROM Permission"
+        where_clause = self.get_where_clause(params)
+        if where_clause:
+            sql += " WHERE {}".format(where_clause)
+        return self.execute(sql)
 
 
     """

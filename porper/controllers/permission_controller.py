@@ -102,7 +102,7 @@ class PermissionController(MetaResourceController):
             elif permission['state'].lower() == "u":
                 self.permission.update(permission_params)
             elif permission['state'].lower() == "d":
-                self.permission.create(permission_params)
+                self.permission.delete(permission_params)
 
 
     def add_permissions_to_customers(self, resource_name, resource_id, permissions):
@@ -126,7 +126,7 @@ class PermissionController(MetaResourceController):
             elif permission['state'].lower() == "u":
                 self.permission.update(permission_params)
             elif permission['state'].lower() == "d":
-                self.permission.create(permission_params)
+                self.permission.delete(permission_params)
 
 
     def create_permissions_to_groups(self, resource_name, resource_id, to_group_ids):
