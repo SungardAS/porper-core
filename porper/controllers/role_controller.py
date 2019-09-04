@@ -3,12 +3,12 @@ from porper.controllers.meta_resource_controller import MetaResourceController
 
 class RoleController(MetaResourceController):
 
-    def __init__(self, connection=None):
-        MetaResourceController.__init__(self, connection)
+    def __init__(self, connection=None, loglevel="INFO"):
+        MetaResourceController.__init__(self, connection, loglevel)
         from porper.models.role import Role
-        self.role = Role(self.connection)
+        self.role = Role(self.connection, loglevel)
         from porper.models.role_function import RoleFunction
-        self.role_function = RoleFunction(self.connection)
+        self.role_function = RoleFunction(self.connection, loglevel)
         # from porper.models.function import Function
         # self.function = Function(self.connection)
         # from porper.controllers.user_group_controller import UserGroupController
@@ -35,7 +35,7 @@ class RoleController(MetaResourceController):
         # find if the given role already exists
         rows = self.role.find({"name": params['name']})
         if len(rows) > 0:
-            print('already exists')
+            self.logger.info('already exists')
             return rows[0]['id']
 
         # create a role

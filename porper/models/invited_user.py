@@ -4,8 +4,8 @@ from porper.models.resource import Resource
 
 class InvitedUser(Resource):
 
-    def __init__(self, connection=None):
-        Resource.__init__(self, connection)
+    def __init__(self, connection=None, loglevel="INFO"):
+        Resource.__init__(self, connection, loglevel)
         self.table_name = "`InvitedUser`"
         self.INVITED = 'invited'
         self.REGISTERED = 'registered'
@@ -17,7 +17,7 @@ class InvitedUser(Resource):
 
     def find(self, params, customer_id=None, user_id=None):
 
-        self.logger.info(f"params={params}")
+        self.logger.debug(f"params={params}")
 
         # use 'left' join with Group_User
         sql = """

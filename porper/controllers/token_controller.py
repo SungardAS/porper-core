@@ -4,11 +4,11 @@ from datetime import datetime
 
 class TokenController(MetaResourceController):
 
-    def __init__(self, connection=None):
+    def __init__(self, connection=None, loglevel="INFO"):
         #self.connection = connection
-        MetaResourceController.__init__(self, connection)
+        MetaResourceController.__init__(self, connection, loglevel)
         from porper.models.access_token import AccessToken
-        self.access_token = AccessToken(self.connection)
+        self.access_token = AccessToken(self.connection, loglevel)
 
         self.permission_name = 'Token'
 
@@ -56,7 +56,7 @@ class TokenController(MetaResourceController):
     #     if len(rows) == 0:
     #         raise Exception("unauthorized")
     #     return rows
-    
+
 
     def delete(self, access_token, params):
         return self.access_token.delete(access_token)

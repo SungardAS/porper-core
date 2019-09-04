@@ -5,8 +5,8 @@ from porper.models.permission import ADMIN_PERMISSION, CUSTOMER_ADMIN_PERMISSION
 
 class Group(Resource):
 
-    def __init__(self, connection=None):
-        Resource.__init__(self, connection)
+    def __init__(self, connection=None, loglevel="INFO"):
+        Resource.__init__(self, connection, loglevel)
         self.table_name = "`Group`"
 
 
@@ -191,7 +191,7 @@ class Group(Resource):
                 	where user_id = '{}')
             """.format(user_id)
 
-        return self.find_one(sql)
+        return self.find_by_sql(sql)
 
 
     def find_by_user_ids(self, user_ids, customer_id=None, user_id=None):
@@ -216,4 +216,4 @@ class Group(Resource):
                 	where user_id = '{}')
             """.format(user_id)
 
-        return self.find_one(sql)
+        return self.find_by_sql(sql)

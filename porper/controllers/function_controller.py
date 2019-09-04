@@ -3,14 +3,14 @@ from porper.controllers.meta_resource_controller import MetaResourceController
 
 class FunctionController(MetaResourceController):
 
-    def __init__(self, connection=None):
-        MetaResourceController.__init__(self, connection)
+    def __init__(self, connection=None, loglevel="INFO"):
+        MetaResourceController.__init__(self, connection, loglevel)
         from porper.models.function import Function
-        self.function = Function(self.connection)
+        self.function = Function(self.connection, loglevel)
         from porper.models.permission import Permission
-        self.permission = Permission(self.connection)
+        self.permission = Permission(self.connection, loglevel)
         from porper.models.function_permission import FunctionPermission
-        self.function_permission = FunctionPermission(self.connection)
+        self.function_permission = FunctionPermission(self.connection, loglevel)
 
 
     def add_permission(self, function_id, permission):
@@ -41,7 +41,7 @@ class FunctionController(MetaResourceController):
         # find if the given function already exists
         rows = self.function.find_simple({"name": params['name']})
         if len(rows) > 0:
-            print('already exists')
+            self.logger.info('already exists')
             return rows[0]['id']
 
         # create a function

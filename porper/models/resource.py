@@ -8,22 +8,23 @@ import logging
 
 class Resource:
 
-    def __init__(self, connection=None):
+    def __init__(self, connection=None, loglevel="INFO"):
+
+        self.logger = logging.getLogger()
+        # loglevel = "INFO"
+        logging.basicConfig(level=logging.ERROR)
+        aws_lambda_logging.setup(level=loglevel)
+
         if connection is None:
             host = os.environ.get('MYSQL_HOST')
             username = os.environ.get('MYSQL_USER')
             password = os.environ.get('MYSQL_PASSWORD')
             database = os.environ.get('MYSQL_DATABASE')
             self.connection = pymysql.connect(host, user=username, passwd=password, db=database, cursorclass=pymysql.cursors.DictCursor)
-            print("!!!!!!!!!!new connection created")
+            self.logger.debug("!!!!!!!!!!new connection created")
         else:
             self.connection = connection
         self.table_name = None
-
-        self.logger = logging.getLogger()
-        loglevel = "INFO"
-        logging.basicConfig(level=logging.ERROR)
-        aws_lambda_logging.setup(level=loglevel)
 
 
     def __extract(self, params):
@@ -65,7 +66,7 @@ class Resource:
 
     def execute(self, sql):
         sql = sql.replace('\n', ' ')
-        self.logger.info(f"SQL:{sql}")
+        self.logger.debug(f"SQL:{sql}")
         with self.connection.cursor() as cursor:
             cursor.execute(sql)
         return True
@@ -102,7 +103,7 @@ class Resource:
 
     def find_by_sql(self, sql):
         sql = sql.replace('\n', ' ')
-        self.logger.info(f"SQL:{sql}")
+        self.logger.debug(f"SQL:{sql}")
         with self.connection.cursor() as cursor:
             cursor.execute(sql)
             rows = cursor.fetchall()
@@ -111,7 +112,7 @@ class Resource:
 
     def find_one(self, sql):
         sql = sql.replace('\n', ' ')
-        self.logger.info(f"SQL:{sql}")
+        self.logger.debug(f"SQL:{sql}")
         with self.connection.cursor() as cursor:
             cursor.execute(sql)
             row = cursor.fetchone()

@@ -4,18 +4,18 @@ from porper.controllers.meta_resource_controller import MetaResourceController
 
 class PermissionController(MetaResourceController):
 
-    def __init__(self, connection=None):
-        MetaResourceController.__init__(self, connection)
+    def __init__(self, connection=None, loglevel="INFO"):
+        MetaResourceController.__init__(self, connection, loglevel)
         from porper.models.permission import Permission
         from porper.models.user_group import UserGroup
-        self.permission = Permission(self.connection)
-        self.user_group = UserGroup(self.connection)
+        self.permission = Permission(self.connection, loglevel)
+        self.user_group = UserGroup(self.connection, loglevel)
         from porper.models.user import User
         from porper.models.group import Group
-        self.user = User(self.connection)
-        self.group = Group(self.connection)
+        self.user = User(self.connection, loglevel)
+        self.group = Group(self.connection, loglevel)
         from porper.models.access_token import AccessToken
-        self.access_token = AccessToken(self.connection)
+        self.access_token = AccessToken(self.connection, loglevel)
         # from porper.controllers.token_controller import TokenController
         # self.token_controller = TokenController(self.connection)
         # from porper.controllers.user_group_controller import UserGroupController
@@ -152,7 +152,7 @@ class PermissionController(MetaResourceController):
                 user_id = self.user_id
             groups = self.group.find_by_ids(group_ids, customer_id= customer_id, user_id=user_id)
             if len(groups) != len(group_ids):
-                print("len(groups) = {} whereas len(to_group_ids) = {}".format(len(groups), len(group_ids)))
+                self.logger.info("len(groups) = {} whereas len(to_group_ids) = {}".format(len(groups), len(group_ids)))
                 raise Exception("not permitted")
 
         return self.add_permissions_to_groups(resource_name, resource_id, to_group_ids)
@@ -194,7 +194,7 @@ class PermissionController(MetaResourceController):
                 user_id = self.user_id
             users = self.user.find_by_ids(user_ids, customer_id=customer_id, user_id=user_id)
             if len(users) != len(user_ids):
-                print("len(users) = {} whereas len(to_user_ids) = {}".format(len(groups), len(user_ids)))
+                self.logger.info("len(users) = {} whereas len(to_user_ids) = {}".format(len(users), len(user_ids)))
                 raise Exception("not permitted")
 
         return self.add_permissions_to_users(resource_name, resource_id, to_user_ids)

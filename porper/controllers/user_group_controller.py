@@ -3,15 +3,15 @@ from porper.controllers.meta_resource_controller import MetaResourceController
 
 class UserGroupController(MetaResourceController):
 
-    def __init__(self, connection=None):
+    def __init__(self, connection=None, loglevel="INFO"):
         #self.connection = connection
-        MetaResourceController.__init__(self, connection)
+        MetaResourceController.__init__(self, connection, loglevel)
         from porper.models.user import User
         from porper.models.group import Group
         from porper.models.user_group import UserGroup
-        self.user = User(self.connection)
-        self.group = Group(self.connection)
-        self.user_group = UserGroup(self.connection)
+        self.user = User(self.connection, loglevel)
+        self.group = Group(self.connection, loglevel)
+        self.user_group = UserGroup(self.connection, loglevel)
         #from porper.controllers.token_controller import TokenController
         #self.token_controller = TokenController(self.connection)
         #from porper.controllers.permission_controller import PermissionController

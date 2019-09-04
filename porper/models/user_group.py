@@ -4,8 +4,8 @@ from porper.models.resource import Resource
 
 class UserGroup(Resource):
 
-    def __init__(self, connection=None):
-        Resource.__init__(self, connection)
+    def __init__(self, connection=None, loglevel="INFO"):
+        Resource.__init__(self, connection, loglevel)
         self.table_name = "`Group_User`"
 
 

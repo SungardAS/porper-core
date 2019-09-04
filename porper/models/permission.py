@@ -16,8 +16,8 @@ PERMISSION_WRITE = 'w'
 
 class Permission(Resource):
 
-    def __init__(self, connection=None):
-        Resource.__init__(self, connection)
+    def __init__(self, connection=None, loglevel="INFO"):
+        Resource.__init__(self, connection, loglevel)
         self.table_name = "`Permission`"
 
 

@@ -3,21 +3,21 @@ from porper.controllers.meta_resource_controller import MetaResourceController
 
 class UserController(MetaResourceController):
 
-    def __init__(self, connection=None):
+    def __init__(self, connection=None, loglevel="INFO"):
         #self.connection = connection
-        MetaResourceController.__init__(self, connection)
+        MetaResourceController.__init__(self, connection, loglevel)
         from porper.models.user import User
-        self.user = User(self.connection)
+        self.user = User(self.connection, loglevel)
         from porper.models.user_group import UserGroup
-        self.user_group = UserGroup(self.connection)
+        self.user_group = UserGroup(self.connection, loglevel)
         from porper.models.invited_user import InvitedUser
-        self.invited_user = InvitedUser(self.connection)
+        self.invited_user = InvitedUser(self.connection, loglevel)
         from porper.models.customer import Customer
-        self.customer = Customer(self.connection)
+        self.customer = Customer(self.connection, loglevel)
         from porper.models.access_token import AccessToken
-        self.access_token = AccessToken(self.connection)
+        self.access_token = AccessToken(self.connection, loglevel)
         from porper.models.function import Function
-        self.function = Function(self.connection)
+        self.function = Function(self.connection, loglevel)
         # from porper.models.group import Group
         # self.group = Group(connection)
         #from porper.controllers.token_controller import TokenController

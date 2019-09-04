@@ -4,14 +4,14 @@ from porper.controllers.meta_resource_controller import MetaResourceController
 
 class InvitedUserController(MetaResourceController):
 
-    def __init__(self, connection=None):
-        MetaResourceController.__init__(self, connection)
+    def __init__(self, connection=None, loglevel="INFO"):
+        MetaResourceController.__init__(self, connection, loglevel)
         from porper.models.invited_user import InvitedUser
-        self.invited_user = InvitedUser(self.connection)
+        self.invited_user = InvitedUser(self.connection, loglevel)
         from porper.models.user_group import UserGroup
-        self.user_group = UserGroup(self.connection)
+        self.user_group = UserGroup(self.connection, loglevel)
         from porper.models.group import Group
-        self.group = Group(self.connection)
+        self.group = Group(self.connection, loglevel)
         # from porper.controllers.user_group_controller import UserGroupController
         # self.user_group_controller = UserGroupController(self.connection)
 
@@ -37,7 +37,7 @@ class InvitedUserController(MetaResourceController):
             if items[0]['state'] == self.invited_user.REGISTERED:
                 raise Exception("Already registered")
             if items[0]['state'] == self.invited_user.INVITED:
-                print("Already invited")
+                self.logger.info("Already invited")
                 return True
 
         return self._save(self.user_id, params)

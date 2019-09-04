@@ -4,8 +4,8 @@ from porper.models.resource import Resource
 
 class User(Resource):
 
-    def __init__(self, connection=None):
-        Resource.__init__(self, connection)
+    def __init__(self, connection=None, loglevel="INFO"):
+        Resource.__init__(self, connection, loglevel)
         self.table_name = "`User`"
 
 
@@ -67,7 +67,7 @@ class User(Resource):
                 	where user_id = '{}')
             """.format(user_id)
 
-        return self.find_one(sql)
+        return self.find_by_sql(sql)
 
 
     # def find(self, group_id, user_id=None):

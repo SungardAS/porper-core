@@ -10,13 +10,13 @@ from porper.controllers.meta_resource_controller import MetaResourceController
 
 class GroupController(MetaResourceController):
 
-    def __init__(self, connection=None):
+    def __init__(self, connection=None, loglevel="INFO"):
         #self.connection = connection
-        MetaResourceController.__init__(self, connection)
+        MetaResourceController.__init__(self, connection, loglevel)
         from porper.models.group import Group
-        self.group = Group(self.connection)
+        self.group = Group(self.connection, loglevel)
         from porper.models.user import User
-        self.user = User(self.connection)
+        self.user = User(self.connection, loglevel)
         # from porper.controllers.user_group_controller import UserGroupController
         # self.user_group_controller = UserGroupController(self.connection)
 

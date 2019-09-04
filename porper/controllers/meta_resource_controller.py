@@ -11,7 +11,12 @@ from porper.models.permission import ADMIN_PERMISSION, CUSTOMER_ADMIN_PERMISSION
 
 class MetaResourceController:
 
-    def __init__(self, connection=None):
+    def __init__(self, connection=None, loglevel="INFO"):
+
+        self.logger = logging.getLogger()
+        # loglevel = "INFO"
+        logging.basicConfig(level=logging.ERROR)
+        aws_lambda_logging.setup(level=loglevel)
 
         if not connection:
             host = os.environ.get('MYSQL_HOST')
@@ -19,18 +24,18 @@ class MetaResourceController:
             password = os.environ.get('MYSQL_PASSWORD')
             database = os.environ.get('MYSQL_DATABASE')
             self.connection = pymysql.connect(host, user=username, passwd=password, db=database, cursorclass=pymysql.cursors.DictCursor)
-            print("@@@@@@@@new connection created")
+            self.logger.debug("@@@@@@@@new connection created")
         else:
             self.connection = connection
 
         from porper.models.customer import Customer
-        self.customer = Customer(self.connection)
+        self.customer = Customer(self.connection, loglevel)
         from porper.models.group import Group
-        self.group = Group(self.connection)
+        self.group = Group(self.connection, loglevel)
         from porper.models.access_token import AccessToken
-        self.access_token = AccessToken(self.connection)
+        self.access_token = AccessToken(self.connection, loglevel)
         from porper.models.permission import Permission
-        self.permission = Permission(self.connection)
+        self.permission = Permission(self.connection, loglevel)
         # from porper.models.user_group import UserGroup
         # self.user_group = UserGroup(self.connection)
         # from porper.controllers.token_controller import TokenController
@@ -50,11 +55,6 @@ class MetaResourceController:
         # self.USER_LEVEL_CUSTOMER_ADMIN = 'customer_admin'
         # # self.USER_LEVEL_GROUP_ADMIN = 'group_admin'
         # self.USER_LEVEL_USER = 'user'
-
-        self.logger = logging.getLogger()
-        loglevel = "INFO"
-        logging.basicConfig(level=logging.ERROR)
-        aws_lambda_logging.setup(level=loglevel)
 
 
     @property

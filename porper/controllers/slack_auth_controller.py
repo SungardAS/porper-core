@@ -6,9 +6,9 @@ from porper.controllers.auth_controller import AuthController
 
 class SlackAuthController(AuthController):
 
-    def __init__(self, permission_connection=None):
+    def __init__(self, permission_connection=None, loglevel="INFO"):
 
-        AuthController.__init__(self, permission_connection)
+        AuthController.__init__(self, permission_connection, loglevel)
 
         self.api_endpoint = os.environ.get('SLACK_API_ENDPOINT')
         self.client_id = os.environ.get('SLACK_CLIENT_ID')
@@ -20,7 +20,7 @@ class SlackAuthController(AuthController):
         access_token = params.get('access_token')
         user_id = params.get('uid')
         team_id = params.get('tid')
-        print("code [{}], state [{}], access_token [{}], user_id [{}], team_id [%s]".format(code, state, access_token, user_id, team_id))
+        self.logger.debug("code [{}], state [{}], access_token [{}], user_id [{}], team_id [%s]".format(code, state, access_token, user_id, team_id))
         if access_token and user_id and team_id:
             return self.validate(access_token, user_id, team_id)
         else:
@@ -41,8 +41,8 @@ class SlackAuthController(AuthController):
         }
         headers = {"Content-Type":"application/json"}
         r = requests.get(api_url, headers=headers, params=payload, verify=False)
-        print(r)
-        print(r._content)
+        self.logger.debug(r)
+        self.logger.debug(r._content)
         user_info = json.loads(r._content)
         user_info['refresh_token'] = code
         return self.save(user_info)
@@ -75,8 +75,8 @@ class SlackAuthController(AuthController):
         }
         headers = {"Content-Type":"application/json"}
         r = requests.get(api_url, headers=headers, params=payload, verify=False)
-        print(r)
-        print(r._content)
+        self.logger.debug(r)
+        self.logger.debug(r._content)
         """
         {
             "ok": true,
@@ -107,7 +107,7 @@ class SlackAuthController(AuthController):
             raise Exception("not authenticated")
         uid = '%s-%s' % (team_id, user_id)
         from porper.models.user import User
-        user = User(self.connection)
+        user = User(self.connection, loglevel)
         user_info = user.find_by_id(uid)
         if not user_info:
             # create this user
@@ -142,7 +142,7 @@ class SlackAuthController(AuthController):
 
         # create a default group if not exists
         from porper.models.group import Group
-        group = Group(self.connection)
+        group = Group(self.connection, loglevel)
         group_info = group.find_by_id(team_id)
         if not group_info:
             # if this is the first user in this group, make it as admin
@@ -152,9 +152,9 @@ class SlackAuthController(AuthController):
 
         # now add this user to its default group
         from porper.models.user_group import UserGroup
-        user_group = UserGroup(self.connection)
+        user_group = UserGroup(self.connection, loglevel)
         user_group_info = {"user_id": uid, "group_id": team_id, "is_admin": is_admin}
-        print(ser_group_info)
+        self.logger.debug(ser_group_info)
         user_group.create(user_group_info)
 
 

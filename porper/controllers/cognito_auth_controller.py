@@ -7,9 +7,9 @@ from porper.controllers.auth_controller import AuthController
 
 class CognitoAuthController(AuthController):
 
-    def __init__(self, permission_connection=None):
+    def __init__(self, permission_connection=None, loglevel="INFO"):
 
-        AuthController.__init__(self, permission_connection)
+        AuthController.__init__(self, permission_connection, loglevel)
 
         self.client = boto3.client('cognito-idp')
 
@@ -19,9 +19,9 @@ class CognitoAuthController(AuthController):
         cognito_access_token = params['cognito_access_token']
 
         # get the tokens to see if the given code is valid
-        print("cognito_access_token [{}]".format(cognito_access_token))
+        self.logger.debug("cognito_access_token [{}]".format(cognito_access_token))
         response = self.client.get_user(AccessToken=cognito_access_token)
-        print(response)
+        self.logger.debug(response)
         """{
                 'Username': '4de37a8c-c2c0-4cc4-9fbb-c578139fb861',
                 'UserAttributes': [

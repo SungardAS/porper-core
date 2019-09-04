@@ -1,17 +1,25 @@
 
 import os
 import pymysql
+import logging
+import aws_lambda_logging
 
 class AuthController():
 
-    def __init__(self, connection=None):
+    def __init__(self, connection=None, loglevel="INFO"):
+
+        self.logger = logging.getLogger()
+        # loglevel = "INFO"
+        logging.basicConfig(level=logging.ERROR)
+        aws_lambda_logging.setup(level=loglevel)
+
         if not connection:
             host = os.environ.get('MYSQL_HOST')
             username = os.environ.get('MYSQL_USER')
             password = os.environ.get('MYSQL_PASSWORD')
             database = os.environ.get('MYSQL_DATABASE')
             self.connection = pymysql.connect(host, user=username, passwd=password, db=database, cursorclass=pymysql.cursors.DictCursor)
-            print("@@@@@@@@new connection created")
+            self.logger.debug("@@@@@@@@new connection created")
         else:
             self.connection = connection
         # from porper.controllers.user_controller import UserController
@@ -23,15 +31,15 @@ class AuthController():
         # from porper.models.access_token import AccessToken
         # self.access_token = AccessToken(self.connection)
         from porper.models.user import User
-        self.user = User(self.connection)
+        self.user = User(self.connection, loglevel)
         from porper.models.user_group import UserGroup
-        self.user_group = UserGroup(self.connection)
+        self.user_group = UserGroup(self.connection, loglevel)
         from porper.models.group import Group
-        self.group = Group(self.connection)
+        self.group = Group(self.connection, loglevel)
         from porper.models.invited_user import InvitedUser
-        self.invited_user = InvitedUser(self.connection)
+        self.invited_user = InvitedUser(self.connection, loglevel)
         from porper.models.access_token import AccessToken
-        self.access_token = AccessToken(self.connection)
+        self.access_token = AccessToken(self.connection, loglevel)
 
     def authenticate(self, params):
 
@@ -105,7 +113,7 @@ class AuthController():
             # set this user to the admin
             self.user.create(params)
             from porper.models.group import Group
-            group = Group(self.dynamodb)
+            group = Group(self.connection, loglevel)
             admin_groups = group.find_admin_groups()
             if not admin_groups:
                 raise Exception("No admin group found")
