@@ -1,28 +1,25 @@
 
 from __future__ import print_function # Python 2/3 compatibility
-import json
-import boto3
-from boto3.dynamodb.conditions import Key, Attr
-from botocore.exceptions import ClientError
-from porper.models.decimal_encoder import DecimalEncoder
+# import json
+# import boto3
+# from boto3.dynamodb.conditions import Key, Attr
+# from botocore.exceptions import ClientError
+# from porper.models.decimal_encoder import DecimalEncoder
 from porper.models.resource import Resource
 
-import os
-import aws_lambda_logging
-import logging
-
-logger = logging.getLogger()
-loglevel = "INFO"
-logging.basicConfig(level=logging.ERROR)
-aws_lambda_logging.setup(level=loglevel)
-
 ALL = "*"
+ADMIN_PERMISSION = 'admin'
+CUSTOMER_ADMIN_PERMISSION = 'customeradmin'
+PERMISSION_READ = 'r'
+PERMISSION_WRITE = 'w'
+
 
 class Permission(Resource):
 
-    def __init__(self, dynamodb):
-        self.dynamodb = dynamodb
-        self.table = dynamodb.Table(os.environ.get('PERMISSION_TABLE_NAME'))
+    def __init__(self, connection=None, loglevel="INFO"):
+        Resource.__init__(self, connection, loglevel)
+        self.table_name = "`Permission`"
+
 
     def _generate_id(self, params):
         id = ""
@@ -32,19 +29,41 @@ class Permission(Resource):
             id = 'g-%s' % params['group_id']
         return '%s-%s-%s-%s' % (id, params.get('resource'), params.get('action'), params.get('value'))
 
+
+    def _replace_attr_name(self, params):
+        if 'resource' in params:
+            params['res_name'] = params['resource']
+            del params['resource']
+        return params
+
+
     def create(self, params):
         params['id'] = self._generate_id(params)
-        try:
-            response = self.table.put_item(
-               Item=params
-            )
-        except ClientError as e:
-            logger.info(f"{e.response['Error']['Message']}")
-            raise
-        else:
-            logger.info(f"PutItem succeeded:{json.dumps(response, indent=4, cls=DecimalEncoder)}")
-            return params
+        params = self._replace_attr_name(params)
+        return Resource.create(self, params)
 
+
+    def update(self, params):
+        params = self._replace_attr_name(params)
+        new_action = params['action']
+        del params['action']
+        sql = "UPDATE Permission set action = '{}'".format(new_action)
+        where_clause = self.get_where_clause(params)
+        if where_clause:
+            sql += " WHERE {}".format(where_clause)
+        return self.execute(sql)
+
+
+    def delete(self, params):
+        params = self._replace_attr_name(params)
+        sql = "DELETE FROM Permission"
+        where_clause = self.get_where_clause(params)
+        if where_clause:
+            sql += " WHERE {}".format(where_clause)
+        return self.execute(sql)
+
+
+    """
     def _find_id(self, params):
         if params.get('user_id') is None and params.get('group_id') is None:
             return None
@@ -66,26 +85,66 @@ class Permission(Resource):
             print(json.dumps(i, cls=DecimalEncoder))
         if len(response["Items"]) == 0: return None
         else:   return response["Items"][0]['id']
+    """
 
-    def delete(self, params):
-        id = params.get('id')
-        if id is None:
-            id = self._find_id(params)
-        if id is None:
-            logger.info("No item found to delete")
-            return None
-        try:
-            response = self.table.delete_item(
-                Key={
-                    'id': id
-                },
-            )
-        except ClientError as e:
-            logger.info(f"{e.response['Error']['Message']}")
-            raise
-        else:
-            logger.info(f"DeleteItem succeeded:{json.dumps(response, indent=4, cls=DecimalEncoder)}")
-            return id
+
+    def find(self, params):
+        sql = """
+            select distinct p.res_name name, p.action action, p.value value
+            from Permission p
+            inner join Function_Permission fp on fp.permission_id = p.id
+            inner join Function f on fp.function_id = f.id
+            inner join Role_Function rf on rf.function_id = f.id
+            inner join Role r on r.id = rf.role_id
+        """
+
+        if 'user_id' in params:
+            sql += """
+                inner join `Group` g on g.role_id = r.id
+                inner join Group_User gu on gu.group_id = g.id
+                inner join User u on u.id = gu.user_id
+            """
+
+        sql += """
+            where p.group_id is null and p.user_id is null
+        """
+
+        if params and 'role_id' in params:
+            where_clause = self.get_where_clause({'id': params['role_id']}, table_abbr="r")
+            sql += " and {}".format(where_clause)
+        elif params and 'function_id' in params:
+            where_clause = self.get_where_clause({'id': params['function_id']}, table_abbr="f")
+            sql += " and {}".format(where_clause)
+        elif params and 'user_id' in params:
+            where_clause = self.get_where_clause({'id': params['user_id']}, table_abbr="u")
+            sql += " and {}".format(where_clause)
+        # else:
+        #     raise Exception("no params given")
+
+        return self.find_by_sql(sql)
+
+
+    def find_resource_permissions(self, params, customer_id=None, group_ids=None, user_ids=None):
+
+        sql = """
+            select res_name as resource, action, value, customer_id, group_id, user_id
+            from Permission
+            where 1 = 1
+        """
+
+        if params:
+            where_clause = self.get_where_clause(params)
+            sql += " and {}".format(where_clause)
+
+        if customer_id:
+            sql += " and customer_id = '{}'".format(customer_id)
+        if group_ids:
+            sql += " and group_id in ('{}')".format("','".join(group_ids))
+        if user_ids:
+            sql += " and user_id in ('{}')".format("','".join(user_ids))
+
+        return self.find_by_sql(sql)
+
 
     # def find(self, params):
     #
