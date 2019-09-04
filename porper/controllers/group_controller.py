@@ -1,78 +1,98 @@
 
 from porper.controllers.meta_resource_controller import MetaResourceController
-import aws_lambda_logging
-import logging
+# import aws_lambda_logging
+# import logging
 
-logger = logging.getLogger()
-loglevel = "INFO"
-logging.basicConfig(level=logging.ERROR)
-aws_lambda_logging.setup(level=loglevel)
+# logger = logging.getLogger()
+# loglevel = "INFO"
+# logging.basicConfig(level=logging.ERROR)
+# aws_lambda_logging.setup(level=loglevel)
 
 class GroupController(MetaResourceController):
 
-    def __init__(self, connection):
+    def __init__(self, connection=None, loglevel="INFO"):
         #self.connection = connection
-        MetaResourceController.__init__(self, connection)
+        MetaResourceController.__init__(self, connection, loglevel)
         from porper.models.group import Group
-        self.group = Group(connection)
-        from porper.controllers.user_group_controller import UserGroupController
-        self.user_group_controller = UserGroupController(self.connection)
+        self.group = Group(self.connection, loglevel)
+        from porper.models.user import User
+        self.user = User(self.connection, loglevel)
+        # from porper.controllers.user_group_controller import UserGroupController
+        # self.user_group_controller = UserGroupController(self.connection)
+
+        self.permission_name = 'group'
 
 
     # only the admin can create a group
-    def create(self, access_token, params, paths=None):
+    def create(self, access_token, params):
         """
         possible attributes in params
             - [id], name
         """
-        logger.info(f"params={params}")
-        logger.info(f"access_token={access_token}")
-        logger.info(f"paths={paths}")
-        current_user = self.find_user_level(access_token)
-        if current_user['level'] != self.USER_LEVEL_ADMIN:
-            raise Exception('not permitted')
+        self.logger.info(f"params={params}")
+        self.logger.info(f"access_token={access_token}")
+        # self.logger.info(f"paths={paths}")
 
-        # check if the group with the given customer already exists
-        ret = self.group.find({"name": params["name"], "customer_id": params["customer_id"]})
-        if ret:
-            raise Exception("already exists")
+        self.find_user_level(access_token)
+        if not self.is_permitted(self.permission_name, self.permission_write):
+            raise Exception("not permitted")
 
-        return self.group.create(params, paths)
+        if "customer_id" not in params or not self.is_member(customer_id=params['customer_id']):
+            raise Exception("not permitted")
+
+        return self.group.create(params)
 
 
-    def update(self, access_token, params, paths=None):
+    def update(self, access_token, params):
         """
         possible attributes in params
             - id, name
         """
-        logger.info(f'group_controller_update-params={params}')
-        logger.info(f'group_controller_update-access_token={access_token}')
+        self.logger.info(f'group_controller_update-params={params}')
+        self.logger.info(f'group_controller_update-access_token={access_token}')
+
+        self.find_user_level(access_token)
+        if not self.is_permitted(self.permission_name, self.permission_write):
+            raise Exception("not permitted")
+
+        item = self.group.find_by_id(params['id'])
+        if not item or not self.is_member(customer_id=item['customer_id']):
+            raise Exception("not permitted")
+
         if params.get('customer_id'):
             raise Exception('You cannot update the group customer')
-        current_user = self.find_user_level(access_token, params['id'])
-        if current_user['level'] == self.USER_LEVEL_USER:
-            raise Exception('not permitted')
-        else:
-            return self.group.update(params)
+
+        if 'name' in params:
+            ret = self.group.find({'name': params['name']})
+            if ret and ret[0]['id'] != params['id']:
+                raise Exception("the group name already exists")
+
+        return self.group.update(params)
 
 
-    def delete(self, access_token, params, paths=None):
+    def delete(self, access_token, params):
         """
         possible attributes in params
             - id
         """
-        current_user = self.find_user_level(access_token, params['id'])
-        if current_user['level'] == self.USER_LEVEL_USER:
-            raise Exception('not permitted')
+
+        self.find_user_level(access_token)
+        if not self.is_permitted(self.permission_name, self.permission_write):
+            raise Exception("not permitted")
+
+        item = self.group.find_by_id(params['id'])
+        if not item or not self.is_member(customer_id=item['customer_id']):
+            raise Exception("not permitted")
 
         # cannot remove it when it has users
-        user_groups = self.user_group_controller.find(access_token, {'group_id': params['id']})
-        if len(user_groups) > 0:
+        users = self.user.find({'group_id': params['id']})
+        if len(users) > 0:
             raise Exception("You must remove all users before removing this group")
+
         return self.group.delete(params['id'])
 
 
-    def find(self, access_token, params, paths=None):
+    def find(self, access_token, params):
         """
         possible attributes in params
             - user_id: find all groups where this given user belongs
@@ -81,40 +101,21 @@ class GroupController(MetaResourceController):
             - None: No condition
             - name
         """
-        if 'user_id' in params:
-            user_groups = self.user_group_controller.find(access_token, {'user_id': params['user_id']})
-            group_ids = [ user_group['group_id'] for user_group in user_groups ]
-            if len(group_ids) == 0: return []
-            return self.group.find_by_ids(group_ids)
 
-        if 'id' in params:
-            user_groups = self.user_group_controller.find(access_token, {'group_id': params['id']})
-            if len(user_groups) == 0:
-               return self.group.find_by_id(params['id'])
-            group_ids = [ user_group['group_id'] for user_group in user_groups ]
-            if params['id'] in group_ids:
-                return self.group.find_by_id(params['id'])
-            else:
-                raise Exception('not permitted')
+        self.find_user_level(access_token)
+        customer_id = None
+        user_id = None
+        if self.is_customer_admin:
+            customer_id = self.customer_id
+        elif not self.is_admin:
+            user_id = self.user_id
 
         if 'ids' in params:
-            user_groups = self.user_group_controller.find(access_token, {'group_ids': params['ids']})
-            group_ids = [ user_group['group_id'] for user_group in user_groups if user_group['group_id'] in params['ids'] ]
-            if len(group_ids) == 0: return []
-            return self.group.find_by_ids(group_ids)
-
-        # find current user information including id and level
-        current_user = self.find_user_level(access_token, params.get('group_id'))
-
-        if not params:
-            # in case there is no params
-            groups = self.group.find({})
-        else:
-            # for other parameters
-            groups = self.group.find(params)
-        if current_user['level'] == self.USER_LEVEL_ADMIN:
+            groups = self.group.find_by_ids(params['ids'], customer_id=customer_id, user_id=user_id)
             return groups
-        # return only the groups where the current user belongs
-        user_groups = self.user_group_controller.find(access_token, {'user_id': current_user['id']})
-        group_ids = [ user_group['group_id'] for user_group in user_groups]
-        return [ group for group in groups if group['id'] in group_ids]
+
+        else:
+            groups = self.group.find(params, customer_id=customer_id, user_id=user_id)
+            if groups and 'id' in params:
+                return groups[0]
+            return groups

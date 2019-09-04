@@ -7,9 +7,9 @@ from porper.controllers.auth_controller import AuthController
 
 class CognitoAuthController(AuthController):
 
-    def __init__(self, permission_connection):
+    def __init__(self, permission_connection=None, loglevel="INFO"):
 
-        AuthController.__init__(self, permission_connection)
+        AuthController.__init__(self, permission_connection, loglevel)
 
         self.client = boto3.client('cognito-idp')
 
@@ -19,9 +19,9 @@ class CognitoAuthController(AuthController):
         cognito_access_token = params['cognito_access_token']
 
         # get the tokens to see if the given code is valid
-        print("cognito_access_token [{}]".format(cognito_access_token))
+        self.logger.debug("cognito_access_token [{}]".format(cognito_access_token))
         response = self.client.get_user(AccessToken=cognito_access_token)
-        print(response)
+        self.logger.debug(response)
         """{
                 'Username': '4de37a8c-c2c0-4cc4-9fbb-c578139fb861',
                 'UserAttributes': [
@@ -65,16 +65,16 @@ class CognitoAuthController(AuthController):
             'refresh_token': cognito_access_token
         }
         auth_params['name'] = "{} {}".format(given_name, family_name)
-        AuthController.authenticate(self, auth_params)
+        user_info = AuthController.authenticate(self, auth_params)
 
         # return the cognito_access_token if all completed successfully
-        user_info = {
-            'user_id': user_id,
-            'email': email,
-            'family_name': family_name,
-            'given_name': given_name,
-            'customer_id': customer_id,
-            'access_token': cognito_access_token,
-        }
-        user_info['groups'] = AuthController.find_groups(self, user_id)
+        # user_info = {
+        #     'user_id': user_id,
+        #     'email': email,
+        #     'family_name': family_name,
+        #     'given_name': given_name,
+        #     'customer_id': customer_id,
+        #     'access_token': cognito_access_token,
+        # }
+        # user_info['groups'] = AuthController.find_groups(self, user_id)
         return user_info

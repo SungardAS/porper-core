@@ -1,207 +1,127 @@
 
 from __future__ import print_function # Python 2/3 compatibility
-import json
-import boto3
-from boto3.dynamodb.conditions import Key, Attr
-from botocore.exceptions import ClientError
-from porper.models.decimal_encoder import DecimalEncoder
+import os
+import uuid
+import pymysql
 import aws_lambda_logging
 import logging
 
-logger = logging.getLogger()
-loglevel = "INFO"
-logging.basicConfig(level=logging.ERROR)
-aws_lambda_logging.setup(level=loglevel)
-
 class Resource:
 
-    def __init__(self, dynamodb):
-        self.dynamodb = dynamodb
-        self.table = None
+    def __init__(self, connection=None, loglevel="INFO"):
+
+        self.logger = logging.getLogger()
+        # loglevel = "INFO"
+        logging.basicConfig(level=logging.ERROR)
+        aws_lambda_logging.setup(level=loglevel)
+
+        if connection is None:
+            host = os.environ.get('MYSQL_HOST')
+            username = os.environ.get('MYSQL_USER')
+            password = os.environ.get('MYSQL_PASSWORD')
+            database = os.environ.get('MYSQL_DATABASE')
+            self.connection = pymysql.connect(host, user=username, passwd=password, db=database, cursorclass=pymysql.cursors.DictCursor)
+            self.logger.debug("!!!!!!!!!!new connection created")
+        else:
+            self.connection = connection
+        self.table_name = None
+
+
+    def __extract(self, params):
+        keys = list(params.keys())
+        vals = list(params.values())
+        for idx, val in enumerate(vals):
+            if isinstance(val, str):
+                val = "'{}'".format(val)
+                vals[idx] = val
+        return (keys, vals)
+
 
     def create(self, params):
-        try:
-            response = self.table.put_item(
-               Item=params
-            )
-        except ClientError as e:
-            logger.info(f"{e.response['Error']['Message']}")
-            raise
-        else:
-            logger.info(f"PutItem succeeded:{json.dumps(response, indent=4, cls=DecimalEncoder)}")
-            return params
+        if 'id' not in params:
+            params['id'] = str(uuid.uuid4())
+        (keys, vals) = self.__extract(params)
+        sql = "INSERT INTO {} ({}) VALUES ({})".format(self.table_name, ",".join(keys), ",".join(vals))
+        self.execute(sql)
+        return params
+
 
     def update(self, params):
-        logger.info(f"porper_put_params====={params}")
-        if params.get('id') is None:
-            raise Exception("no id is given in update")
-        ue = ""
-        eav = {}
-        ean = {}
-        for key in params.keys():
-            if key == 'id': continue
-            if ue != "":
-                ue += ', '
-            ue += "#%s = :%s" % (key, key)
-            eav[':%s' % key] = params[key]
-            ean['#%s' % key] = key
-        ue = "set " + ue
-        logger.info(f"ue={ue}")
-        logger.info(f"eav={eav}")
-        logger.info(f"ean={ean}")
-        try:
-            response = self.table.update_item(
-                Key={
-                    'id': params["id"]
-                },
-                UpdateExpression=ue,
-                ExpressionAttributeValues=eav,
-                ExpressionAttributeNames=ean,
-                ReturnValues="UPDATED_NEW"
-            )
-            return self.find_by_id(params["id"])
-        except ClientError as e:
-            logger.info(f"{e.response['Error']['Message']}")
-            raise
-        else:
-            logger.info(f"UpdateItem succeeded:{json.dumps(response, indent=4, cls=DecimalEncoder)}")
+        id = params['id']
+        (keys, vals) = self.__extract(params)
+        sets = []
+        for idx, key in enumerate(keys):
+            if key == 'id':
+                continue
+            sets.append("{} = {}".format(key, vals[idx]))
+        sql = "UPDATE {} SET {} WHERE id = '{}'".format(self.table_name, ", ".join(sets), id)
+        if self.execute(sql):
+            return self.find_by_id(id)
 
-    def find_by_id(self, id):
-        response = self.table.get_item(
-            Key={
-                'id': id
-            }
-        )
-        if response.get('Item'):
-            item = response['Item']
-            logger.info(f"GetItem succeeded:{json.dumps(item, indent=4, cls=DecimalEncoder)}")
-            return item
-        else:
-            logger.info("GetItem returns no item:")
-            return None
-
-    def add_filter_with_multiple_values(self, fe, ean, eav, key, values):
-        if fe != "":
-            fe += " and "
-        fe += '#%s in (' % key
-        for index, val in enumerate(values):
-            val_name = ':%s_%s' % (key, index)
-            if index == 0:
-                fe += val_name
-            else:
-                fe += ', ' + val_name
-            eav[val_name] = val
-        ean['#%s' % key] = key
-        fe += ')'
-        return fe
-
-    def build_filters(self, params, fe, ean, eav, exceptions):
-        for key in params.keys():
-            if not params[key]: continue
-            if key in exceptions:   continue
-            if isinstance(params[key], list):
-                key_single = key[:len(key)-1]    # truncate 's'
-                fe = self.add_filter_with_multiple_values(fe, ean, eav, key_single, params[key])
-            else:
-                if fe != "":
-                    fe += " and "
-                fe += "#%s = :%s" % (key, key)
-                #print(fe)
-                eav[':%s' % key] = params[key]
-                ean['#%s' % key] = key
-        return fe
-
-    def find_by_ids(self, ids):
-        ean = {}
-        eav = {}
-        fe = ""
-        """fe = 'id in ('
-        for index, id in enumerate(ids):
-            id_name = ':id_%s' % index
-            if index == 0:
-                fe += id_name
-            else:
-                fe += ', ' + id_name
-            eav[id_name] = id
-        fe += ')'"""
-        fe += self.add_filter_with_multiple_values(fe, ean, eav, "id", ids)
-        logger.info(f"fe={fe}")
-        logger.info(f"eav={eav}")
-        return self.table.scan(
-            FilterExpression=fe,
-            ExpressionAttributeNames=ean,
-            ExpressionAttributeValues=eav
-        )['Items']
-
-    def find(self, params):
-
-        logger.info(f'resource find params : {params}')
-
-        if not params:
-            return self.table.scan()['Items']
-
-        num_keys = len(params.keys())
-        if num_keys == 1:
-            if params.get('id'):
-                item = self.find_by_id(params['id'])
-                if not item: return []
-                else:   return [item]
-            if params.get('ids'):
-                return self.find_by_ids(params['ids'])
-
-        fe = ""
-        ean = {}
-        eav = {}
-        for key in params.keys():
-            if not params[key]: continue
-            if isinstance(params[key], list):
-                key_single = key[:len(key)-1]    # truncate 's'
-                fe = self.add_filter_with_multiple_values(fe, ean, eav, key_single, params[key])
-            else:
-                if fe != "":
-                    fe += " and "
-                fe += "#%s = :%s" % (key, key)
-                eav[':%s' % key] = params[key]
-                ean['#%s' % key] = key
-
-        # append 'ids' filter
-        """if params.get('ids'):
-            if fe != "":
-                fe += " and "
-            fe += '#id in ('
-            for index, id in enumerate(params['ids']):
-                id_name = ':id_%s' % index
-                if index == 0:
-                    fe += id_name
-                else:
-                    fe += ', ' + id_name
-                eav[id_name] = id
-            ean['#id'] = 'id'
-            fe += ')'"""
-
-        logger.info(f"fe={fe}")
-        logger.info(f"ean={ean}")
-        logger.info(f"eav={eav}")
-
-        logger.info(f"table={self.table}")
-        response = self.table.scan(
-            FilterExpression=fe,
-            ExpressionAttributeNames=ean,
-            ExpressionAttributeValues=eav
-        )
-        for i in response['Items']:
-            logger.info(f"response_Items={json.dumps(i, cls=DecimalEncoder)}")
-        return response["Items"]
 
     def delete(self, id):
-        try:
-            response = self.table.delete_item(
-                Key={
-                    'id': id
-                },
-            )
-        except ClientError as e:
-            logger.info(f"{e.response['Error']['Message']}")
-            raise
+        sql = "DELETE FROM {} WHERE id = '{}'".format(self.table_name, id)
+        return self.execute(sql)
+
+
+    def execute(self, sql):
+        sql = sql.replace('\n', ' ')
+        self.logger.debug(f"SQL:{sql}")
+        with self.connection.cursor() as cursor:
+            cursor.execute(sql)
+        return True
+
+
+    def get_where_clause(self, params, table_abbr=None):
+        if table_abbr is None:
+            table_abbr = ""
         else:
-            logger.info(f"DeleteItem succeeded:{json.dumps(response, indent=4, cls=DecimalEncoder)}")
+            table_abbr = '{}.'.format(table_abbr)
+        wheres = []
+        (keys, vals) = self.__extract(params)
+        for idx, key in enumerate(keys):
+            wheres.append('{}{} = {}'.format(table_abbr, key, vals[idx]))
+        return " and ".join(wheres)
+
+
+    def find_by_id(self, id, colstr=None):
+        if not colstr:
+            colstr = "*"
+        sql = "SELECT {} FROM {} WHERE id = '{}'".format(colstr, self.table_name, id)
+        return self.find_one(sql)
+
+
+    def find_simple(self, params):
+        colstr = "*"
+        sql = "SELECT {} FROM {}".format(colstr, self.table_name)
+        if not params:
+            return self.find_by_sql(sql)
+        where_clause = self.get_where_clause(params)
+        sql += " WHERE {}".format(where_clause)
+        return self.find_by_sql(sql)
+
+
+    def find_by_sql(self, sql):
+        sql = sql.replace('\n', ' ')
+        self.logger.debug(f"SQL:{sql}")
+        with self.connection.cursor() as cursor:
+            cursor.execute(sql)
+            rows = cursor.fetchall()
+        return rows
+
+
+    def find_one(self, sql):
+        sql = sql.replace('\n', ' ')
+        self.logger.debug(f"SQL:{sql}")
+        with self.connection.cursor() as cursor:
+            cursor.execute(sql)
+            row = cursor.fetchone()
+        return row
+
+
+    def commit(self):
+        self.connection.commit()
+
+
+    def rollback(self):
+        self.connection.rollback()

@@ -7,9 +7,9 @@ from porper.controllers.auth_controller import AuthController
 
 class GoogleAuthController(AuthController):
 
-    def __init__(self, permission_connection):
+    def __init__(self, permission_connection=None, loglevel="INFO"):
 
-        AuthController.__init__(self, permission_connection)
+        AuthController.__init__(self, permission_connection, loglevel)
 
         self.tokeninfo_endpoint = os.environ.get('GOOGLE_TOKENINFO_ENDPOINT')
 
@@ -18,10 +18,10 @@ class GoogleAuthController(AuthController):
         id_token = params['id_token']
 
         # get the tokens to see if the given code is valid
-        print("id_token [{}]".format(id_token))
+        self.logger.debug("id_token [{}]".format(id_token))
         url = "%s%s"%(self.tokeninfo_endpoint, id_token)
         r = requests.get(url, verify=False)
-        print(r._content)
+        self.logger.debug(r._content)
         """{
             "iss": "accounts.google.com",
             "at_hash": "",
@@ -56,10 +56,10 @@ class GoogleAuthController(AuthController):
             'access_token': access_token,
             'refresh_token': id_token
         }
-        AuthController.authenticate(self, auth_params)
+        user_info = AuthController.authenticate(self, auth_params)
 
         # return the access_token if all completed successfully
-        user_info['user_id'] = user_info['sub']
-        user_info['access_token'] = access_token
-        user_info['groups'] = AuthController.find_groups(self, auth_params['user_id'])
+        # user_info['user_id'] = user_info['sub']
+        # user_info['access_token'] = access_token
+        # user_info['groups'] = AuthController.find_groups(self, auth_params['user_id'])
         return user_info
