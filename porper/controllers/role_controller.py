@@ -44,8 +44,9 @@ class RoleController(MetaResourceController):
             role_params['id'] = params['id']
         ret = self.role.create(role_params)
 
-        for function in params['functions']:
-            self.role_function.create({'role_id': ret['id'], 'function_id': function})
+        if 'functions' in params:
+            for function in params['functions']:
+                self.role_function.create({'role_id': ret['id'], 'function_id': function})
 
         return ret
 
