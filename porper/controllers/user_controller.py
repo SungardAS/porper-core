@@ -241,18 +241,32 @@ class UserController(MetaResourceController):
         if params.get("ids"):
             if self.is_admin:
                 ret = self.user.find_by_ids(self.params['ids'])
-            elif self.is_customer_admin:
-                ret = self.user.find_by_ids(self.params['ids'], customer_id=self.customer_id)
             else:
-                ret = self.user.find_by_ids(self.params['ids'], user_id=self.user_id)
+                if 'closed' in params:
+                    # allow users/groups of the groups only this user belongs
+                    del params['closed']
+                    if self.is_customer_admin:
+                        ret = self.user.find_by_ids(self.params['ids'], customer_id=self.customer_id)
+                    elif not self.is_admin:
+                        ret = self.user.find_by_ids(self.params['ids'], user_id=self.user_id)
+                else:
+                    # allow all users/groups of the customer this user belongs
+                    ret = self.user.find_by_ids(self.params['ids'], customer_id=self.customer_id)
 
         else:
             if self.is_admin:
                 ret = self.user.find(params)
-            elif self.is_customer_admin:
-                ret = self.user.find(params, customer_id=self.customer_id)
             else:
-                ret = self.user.find(params, user_id=self.user_id)
+                if 'closed' in params:
+                    # allow users/groups of the groups only this user belongs
+                    del params['closed']
+                    if self.is_customer_admin:
+                        ret = self.user.find(params, customer_id=self.customer_id)
+                    elif not self.is_admin:
+                        ret = self.user.find(params, user_id=self.user_id)
+                else:
+                    # allow all users/groups of the customer this user belongs
+                    ret = self.user.find(params, customer_id=self.customer_id)
 
         user = {}
         for u in ret:

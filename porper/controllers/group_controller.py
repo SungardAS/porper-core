@@ -105,10 +105,17 @@ class GroupController(MetaResourceController):
         self.find_user_level(access_token)
         customer_id = None
         user_id = None
-        if self.is_customer_admin:
-            customer_id = self.customer_id
-        elif not self.is_admin:
-            user_id = self.user_id
+        if 'closed' in params:
+            # allow users/groups of the groups only this user belongs
+            if self.is_customer_admin:
+                customer_id = self.customer_id
+            elif not self.is_admin:
+                user_id = self.user_id
+            del params['closed']
+        else:
+            # allow all users/groups of the customer this user belongs
+            if not self.is_admin:
+                customer_id = self.customer_id
 
         if 'ids' in params:
             groups = self.group.find_by_ids(params['ids'], customer_id=customer_id, user_id=user_id)
