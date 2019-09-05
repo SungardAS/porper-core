@@ -136,12 +136,15 @@ class Permission(Resource):
             where_clause = self.get_where_clause(params)
             sql += " and {}".format(where_clause)
 
+        id_conds = []
         if customer_id:
-            sql += " and customer_id = '{}'".format(customer_id)
+            id_conds.append("customer_id = '{}'".format(customer_id))
         if group_ids:
-            sql += " and group_id in ('{}')".format("','".join(group_ids))
+            id_conds.append("group_id in ('{}')".format("','".join(group_ids)))
         if user_ids:
-            sql += " and user_id in ('{}')".format("','".join(user_ids))
+            id_conds.append("user_id in ('{}')".format("','".join(user_ids)))
+        if id_conds:
+            sql += " and ({})".format(" or ".join(id_conds))
 
         return self.find_by_sql(sql)
 
