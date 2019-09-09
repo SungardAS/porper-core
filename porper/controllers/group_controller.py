@@ -103,6 +103,11 @@ class GroupController(MetaResourceController):
         """
 
         self.find_user_level(access_token)
+
+        if 'closed' in params:
+            if not self.is_permitted(self.permission_name, self.permission_read):
+                raise Exception("not permitted")
+
         customer_id = None
         user_id = None
         if 'closed' in params:

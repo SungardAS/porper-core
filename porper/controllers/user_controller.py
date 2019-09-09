@@ -233,8 +233,9 @@ class UserController(MetaResourceController):
             if ret:
                 return ret[0]
 
-        if not self.is_permitted(self.permission_name, self.permission_read):
-            raise Exception("not permitted")
+        if 'closed' in params:
+            if not self.is_permitted(self.permission_name, self.permission_read):
+                raise Exception("not permitted")
 
         ######### NOTICE
         #### When params has 'ids', no other conditions cannot be used together!!!!
