@@ -272,39 +272,38 @@ class PermissionController(MetaResourceController):
     def delete(self, access_token, params):
         user_id = self.find_user_id(access_token)
 
-        ### temporarily comment the implementation for CTOAF-349
-        # owner_id = params.get('owner_id')
-        #
-        # self.find_user_level(access_token)
-        # if self.user_id != owner_id:
-        #     raise Exception("not permitted")
-        #
-        # if 'res_name' not in params or 'res_id' not in params:
-        #     raise Exception("resource name and id are not provided")
-        #
-        # params['value'] = params['res_id']
-        # del params['res_id']
+        owner_id = params.get('owner_id')
+
+        self.find_user_level(access_token)
+        if self.user_id != owner_id:
+            raise Exception("not permitted")
+
+        if 'res_name' not in params or 'res_id' not in params:
+            raise Exception("resource name and id are not provided")
+
+        params['value'] = params['res_id']
+        del params['res_id']
         return self.permission.delete(params)
 
 
-    def _filter_conditions(self, user_id, rows):
-
-        filtered = [ row for row in rows if not row.get('condition') ]
-        if len(filtered) == len(filtered):
-            # there is no row with a condition
-            return rows
-
-        permissions = [ row for row in rows if row.get('condition') ]
-        for permission in permissions:
-            condition = json.loads(permission['condition'])
-            # check when the condition is 'is_admin' and it is satisified, add it to the return list if so
-            if 'is_admin' in condition:
-                if not user_id \
-                or not condition['is_admin'] \
-                or ( permission.get('group_id') and self.is_group_admin(user_id, permission['group_id']) ):
-                    filtered.append(permission)
-
-        return filtered
+    # def _filter_conditions(self, user_id, rows):
+    #
+    #     filtered = [ row for row in rows if not row.get('condition') ]
+    #     if len(filtered) == len(filtered):
+    #         # there is no row with a condition
+    #         return rows
+    #
+    #     permissions = [ row for row in rows if row.get('condition') ]
+    #     for permission in permissions:
+    #         condition = json.loads(permission['condition'])
+    #         # check when the condition is 'is_admin' and it is satisified, add it to the return list if so
+    #         if 'is_admin' in condition:
+    #             if not user_id \
+    #             or not condition['is_admin'] \
+    #             or ( permission.get('group_id') and self.is_group_admin(user_id, permission['group_id']) ):
+    #                 filtered.append(permission)
+    #
+    #     return filtered
 
 
     def find(self, access_token, params):
@@ -324,11 +323,12 @@ class PermissionController(MetaResourceController):
                 search_params['value'] = params['res_id']
 
         self.find_user_level(access_token)
+        owner_id = params.get('owner_id')
 
         search_cid = None
         search_gids = None
         search_uids = None
-        if not self.is_admin:
+        if not self.is_admin and owner_id != self.user_id:
             customer_id = None
             user_id = None
             if self.is_customer_admin:
