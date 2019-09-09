@@ -15,8 +15,8 @@ class RoleController(MetaResourceController):
         # self.user_group_controller = UserGroupController(self.connection)
         # from porper.controllers.token_controller import TokenController
         # self.token_controller = TokenController(self.connection)
-        # from porper.models.group import Group
-        # self.group = Group(self.connection)
+        from porper.models.group import Group
+        self.group = Group(self.connection, loglevel)
 
         self.permission_name = "role"
 
@@ -63,6 +63,11 @@ class RoleController(MetaResourceController):
 
         if not params.get('id'):
             raise Exception("id must be provided")
+
+        # check if there is any group with this role
+        ret = self.group.find_simple({'role_id': params['id']})
+        if len(ret):
+            raise Exception("You cannot remove this role because it is used in group(s)")
 
         self.role_function.delete(role_id=params['id'])
 
