@@ -172,9 +172,9 @@ class Group(Resource):
 
         sql = """
             select distinct *
-            from `Group`
+            from `Group` g
             left join Group_User gu on g.id = gu.group_id
-            where id = in ('{}')
+            where g.id in ('{}')
         """.format("','".join(group_ids))
 
         if customer_id:
