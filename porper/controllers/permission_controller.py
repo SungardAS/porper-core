@@ -146,10 +146,12 @@ class PermissionController(MetaResourceController):
             group_ids = [g['id'] for g in to_group_ids]
             customer_id = None
             user_id = None
-            if self.is_customer_admin:
-                customer_id = self.customer_id
-            else:
-                user_id = self.user_id
+            # if self.is_customer_admin:
+            #     customer_id = self.customer_id
+            # else:
+            #     user_id = self.user_id
+            # allow all users in the same customer
+            customer_id = self.customer_id
             groups = self.group.find_by_ids(group_ids, customer_id= customer_id, user_id=user_id)
             if len(groups) != len(group_ids):
                 self.logger.info("len(groups) = {} whereas len(to_group_ids) = {}".format(len(groups), len(group_ids)))
@@ -188,10 +190,12 @@ class PermissionController(MetaResourceController):
             user_ids = [u['id'] for u in to_user_ids]
             customer_id = None
             user_id = None
-            if self.is_customer_admin:
-                customer_id = self.customer_id
-            else:
-                user_id = self.user_id
+            # if self.is_customer_admin:
+            #     customer_id = self.customer_id
+            # else:
+            #     user_id = self.user_id
+            # allow all users in the same customer
+            customer_id = self.customer_id
             users = self.user.find_by_ids(user_ids, customer_id=customer_id, user_id=user_id)
             if len(users) != len(user_ids):
                 self.logger.info("len(users) = {} whereas len(to_user_ids) = {}".format(len(users), len(user_ids)))
@@ -264,8 +268,22 @@ class PermissionController(MetaResourceController):
         raise Exception("not supported")
 
 
+    # This is to remove all permissions of given resource
     def delete(self, access_token, params):
         user_id = self.find_user_id(access_token)
+
+        ### temporarily comment the implementation for CTOAF-349
+        # owner_id = params.get('owner_id')
+        #
+        # self.find_user_level(access_token)
+        # if self.user_id != owner_id:
+        #     raise Exception("not permitted")
+        #
+        # if 'res_name' not in params or 'res_id' not in params:
+        #     raise Exception("resource name and id are not provided")
+        #
+        # params['value'] = params['res_id']
+        # del params['res_id']
         return self.permission.delete(params)
 
 
