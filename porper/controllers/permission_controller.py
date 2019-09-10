@@ -230,7 +230,7 @@ class PermissionController(MetaResourceController):
         if not self.is_admin:
             # check if this user is in the same customer with the customer to give access
             for customer_id in [c['id'] for c in to_customer_ids]:
-                if self.customer_id != to_customer_id:
+                if self.customer_id != customer_id:
                     raise Exception("not permitted")
 
         return self.add_permissions_to_customers(resource_name, resource_id, to_customer_ids)
