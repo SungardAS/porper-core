@@ -21,6 +21,8 @@ class User(Resource):
         if params:
             if 'customer_id' in params:
                 where_clause = self.get_where_clause(params, table_abbr="g")
+            elif 'id' in params:
+                where_clause = self.get_where_clause(params, table_abbr="u")
             else:
                 where_clause = self.get_where_clause(params, table_abbr="gu")
             sql += " and {}".format(where_clause)

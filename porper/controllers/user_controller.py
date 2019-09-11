@@ -145,7 +145,7 @@ class UserController(MetaResourceController):
             - id, group_id
         """
         self.find_user_level(access_token)
-        if self.is_permitted(self.permission_name, self.permission_write):
+        if not self.is_permitted(self.permission_name, self.permission_write):
             raise Exception("not permitted")
 
         if not params.get('id'):
@@ -153,9 +153,12 @@ class UserController(MetaResourceController):
 
         if 'group_id' not in params:
             # find the customer_id of this given user
-            items = self.customer.find({'user_id': id})
-            if not items or not self.is_member(customer_id=items[0]['id']):
-                raise Exception("not permitted")
+            if not self.is_admin:
+                if not self.is_customer_admin:
+                    raise Exception("not permitted")
+                items = self.customer.find({'user_id': id})
+                if not items or not self.is_member(customer_id=items[0]['id']):
+                    raise Exception("not permitted")
 
             # find user info before removing it
             user_info = self.user.find_by_id(params['id'])
@@ -167,8 +170,15 @@ class UserController(MetaResourceController):
             self.invited_user.update_state(user_info['email'], user_info['auth_type'], self.invited_user.DELETED)
 
         else:
-            if not self.is_member(group_id=params['group_id']):
-                raise Exception("not permitted")
+            if not self.is_admin:
+                customer_id = None
+                group_id = None
+                if self.is_customer_admin:
+                    customer_id = self.customer_id
+                else:
+                    group_id = params['group_id']
+                if not self.is_member(customer_id=customer_id, group_id=group_id):
+                    raise Exception("not permitted")
             return self.user_group.delete(user_id=params['id'], group_id=params["group_id"])
 
         # removeuser=params.get('removeuser')
