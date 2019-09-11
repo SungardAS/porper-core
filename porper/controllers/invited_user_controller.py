@@ -39,6 +39,9 @@ class InvitedUserController(MetaResourceController):
             if items[0]['state'] == self.invited_user.INVITED:
                 self.logger.info("Already invited")
                 return True
+            # set the status to 'invited'
+            self.invited_user.update_state(params['email'], params['auth_type'], self.invited_user.INVITED)
+            return True
 
         return self._save(self.user_id, params)
 
