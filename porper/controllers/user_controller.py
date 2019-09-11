@@ -291,7 +291,9 @@ class UserController(MetaResourceController):
                     "given_name": u['given_name'],
                     "name": u['name'],
                     "auth_type": u['auth_type'],
-                    'groups': [
+                }
+                if u['group_id']:
+                    groups =  [
                         {
                             'id': u['group_id'],
                             'name': u['group_name'],
@@ -299,16 +301,19 @@ class UserController(MetaResourceController):
                             'role_id': u['role_id']
                         }
                     ]
-                }
+                else:
+                    groups = []
+                user[id]['groups'] = groups
             else:
-                user[id]['groups'].append(
-                    {
-                        'id': u['group_id'],
-                        'name': u['group_name'],
-                        'customer_id': u['customer_id'],
-                        'role_id': u['role_id']
-                    }
-                )
+                if u['group_id']:
+                    user[id]['groups'].append(
+                        {
+                            'id': u['group_id'],
+                            'name': u['group_name'],
+                            'customer_id': u['customer_id'],
+                            'role_id': u['role_id']
+                        }
+                    )
 
         ret = list(user.values())
 
