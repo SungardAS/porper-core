@@ -13,8 +13,8 @@ class User(Resource):
         sql = """
             select distinct u.*, g.id as group_id, g.name as group_name, g.customer_id, g.role_id
             from User u
-            inner join Group_User gu on u.id = gu.user_id
-            inner join `Group` g on g.id = gu.group_id
+            left join Group_User gu on u.id = gu.user_id
+            left join `Group` g on g.id = gu.group_id
             where 1 = 1
         """
 
@@ -50,8 +50,8 @@ class User(Resource):
         sql = """
             select distinct u.*, g.id as group_id, g.name as group_name, g.customer_id, g.role_id
             from User u
-            inner join Group_User gu on u.id = gu.user_id
-            inner join `Group` g on g.id = gu.group_id
+            left join Group_User gu on u.id = gu.user_id
+            left join `Group` g on g.id = gu.group_id
             where u.id in ('{}')
         """.format("','".join(user_ids))
 
