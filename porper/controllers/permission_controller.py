@@ -197,6 +197,8 @@ class PermissionController(MetaResourceController):
             # allow all users in the same customer
             customer_id = self.customer_id
             users = self.user.find_by_ids(user_ids, customer_id=customer_id, user_id=user_id)
+            # get the unique users
+            users = list(dict.fromkeys([u['id'] for u in users]))
             if len(users) != len(user_ids):
                 self.logger.info("len(users) = {} whereas len(to_user_ids) = {}".format(len(users), len(user_ids)))
                 raise Exception("not permitted")
@@ -328,13 +330,15 @@ class PermissionController(MetaResourceController):
         search_cid = None
         search_gids = None
         search_uids = None
-        if not self.is_admin and owner_id != self.user_id:
+        if not self.is_admin and ('res_id' not in params or owner_id != self.user_id):
             customer_id = None
             user_id = None
-            if self.is_customer_admin:
-                customer_id = self.customer_id
-            else:
-                user_id = self.user_id
+            # Allow customer admin to see only its and shared graphs like normal users
+            # if self.is_customer_admin:
+            #     customer_id = self.customer_id
+            # else:
+            #     user_id = self.user_id
+            user_id = self.user_id
             groups = self.group.find({}, customer_id= customer_id, user_id=user_id)
             users = self.user.find({}, customer_id= customer_id, user_id=user_id)
 
