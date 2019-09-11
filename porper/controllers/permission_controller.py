@@ -340,11 +340,13 @@ class PermissionController(MetaResourceController):
             #     user_id = self.user_id
             user_id = self.user_id
             groups = self.group.find({}, customer_id= customer_id, user_id=user_id)
-            users = self.user.find({}, customer_id= customer_id, user_id=user_id)
+            # do not allow users in the same groups with this user
+            # users = self.user.find({}, customer_id= customer_id, user_id=user_id)
 
             search_cid = self.customer_id
             search_gids = [g['id'] for g in groups]
-            search_uids = [u['id'] for u in users]
+            # search_uids = [u['id'] for u in users]
+            search_uids = [user_id]
 
         ret = self.permission.find_resource_permissions(search_params, search_cid, search_gids, search_uids)
         if params.get("value_only"):
