@@ -112,9 +112,7 @@ class AuthController():
         if len(users) == 0:
             # set this user to the admin
             self.user.create(params)
-            from porper.models.group import Group
-            group = Group(self.connection, loglevel)
-            admin_groups = group.find_admin_groups()
+            admin_groups = self.group.find_admin_groups()
             if not admin_groups:
                 raise Exception("No admin group found")
             self.user_group.create({
@@ -165,6 +163,9 @@ class AuthController():
             'group_id': invited_users[0]['group_id']
         })
         self.invited_user.update_state(params['email'], params['auth_type'], self.invited_user.REGISTERED)
+
+        self.commit()
+
         return params['id']
 
 
